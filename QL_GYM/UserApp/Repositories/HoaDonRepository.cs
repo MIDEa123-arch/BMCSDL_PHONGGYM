@@ -66,7 +66,10 @@ namespace UserApp.Repositories // Chú ý namespace
             return result;
         }
 
-
+        public HOADON GetHOADON(int mahd)
+        {
+            return _context.HOADONs.Find(mahd);
+        }
 
         public List<InvoiceFullData> GetInvoice()
         {
@@ -108,5 +111,6 @@ namespace UserApp.Repositories // Chú ý namespace
 
             return result;
         }
+
     }
 }

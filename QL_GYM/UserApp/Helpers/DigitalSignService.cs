@@ -52,6 +52,78 @@ namespace UserApp.Helpers
                 File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, password));
             }
         }
+       
+        public bool VerifyFile(string originalFilePath, string signatureFilePath, string pfxPath, string pfxPassword, out string message)
+        {
+            message = "";
+            try
+            {
+                // 1. Kiểm tra file đầu vào
+                if (!File.Exists(originalFilePath))
+                {
+                    message = "Không tìm thấy file gốc trên server.";
+                    return false;
+                }
+                if (!File.Exists(signatureFilePath))
+                {
+                    message = "Không tìm thấy file chữ ký (.sig).";
+                    return false;
+                }
+
+                // 2. Load file PFX để lấy thông tin chủ nhân (để so sánh)
+                X509Certificate2 certFromPfx;
+                try
+                {
+                    certFromPfx = new X509Certificate2(pfxPath, pfxPassword);
+                }
+                catch
+                {
+                    message = "Mật khẩu file PFX không đúng hoặc file PFX lỗi.";
+                    return false;
+                }
+
+                // 3. Đọc dữ liệu để verify
+                byte[] originalData = File.ReadAllBytes(originalFilePath);
+                byte[] signatureData = File.ReadAllBytes(signatureFilePath);
+
+                ContentInfo contentInfo = new ContentInfo(originalData);
+                // true = Detached (Quan trọng: Phải khớp với lúc Sign)
+                SignedCms signedCms = new SignedCms(contentInfo, true);
+
+                // 4. Giải mã và Kiểm tra toán học
+                signedCms.Decode(signatureData);
+
+                try
+                {
+                    // true = verifySignatureOnly (Bỏ qua check CA Trust vì bạn dùng Self-Signed)
+                    signedCms.CheckSignature(true);
+                }
+                catch (CryptographicException)
+                {
+                    message = "CẢNH BÁO: Dữ liệu file gốc đã bị thay đổi hoặc chữ ký không đúng!";
+                    return false;
+                }
+
+                // 5. Kiểm tra xem người ký có đúng là người sở hữu file PFX này không?
+                foreach (var signer in signedCms.SignerInfos)
+                {
+                    if (signer.Certificate != null &&
+                        signer.Certificate.Thumbprint == certFromPfx.Thumbprint)
+                    {
+                        message = "Hợp lệ: File toàn vẹn và được ký bởi đúng PFX này.";
+                        return true;
+                    }
+                }
+
+                message = "File toàn vẹn, NHƯNG được ký bởi một người khác (không khớp file PFX này).";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                message = "Lỗi hệ thống: " + ex.Message;
+                return false;
+            }
+        }
 
     }
 }
