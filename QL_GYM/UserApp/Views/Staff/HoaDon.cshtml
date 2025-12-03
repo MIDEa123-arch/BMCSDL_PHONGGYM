@@ -150,9 +150,9 @@
                         <button class="btn btn-sm btn-outline-primary" onclick="printInvoice(@invoice.Header.MAHD)">
                             <i class="bi bi-printer"></i> In hóa đơn
                         </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="viewDetail(@invoice.Header.MAHD)">
-                            <i class="bi bi-eye"></i> Chi tiết
-                        </button>
+                        <a href="@Url.Action("VerifySignatureById", "Staff", new { id = invoice.Header.MAHD })" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-shield-check"></i> Kiểm tra chữ ký
+                        </a>
                     </div>
                 </div>
             </div>

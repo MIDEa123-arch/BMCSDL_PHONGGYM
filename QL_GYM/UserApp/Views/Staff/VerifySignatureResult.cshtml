@@ -1,0 +1,50 @@
+﻿@{
+    ViewBag.Title = "Kết quả kiểm tra chữ ký";
+
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header @(ViewBag.Status == "Success" ? "bg-success" : "bg-danger") text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-lock"></i>
+                        Kết quả xác thực @(ViewBag.InvoiceID != null ? $"Hóa đơn #{ViewBag.InvoiceID}" : "Thủ công")
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+
+                    @if (ViewBag.FileName != null)
+                    {
+                        <p class="text-muted">Đã kiểm tra file: <strong>@ViewBag.FileName</strong></p>
+                    }
+
+                    @if (ViewBag.Status == "Success")
+                    {
+                        <div class="alert alert-success mt-4">
+                            <h1 class="display-4"><i class="bi bi-check-circle-fill"></i></h1>
+                            <p class="fs-5 fw-bold">XÁC THỰC THÀNH CÔNG</p>
+                            <p class="mb-0">@ViewBag.Message</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger mt-4">
+                            <h1 class="display-4"><i class="bi bi-x-circle-fill"></i></h1>
+                            <p class="fs-5 fw-bold">XÁC THỰC THẤT BẠI</p>
+                            <p class="mb-0">@ViewBag.Message</p>
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <a href="@Url.Action("HoaDon", "Staff")" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
