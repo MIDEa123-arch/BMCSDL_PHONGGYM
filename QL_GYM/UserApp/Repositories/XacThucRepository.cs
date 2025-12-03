@@ -17,8 +17,11 @@ namespace UserApp.Repositories
 
         public bool Verify(int logId, string otpInput)
         {
+            int key = 12345678; 
+            string encryptedInput = MaHoa.MahoaDes(otpInput, key);
+
             var logRecord = _context.LOGINHISTORies.FirstOrDefault(x => x.ID == logId);
-            if (logRecord != null && logRecord.OTPCODE == otpInput && logRecord.OTPEXPIRE > DateTime.Now)
+            if (logRecord != null && logRecord.OTPCODE == encryptedInput && logRecord.OTPEXPIRE > DateTime.Now)
             {
                 logRecord.STATUS = 1;
                 _context.SaveChanges();
@@ -35,7 +38,7 @@ namespace UserApp.Repositories
                                .Where(x => x.USERID == userId && x.STATUS == 1)
                                .OrderByDescending(x => x.LOGINTIME)
                                .FirstOrDefault();
-            
+
             if (lastLogin == null || lastLogin.IPADDRESS == currentIp)
             {
                 var safeLog = new LOGINHISTORY
@@ -43,7 +46,7 @@ namespace UserApp.Repositories
                     USERID = userId,
                     IPADDRESS = currentIp,
                     LOGINTIME = DateTime.Now,
-                    STATUS = 1 
+                    STATUS = 1
                 };
                 _context.LOGINHISTORies.Add(safeLog);
                 _context.SaveChanges();
@@ -52,21 +55,23 @@ namespace UserApp.Repositories
             }
 
             string otp = new Random().Next(100000, 999999).ToString();
+            int key = 12345678;
+            string encryptedOtp = MaHoa.MahoaDes(otp, key);
 
             var pendingLog = new LOGINHISTORY
             {
                 USERID = userId,
                 IPADDRESS = currentIp,
                 LOGINTIME = DateTime.Now,
-                STATUS = 0, // Đang chờ
-                OTPCODE = otp,
+                STATUS = 0,
+                OTPCODE = encryptedOtp,
                 OTPEXPIRE = DateTime.Now.AddMinutes(5)
             };
             _context.LOGINHISTORies.Add(pendingLog);
             _context.SaveChanges();
 
-            logId = (int)pendingLog.ID; // Lấy ID ra để lát lưu Session
-            return otp;
+            logId = (int)pendingLog.ID; 
+            return otp; 
         }
     }
 }
