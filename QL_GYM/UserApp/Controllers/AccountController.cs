@@ -72,11 +72,26 @@ namespace UserApp.Controllers
 
                 if (user != null)
                 {
-                    string headerIp = Request.Headers["X-Client-IP"];
-                    string currentIp = !string.IsNullOrEmpty(headerIp) ? headerIp : Request.UserHostAddress;
+                    string currentIp = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-                    if (currentIp == "::1") currentIp = "127.0.0.1";
+                    if (string.IsNullOrEmpty(currentIp))
+                    {
+                        currentIp = System.Web.HttpContext.Current.Request.Headers["X-Forwarded-For"];
+                    }
 
+                    if (string.IsNullOrEmpty(currentIp))
+                    {
+                        currentIp = System.Web.HttpContext.Current.Request.UserHostAddress;
+                    }
+
+   
+                    if (!string.IsNullOrEmpty(currentIp) && currentIp.Contains(","))
+                    {
+                        currentIp = currentIp.Split(',')[0].Trim();
+                    }
+
+                    // 5. Chuẩn hóa Localhost
+                    if (currentIp == "::1") currentIp = "127.0.0.1";                    
 
                     int historyId; 
 
