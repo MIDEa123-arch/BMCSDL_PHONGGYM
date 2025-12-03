@@ -4,17 +4,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Web;
-
+using UserApp.Helpers;
 namespace UserApp.Helpers
 {
     public class GmailService
     {
         public static bool SendOTP(string userEmail, string otpCode)
         {
+
             try
             {
                 var fromAddress = new MailAddress("thangdien0169@gmail.com", "Gym System Security");
-                var toAddress = new MailAddress(userEmail);
+                var toAddress = new MailAddress(GiaiMa.GiaiMaCong(userEmail, 6));
 
                 const string appPassword = "wfjrxxlksiwzvifm";
 

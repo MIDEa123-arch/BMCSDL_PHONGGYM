@@ -72,7 +72,12 @@ namespace UserApp.Controllers
 
                 if (user != null)
                 {
-                    string currentIp = Request.UserHostAddress; 
+                    string headerIp = Request.Headers["X-Client-IP"];
+                    string currentIp = !string.IsNullOrEmpty(headerIp) ? headerIp : Request.UserHostAddress;
+
+                    if (currentIp == "::1") currentIp = "127.0.0.1";
+
+
                     int historyId; 
 
                     string otpCode = _verifyRepo.CheckIpSecurity(user.MaKH, currentIp, out historyId);
@@ -86,7 +91,7 @@ namespace UserApp.Controllers
                             Session["PendingLogId"] = historyId; 
                             Session["PendingUserId"] = user.MaKH; 
 
-                            return RedirectToAction("VerifyOTP");
+                            return RedirectToAction("VerifyOTP", "Account");
                         }
                         else
                         {
