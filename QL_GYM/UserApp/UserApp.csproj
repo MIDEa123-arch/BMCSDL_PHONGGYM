@@ -167,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AdminBaseController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\CartCheckoutController.cs" />
     <Compile Include="Controllers\InvoiceController.cs" />
@@ -177,90 +178,95 @@
     <Compile Include="Helpers\DigitalSignService.cs" />
     <Compile Include="Helpers\Euclid.cs" />
     <Compile Include="Helpers\GiaiMa.cs" />
+    <Compile Include="Helpers\GmailService.cs" />
     <Compile Include="Helpers\MaHoa.cs" />
     <Compile Include="Models\ACTIVE_WEB_LOGINS.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CHECKIN.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CHITIETGIOHANG.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CHITIETHOADON.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CHUCVU.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CHUYENMON.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DANGKYGOITAP.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DANGKYLOP.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DANGKYPT.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DIACHI.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\GOITAP.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\HINHANH.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\HOADON.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\KHACHHANG.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\LICHLOP.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\LICHTAPPT.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\LOAIKHACHHANG.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\LOAISANPHAM.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LOGINHISTORY.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\LOPHOC.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Model1.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Model1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.edmx</DependentUpon>
     </Compile>
     <Compile Include="Models\NHANVIEN.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\QL_PHONGGYM.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>QL_PHONGGYM.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\QL_PHONGGYM.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\QL_PHONGGYM.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\SANPHAM.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\USER_SESSIONS.cs">
-      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\CartRepository.cs" />
+    <Compile Include="Repositories\XacThucRepository.cs" />
     <Compile Include="Repositories\HoaDonRepository.cs" />
     <Compile Include="Repositories\InvoiceRepository.cs" />
     <Compile Include="Repositories\KhachHangRepository.cs" />
@@ -583,15 +589,15 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Layout.css" />
-    <Content Include="Models\QL_PHONGGYM.Context.tt">
+    <Content Include="Models\Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
-      <LastGenOutput>QL_PHONGGYM.Context.cs</LastGenOutput>
+      <DependentUpon>Model1.edmx</DependentUpon>
+      <LastGenOutput>Model1.Context.cs</LastGenOutput>
     </Content>
-    <Content Include="Models\QL_PHONGGYM.tt">
+    <Content Include="Models\Model1.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
-      <LastGenOutput>QL_PHONGGYM.cs</LastGenOutput>
+      <DependentUpon>Model1.edmx</DependentUpon>
+      <LastGenOutput>Model1.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -599,12 +605,12 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <EntityDeploy Include="Models\QL_PHONGGYM.edmx">
+    <EntityDeploy Include="Models\Model1.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>QL_PHONGGYM.Designer.cs</LastGenOutput>
+      <LastGenOutput>Model1.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <Content Include="Models\QL_PHONGGYM.edmx.diagram">
-      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+    <Content Include="Models\Model1.edmx.diagram">
+      <DependentUpon>Model1.edmx</DependentUpon>
     </Content>
     <None Include="Oracle.DataAccess.Common.Configuration.Section.xsd">
       <SubType>Designer</SubType>
@@ -659,9 +665,11 @@
     <Content Include="Views\Admin\NguoiDung.cshtml" />
     <Content Include="Views\Admin\ThemNguoiDung.cshtml" />
     <Content Include="Views\Staff\VerifySignatureResult.cshtml" />
+    <Content Include="Views\Account\VerifyOTP.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\AdminBase\" />
     <Folder Include="Views\Default\" />
   </ItemGroup>
   <ItemGroup>

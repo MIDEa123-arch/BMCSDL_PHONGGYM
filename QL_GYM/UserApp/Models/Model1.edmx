@@ -200,6 +200,18 @@
           <Property Name="MALOAISP" Type="number" Precision="38" Scale="0" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="TENLOAISP" Type="nvarchar2" MaxLength="50" />
         </EntityType>
+        <EntityType Name="LOGINHISTORY">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="number" Precision="38" Scale="0" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="USERID" Type="number" Precision="38" Scale="0" Nullable="false" />
+          <Property Name="IPADDRESS" Type="varchar2" MaxLength="50" />
+          <Property Name="LOGINTIME" Type="date" />
+          <Property Name="STATUS" Type="number" Precision="2" Scale="0" />
+          <Property Name="OTPCODE" Type="varchar2" MaxLength="10" />
+          <Property Name="OTPEXPIRE" Type="date" />
+        </EntityType>
         <EntityType Name="LOPHOC">
           <Key>
             <PropertyRef Name="MALOP" />
@@ -533,6 +545,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_LOGINHISTORY_KHACHHANG">
+          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="LOGINHISTORY" Type="Self.LOGINHISTORY" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="KHACHHANG">
+              <PropertyRef Name="MAKH" />
+            </Principal>
+            <Dependent Role="LOGINHISTORY">
+              <PropertyRef Name="USERID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_LOP_CM">
           <End Role="CHUYENMON" Type="Self.CHUYENMON" Multiplicity="1" />
           <End Role="LOPHOC" Type="Self.LOPHOC" Multiplicity="*" />
@@ -642,8 +668,11 @@
           <Parameter Name="K" Type="number" Mode="In" />
           <Parameter Name="RESULT" Type="varchar2" Mode="Out" />
         </Function>
-        <Function Name="SP_CHECK_SESSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
-          <Parameter Name="P_LOGIN_ID" Type="varchar2" Mode="In" />
+        <Function Name="SP_CHECKCHINE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="nvarchar2" Mode="In" />
+          <Parameter Name="P_RESULT" Type="number" Mode="Out" />
+        </Function>
+        <Function Name="SP_CHECK_OTHER_MACHINE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_RESULT" Type="number" Mode="Out" />
         </Function>
         <Function Name="SP_CREATE_MANAGER_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
@@ -684,10 +713,11 @@
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
           <Parameter Name="P_MAX_SESSIONS" Type="number" Mode="In" />
         </Function>
-        <Function Name="SP_REGISTER_LOGIN" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+        <Function Name="SP_RESOLVE_LOGIN_LIMIT" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
-          <Parameter Name="P_LOGIN_ID" Type="varchar2" Mode="In" />
-          <Parameter Name="P_MAX_SESSIONS" Type="number" Mode="In" />
+        </Function>
+        <Function Name="SP_TEST_CONNECTION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_ALIVE" Type="number" Mode="Out" />
         </Function>
         <Function Name="SP_UNLOCK_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
@@ -711,6 +741,7 @@
           <EntitySet Name="LICHTAPPT" EntityType="Self.LICHTAPPT" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="LOAIKHACHHANG" EntityType="Self.LOAIKHACHHANG" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="LOAISANPHAM" EntityType="Self.LOAISANPHAM" Schema="ADMINGYM" store:Type="Tables" />
+          <EntitySet Name="LOGINHISTORY" EntityType="Self.LOGINHISTORY" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="LOPHOC" EntityType="Self.LOPHOC" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="NHANVIEN" EntityType="Self.NHANVIEN" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="NHANVIENCHUYENMON" EntityType="Self.NHANVIENCHUYENMON" Schema="ADMINGYM" store:Type="Tables" />
@@ -803,6 +834,10 @@
           <AssociationSet Name="FK_LICHPT_DKPT" Association="Self.FK_LICHPT_DKPT">
             <End Role="DANGKYPT" EntitySet="DANGKYPT" />
             <End Role="LICHTAPPT" EntitySet="LICHTAPPT" />
+          </AssociationSet>
+          <AssociationSet Name="FK_LOGINHISTORY_KHACHHANG" Association="Self.FK_LOGINHISTORY_KHACHHANG">
+            <End Role="KHACHHANG" EntitySet="KHACHHANG" />
+            <End Role="LOGINHISTORY" EntitySet="LOGINHISTORY" />
           </AssociationSet>
           <AssociationSet Name="FK_LOP_CM" Association="Self.FK_LOP_CM">
             <End Role="CHUYENMON" EntitySet="CHUYENMON" />
@@ -1021,6 +1056,7 @@
           <NavigationProperty Name="DIACHIs" Relationship="Self.FK_DIACHI_KHACHHANG" FromRole="KHACHHANG" ToRole="DIACHI" />
           <NavigationProperty Name="HOADONs" Relationship="Self.FK_HOADON_KH" FromRole="KHACHHANG" ToRole="HOADON" />
           <NavigationProperty Name="LOAIKHACHHANG" Relationship="Self.FK_KHACHHANG_LOAIKH" FromRole="KHACHHANG" ToRole="LOAIKHACHHANG" />
+          <NavigationProperty Name="LOGINHISTORies" Relationship="Self.FK_LOGINHISTORY_KHACHHANG" FromRole="KHACHHANG" ToRole="LOGINHISTORY" />
         </EntityType>
         <EntityType Name="LICHLOP">
           <Key>
@@ -1064,6 +1100,19 @@
           <Property Name="MALOAISP" Type="Decimal" Precision="38" Scale="0" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="TENLOAISP" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="SANPHAMs" Relationship="Self.FK_SP_LSP" FromRole="LOAISANPHAM" ToRole="SANPHAM" />
+        </EntityType>
+        <EntityType Name="LOGINHISTORY">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Decimal" Precision="38" Scale="0" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="USERID" Type="Decimal" Precision="38" Scale="0" Nullable="false" />
+          <Property Name="IPADDRESS" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LOGINTIME" Type="DateTime" />
+          <Property Name="STATUS" Type="Byte" />
+          <Property Name="OTPCODE" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="OTPEXPIRE" Type="DateTime" />
+          <NavigationProperty Name="KHACHHANG" Relationship="Self.FK_LOGINHISTORY_KHACHHANG" FromRole="LOGINHISTORY" ToRole="KHACHHANG" />
         </EntityType>
         <EntityType Name="LOPHOC">
           <Key>
@@ -1402,6 +1451,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_LOGINHISTORY_KHACHHANG">
+          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="LOGINHISTORY" Type="Self.LOGINHISTORY" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="KHACHHANG">
+              <PropertyRef Name="MAKH" />
+            </Principal>
+            <Dependent Role="LOGINHISTORY">
+              <PropertyRef Name="USERID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_LICHLOP_LOP">
           <End Role="LOPHOC" Type="Self.LOPHOC" Multiplicity="1" />
           <End Role="LICHLOP" Type="Self.LICHLOP" Multiplicity="*" />
@@ -1461,6 +1524,7 @@
           <EntitySet Name="LICHTAPPTs" EntityType="Self.LICHTAPPT" />
           <EntitySet Name="LOAIKHACHHANGs" EntityType="Self.LOAIKHACHHANG" />
           <EntitySet Name="LOAISANPHAMs" EntityType="Self.LOAISANPHAM" />
+          <EntitySet Name="LOGINHISTORies" EntityType="Self.LOGINHISTORY" />
           <EntitySet Name="LOPHOCs" EntityType="Self.LOPHOC" />
           <EntitySet Name="NHANVIENs" EntityType="Self.NHANVIEN" />
           <EntitySet Name="SANPHAMs" EntityType="Self.SANPHAM" />
@@ -1553,6 +1617,10 @@
             <End Role="LOAIKHACHHANG" EntitySet="LOAIKHACHHANGs" />
             <End Role="KHACHHANG" EntitySet="KHACHHANGs" />
           </AssociationSet>
+          <AssociationSet Name="FK_LOGINHISTORY_KHACHHANG" Association="Self.FK_LOGINHISTORY_KHACHHANG">
+            <End Role="KHACHHANG" EntitySet="KHACHHANGs" />
+            <End Role="LOGINHISTORY" EntitySet="LOGINHISTORies" />
+          </AssociationSet>
           <AssociationSet Name="FK_LICHLOP_LOP" Association="Self.FK_LICHLOP_LOP">
             <End Role="LOPHOC" EntitySet="LOPHOCs" />
             <End Role="LICHLOP" EntitySet="LICHLOPs" />
@@ -1590,8 +1658,11 @@
             <Parameter Name="K" Mode="In" Type="Decimal" />
             <Parameter Name="RESULT" Mode="Out" Type="String" />
           </FunctionImport>
-          <FunctionImport Name="SP_CHECK_SESSION">
-            <Parameter Name="P_LOGIN_ID" Mode="In" Type="String" />
+          <FunctionImport Name="SP_CHECKCHINE">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+            <Parameter Name="P_RESULT" Mode="Out" Type="Decimal" />
+          </FunctionImport>
+          <FunctionImport Name="SP_CHECK_OTHER_MACHINE">
             <Parameter Name="P_RESULT" Mode="Out" Type="Decimal" />
           </FunctionImport>
           <FunctionImport Name="SP_CREATE_MANAGER_USER">
@@ -1632,10 +1703,11 @@
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
             <Parameter Name="P_MAX_SESSIONS" Mode="In" Type="Decimal" />
           </FunctionImport>
-          <FunctionImport Name="SP_REGISTER_LOGIN">
+          <FunctionImport Name="SP_RESOLVE_LOGIN_LIMIT">
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
-            <Parameter Name="P_LOGIN_ID" Mode="In" Type="String" />
-            <Parameter Name="P_MAX_SESSIONS" Mode="In" Type="Decimal" />
+          </FunctionImport>
+          <FunctionImport Name="SP_TEST_CONNECTION">
+            <Parameter Name="P_ALIVE" Mode="Out" Type="Decimal" />
           </FunctionImport>
           <FunctionImport Name="SP_UNLOCK_USER">
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
@@ -1860,6 +1932,19 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="LOGINHISTORies">
+            <EntityTypeMapping TypeName="Model.LOGINHISTORY">
+              <MappingFragment StoreEntitySet="LOGINHISTORY">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="USERID" ColumnName="USERID" />
+                <ScalarProperty Name="IPADDRESS" ColumnName="IPADDRESS" />
+                <ScalarProperty Name="LOGINTIME" ColumnName="LOGINTIME" />
+                <ScalarProperty Name="STATUS" ColumnName="STATUS" />
+                <ScalarProperty Name="OTPCODE" ColumnName="OTPCODE" />
+                <ScalarProperty Name="OTPEXPIRE" ColumnName="OTPEXPIRE" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="LOPHOCs">
             <EntityTypeMapping TypeName="Model.LOPHOC">
               <MappingFragment StoreEntitySet="LOPHOC">
@@ -1928,7 +2013,8 @@
           <FunctionImportMapping FunctionImportName="P_DECRYPTMULCIPHER" FunctionName="Model.Store.P_DECRYPTMULCIPHER" />
           <FunctionImportMapping FunctionImportName="P_ENCRYPTADDCIPHER" FunctionName="Model.Store.P_ENCRYPTADDCIPHER" />
           <FunctionImportMapping FunctionImportName="P_ENCRYPTMULCIPHER" FunctionName="Model.Store.P_ENCRYPTMULCIPHER" />
-          <FunctionImportMapping FunctionImportName="SP_CHECK_SESSION" FunctionName="Model.Store.SP_CHECK_SESSION" />
+          <FunctionImportMapping FunctionImportName="SP_CHECKCHINE" FunctionName="Model.Store.SP_CHECKCHINE" />
+          <FunctionImportMapping FunctionImportName="SP_CHECK_OTHER_MACHINE" FunctionName="Model.Store.SP_CHECK_OTHER_MACHINE" />
           <FunctionImportMapping FunctionImportName="SP_CREATE_MANAGER_USER" FunctionName="Model.Store.SP_CREATE_MANAGER_USER" />
           <FunctionImportMapping FunctionImportName="SP_DANGKYTAPTHU" FunctionName="Model.Store.SP_DANGKYTAPTHU" />
           <FunctionImportMapping FunctionImportName="SP_DROP_USER" FunctionName="Model.Store.SP_DROP_USER" />
@@ -1938,7 +2024,8 @@
           <FunctionImportMapping FunctionImportName="SP_LOCK_USER" FunctionName="Model.Store.SP_LOCK_USER" />
           <FunctionImportMapping FunctionImportName="SP_LOGOUT_USER" FunctionName="Model.Store.SP_LOGOUT_USER" />
           <FunctionImportMapping FunctionImportName="SP_MANAGE_SESSIONS" FunctionName="Model.Store.SP_MANAGE_SESSIONS" />
-          <FunctionImportMapping FunctionImportName="SP_REGISTER_LOGIN" FunctionName="Model.Store.SP_REGISTER_LOGIN" />
+          <FunctionImportMapping FunctionImportName="SP_RESOLVE_LOGIN_LIMIT" FunctionName="Model.Store.SP_RESOLVE_LOGIN_LIMIT" />
+          <FunctionImportMapping FunctionImportName="SP_TEST_CONNECTION" FunctionName="Model.Store.SP_TEST_CONNECTION" />
           <FunctionImportMapping FunctionImportName="SP_UNLOCK_USER" FunctionName="Model.Store.SP_UNLOCK_USER" />
         </EntityContainerMapping>
       </Mapping>

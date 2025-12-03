@@ -6,7 +6,7 @@ using UserApp.Repositories;
 
 namespace UserApp.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController : AdminBaseController
     {
         public UserService userService;
 
@@ -45,6 +45,9 @@ namespace UserApp.Controllers
 
         public ActionResult ThemNguoiDung()
         {
+            if (Session["Admin"] == null)
+                return RedirectToAction("Login", "Staff");
+
             return View();
         }
 
@@ -117,6 +120,8 @@ namespace UserApp.Controllers
 
         public ActionResult NguoiDung()
         {
+            if (Session["Admin"] == null)
+                return RedirectToAction("Login", "Staff");
             try
             {
                 List<UserInfo> users = userService.GetAllUsers();

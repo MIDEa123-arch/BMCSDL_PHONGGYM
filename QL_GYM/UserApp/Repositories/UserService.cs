@@ -129,11 +129,6 @@ namespace UserApp.Repositories
                                 LastLogin = reader["LAST_LOGIN"] == DBNull.Value
                                     ? (DateTime?)null : ((DateTimeOffset)reader["LAST_LOGIN"]).DateTime,
                                 IsLocked = Convert.ToBoolean(reader["IS_LOCKED"] ?? false),
-                                ObjectPrivileges = reader["OBJECT_PRIVILEGES"] != DBNull.Value
-                                    ? reader["OBJECT_PRIVILEGES"].ToString()
-                                        .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                                        .ToList()
-                                    : new List<string>(),
                                 ActiveSessionCount = reader["ACTIVE_SESSION_COUNT"] != DBNull.Value
                                     ? Convert.ToInt32(reader["ACTIVE_SESSION_COUNT"])
                                     : 0

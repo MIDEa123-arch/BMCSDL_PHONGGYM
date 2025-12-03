@@ -17,7 +17,7 @@ namespace UserApp.Controllers
         public UserService userService;
         public SanPhamRepository connStr;
         public HoaDonRepository hoaDonRepository;
-      
+
         public StaffController()
         {
             userService = new UserService();
@@ -87,29 +87,31 @@ namespace UserApp.Controllers
             string username = form["TenDangNhap"];
             string password = form["MatKhau"];
 
-            try 
-            { 
-            
-            int result = userService.Login(username, password);
-
-            if (result == 1)
+            try
             {
-                Session["user"] = username;
-                Session["connectionString"] = userService.ConnectionStringUser;
-                Session["loginDate"] = DateTime.Now.ToString("dd/MM/yyyy");
-                return RedirectToAction("HoaDon", "Staff");
-            }
+
+                int result = userService.Login(username, password);
+
+                if (result == 1)
+                {
+                    Session["user"] = username;
+                    Session["connectionString"] = userService.ConnectionStringUser;
+                    Session["loginDate"] = DateTime.Now.ToString("dd/MM/yyyy");
+                    return RedirectToAction("HoaDon", "Staff");
+                }
                 else
                 {
+                    Session["Admin"] = username;
+                    
                     return RedirectToAction("NguoiDung", "Admin");
                 }
             }
             catch (OracleException ex)
-            { 
+            {
                 if (ex.Number == 1017)
-                {             
+                {
                     TempData["Error"] = "Sai mật khẩu hoặc tài khoản!";
-                   
+
                 }
                 if (ex.Number == 28000)
                 {
@@ -127,7 +129,7 @@ namespace UserApp.Controllers
             // Dùng GetInvoice() và tìm kiếm trong danh sách (vì bạn chưa có GetById)
             var invoiceHeader = hoaDonRepository.GetInvoice().FirstOrDefault(i => i.Header.MAHD == id);
 
-            if (invoiceHeader == null )
+            if (invoiceHeader == null)
             {
                 ViewBag.Status = "Error";
                 ViewBag.Message = $"Không tìm thấy hóa đơn ID = {id} hoặc hóa đơn chưa được ký.";

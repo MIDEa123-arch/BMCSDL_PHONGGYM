@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using UserApp.Helpers;
 using UserApp.Models;
 using UserApp.Repositories;
 using UserApp.ViewModel;
@@ -14,10 +15,14 @@ namespace UserApp.Controllers
     {
         // GET: Account
         private readonly AccountRepository _accountRepo;
+        private readonly XacThucRepository _verifyRepo;
+        private readonly KhachHangRepository _customerRepo;
 
         public AccountController()
         {
             _accountRepo = new AccountRepository(new QL_PHONGGYMEntities());
+            _verifyRepo = new XacThucRepository(true);
+            _customerRepo = new KhachHangRepository(new QL_PHONGGYMEntities());
         }
 
         // GET: /Account/Register
@@ -67,6 +72,29 @@ namespace UserApp.Controllers
 
                 if (user != null)
                 {
+                    string currentIp = Request.UserHostAddress; 
+                    int historyId; 
+
+                    string otpCode = _verifyRepo.CheckIpSecurity(user.MaKH, currentIp, out historyId);
+
+                    if (otpCode != null)
+                    {
+                        bool isSent = GmailService.SendOTP(user.Email, otpCode);
+
+                        if (isSent)
+                        {         
+                            Session["PendingLogId"] = historyId; 
+                            Session["PendingUserId"] = user.MaKH; 
+
+                            return RedirectToAction("VerifyOTP");
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("", "Hệ thống không gửi được Email xác thực. Vui lòng thử lại.");
+                            return View(model);
+                        }
+                    }
+
                     Session["MaKH"] = user.MaKH;
                     string fullName = user.TenKH;
                     string firstName = fullName.Split(' ').Last();
@@ -85,6 +113,37 @@ namespace UserApp.Controllers
             return View(model);
         }
 
+        public ActionResult VerifyOTP()
+        {
+            if (Session["PendingLogId"] == null) return RedirectToAction("Login");
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult VerifyOTP(string otpInput)
+        {
+            if (Session["PendingLogId"] == null) return RedirectToAction("Login");
+            int logId = (int)Session["PendingLogId"];
+
+            var result = _verifyRepo.Verify(logId, otpInput);
+
+            if (result)
+            {               
+                int userId = (int)Session["PendingUserId"];
+                var user = _customerRepo.ThongTinKH(userId);
+
+                Session["MaKH"] = user.MAKH;
+                Session["TenKH"] = user.TENKH.Split(' ').Last();
+
+                Session.Remove("PendingLogId");
+                Session.Remove("PendingUserId");
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.Error = "Mã xác thực không đúng hoặc đã hết hạn!";
+            return View();
+        }
 
         // GET: /Account/Logout
         public ActionResult Logout()

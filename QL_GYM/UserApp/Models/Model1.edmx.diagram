@@ -4,29 +4,30 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="7fde089ac832411d9aa269f99a248df6" Name="Diagram1">
-        <EntityTypeShape EntityType="Model.ACTIVE_WEB_LOGINS" Width="1.5" PointX="0.75" PointY="3.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.CHECKIN" Width="1.5" PointX="5.25" PointY="10.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.CHITIETGIOHANG" Width="1.5" PointX="10.5" PointY="5.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.CHITIETHOADON" Width="1.5" PointX="10.5" PointY="21" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.CHUCVU" Width="1.5" PointX="0.75" PointY="19.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.CHUYENMON" Width="1.5" PointX="3.75" PointY="6.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.DANGKYGOITAP" Width="1.5" PointX="5.25" PointY="14" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.DANGKYLOP" Width="1.5" PointX="8.25" PointY="14.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.DANGKYPT" Width="1.5" PointX="5.25" PointY="17.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.DIACHI" Width="1.5" PointX="5.25" PointY="24.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.GOITAP" Width="1.5" PointX="3" PointY="10.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.HINHANH" Width="1.5" PointX="10.5" PointY="9.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.HOADON" Width="1.5" PointX="5.25" PointY="27.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.KHACHHANG" Width="1.5" PointX="3" PointY="13.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.LICHLOP" Width="1.5" PointX="8.25" PointY="10.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.LICHTAPPT" Width="1.5" PointX="7.5" PointY="18.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.LOAIKHACHHANG" Width="1.5" PointX="0.75" PointY="14.625" IsExpanded="true" />
+      <Diagram DiagramId="ba8713a1e9ee493f90afeda7d7400829" Name="Diagram1">
+        <EntityTypeShape EntityType="Model.ACTIVE_WEB_LOGINS" Width="1.5" PointX="0.75" PointY="3.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.CHECKIN" Width="1.5" PointX="5.25" PointY="10.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.CHITIETGIOHANG" Width="1.5" PointX="10.5" PointY="5.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.CHITIETHOADON" Width="1.5" PointX="10.5" PointY="22" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.CHUCVU" Width="1.5" PointX="0.75" PointY="21.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.CHUYENMON" Width="1.5" PointX="3.75" PointY="6.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.DANGKYGOITAP" Width="1.5" PointX="5.25" PointY="15.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.DANGKYLOP" Width="1.5" PointX="8.25" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.DANGKYPT" Width="1.5" PointX="5.25" PointY="19.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.DIACHI" Width="1.5" PointX="5.25" PointY="24.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.GOITAP" Width="1.5" PointX="3" PointY="11.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.HINHANH" Width="1.5" PointX="10.5" PointY="2.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.HOADON" Width="1.5" PointX="5.25" PointY="27.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.KHACHHANG" Width="1.5" PointX="3" PointY="15.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.LICHLOP" Width="1.5" PointX="8.25" PointY="12.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.LICHTAPPT" Width="1.5" PointX="7.5" PointY="20.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.LOAIKHACHHANG" Width="1.5" PointX="0.75" PointY="16.375" IsExpanded="true" />
         <EntityTypeShape EntityType="Model.LOAISANPHAM" Width="1.5" PointX="6" PointY="3" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.LOPHOC" Width="1.5" PointX="6" PointY="5.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.NHANVIEN" Width="1.5" PointX="3" PointY="18.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.LOGINHISTORY" Width="1.5" PointX="5.25" PointY="32.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.LOPHOC" Width="1.5" PointX="6" PointY="5.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.NHANVIEN" Width="1.5" PointX="3" PointY="20.625" IsExpanded="true" />
         <EntityTypeShape EntityType="Model.SANPHAM" Width="1.5" PointX="8.25" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="Model.USER_SESSIONS" Width="1.5" PointX="2.75" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="Model.USER_SESSIONS" Width="1.5" PointX="2.75" PointY="3.5" IsExpanded="true" />
         <AssociationConnector Association="Model.FK_CHECKIN_KH" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_GIOHANG_GOITAP" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_GIOHANG_LOPHOC" ManuallyRouted="false" />
@@ -49,6 +50,7 @@
         <AssociationConnector Association="Model.FK_HINHANH_SANPHAM" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_HOADON_KH" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_KHACHHANG_LOAIKH" ManuallyRouted="false" />
+        <AssociationConnector Association="Model.FK_LOGINHISTORY_KHACHHANG" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_LICHLOP_LOP" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_LICHLOP_NV" ManuallyRouted="false" />
         <AssociationConnector Association="Model.FK_SP_LSP" ManuallyRouted="false" />

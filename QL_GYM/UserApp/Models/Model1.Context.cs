@@ -21,15 +21,17 @@ namespace UserApp.Models
             : base("name=QL_PHONGGYMEntities")
         {
         }
+        
+        public QL_PHONGGYMEntities(bool userAdmin)
+            : base("name=ADMIN_ENTITY")
+        {
+        }
 
-        public QL_PHONGGYMEntities(bool useAdmin)
-        : base("name=ADMIN_CONNECTION")
-        {
-        }
         public QL_PHONGGYMEntities(string connStr)
-               : base(connStr)
+           : base(connStr)
         {
         }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
@@ -53,6 +55,7 @@ namespace UserApp.Models
         public virtual DbSet<LICHTAPPT> LICHTAPPTs { get; set; }
         public virtual DbSet<LOAIKHACHHANG> LOAIKHACHHANGs { get; set; }
         public virtual DbSet<LOAISANPHAM> LOAISANPHAMs { get; set; }
+        public virtual DbSet<LOGINHISTORY> LOGINHISTORies { get; set; }
         public virtual DbSet<LOPHOC> LOPHOCs { get; set; }
         public virtual DbSet<NHANVIEN> NHANVIENs { get; set; }
         public virtual DbSet<SANPHAM> SANPHAMs { get; set; }
@@ -115,13 +118,18 @@ namespace UserApp.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("P_ENCRYPTMULCIPHER", sTRParameter, kParameter, rESULT);
         }
     
-        public virtual int SP_CHECK_SESSION(string p_LOGIN_ID, ObjectParameter p_RESULT)
+        public virtual int SP_CHECKCHINE(string p_USERNAME, ObjectParameter p_RESULT)
         {
-            var p_LOGIN_IDParameter = p_LOGIN_ID != null ?
-                new ObjectParameter("P_LOGIN_ID", p_LOGIN_ID) :
-                new ObjectParameter("P_LOGIN_ID", typeof(string));
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
     
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_SESSION", p_LOGIN_IDParameter, p_RESULT);
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECKCHINE", p_USERNAMEParameter, p_RESULT);
+        }
+    
+        public virtual int SP_CHECK_OTHER_MACHINE(ObjectParameter p_RESULT)
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_OTHER_MACHINE", p_RESULT);
         }
     
         public virtual int SP_CREATE_MANAGER_USER(string p_USERNAME, string p_PASSWORD)
@@ -249,21 +257,18 @@ namespace UserApp.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_MANAGE_SESSIONS", p_USERNAMEParameter, p_MAX_SESSIONSParameter);
         }
     
-        public virtual int SP_REGISTER_LOGIN(string p_USERNAME, string p_LOGIN_ID, Nullable<decimal> p_MAX_SESSIONS)
+        public virtual int SP_RESOLVE_LOGIN_LIMIT(string p_USERNAME)
         {
             var p_USERNAMEParameter = p_USERNAME != null ?
                 new ObjectParameter("P_USERNAME", p_USERNAME) :
                 new ObjectParameter("P_USERNAME", typeof(string));
     
-            var p_LOGIN_IDParameter = p_LOGIN_ID != null ?
-                new ObjectParameter("P_LOGIN_ID", p_LOGIN_ID) :
-                new ObjectParameter("P_LOGIN_ID", typeof(string));
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_RESOLVE_LOGIN_LIMIT", p_USERNAMEParameter);
+        }
     
-            var p_MAX_SESSIONSParameter = p_MAX_SESSIONS.HasValue ?
-                new ObjectParameter("P_MAX_SESSIONS", p_MAX_SESSIONS) :
-                new ObjectParameter("P_MAX_SESSIONS", typeof(decimal));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_REGISTER_LOGIN", p_USERNAMEParameter, p_LOGIN_IDParameter, p_MAX_SESSIONSParameter);
+        public virtual int SP_TEST_CONNECTION(ObjectParameter p_ALIVE)
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_TEST_CONNECTION", p_ALIVE);
         }
     
         public virtual int SP_UNLOCK_USER(string p_USERNAME)

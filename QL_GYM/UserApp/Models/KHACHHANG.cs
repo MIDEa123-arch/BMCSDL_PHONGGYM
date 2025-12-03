@@ -23,6 +23,7 @@ namespace UserApp.Models
             this.DANGKYPTs = new HashSet<DANGKYPT>();
             this.DIACHIs = new HashSet<DIACHI>();
             this.HOADONs = new HashSet<HOADON>();
+            this.LOGINHISTORies = new HashSet<LOGINHISTORY>();
         }
     
         public decimal MAKH { get; set; }
@@ -48,5 +49,7 @@ namespace UserApp.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<HOADON> HOADONs { get; set; }
         public virtual LOAIKHACHHANG LOAIKHACHHANG { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<LOGINHISTORY> LOGINHISTORies { get; set; }
     }
 }

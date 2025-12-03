@@ -34,7 +34,7 @@ namespace UserApp.Controllers
             // Lấy root của project web/app
             string projectRoot = AppDomain.CurrentDomain.BaseDirectory;
 
-            // Tạo folder "SharedFiles" bên trong project nếu chưa tồn tại
+            // Tạo folder "DanhSachHoaDon" bên trong project nếu chưa tồn tại
             string sharedFolder = Path.Combine(projectRoot, "DanhSachHoaDon");
             if (!Directory.Exists(sharedFolder))
             {
@@ -48,10 +48,18 @@ namespace UserApp.Controllers
             {
                 CreatePdfInvoice(pdfPath, invoiceData);
 
-                string pfxPath = Path.Combine(sharedFolder, "GymAdmin.pfx");
+                // Lưu PFX trong App_Data
+                string appDataPath = Path.Combine(projectRoot, "App_Data");
+                if (!Directory.Exists(appDataPath))
+                    Directory.CreateDirectory(appDataPath);
+
+                string pfxFileName = "GymAdmin.pfx";
+                string pfxPath = Path.Combine(appDataPath, pfxFileName);
+
                 var signer = new DigitalSignService();
                 string sigPath = signer.SignFile(pdfPath, pfxPath, "123456", "CN=GymAdmin");
 
+                // Lưu đường dẫn tương đối vào database
                 string relativeFolder = "/DanhSachHoaDon";
                 hoaDon.FILE_PATH = relativeFolder + "/" + fileName;
                 hoaDon.SIGNATURE_PATH = relativeFolder + "/" + Path.GetFileName(sigPath);

@@ -12,9 +12,6 @@ namespace UserApp.ViewModel
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastLogin { get; set; }
 
-        public List<string> SystemPrivileges { get; set; }
-        public List<string> ObjectPrivileges { get; set; }
-
         public bool IsLocked { get; set; }
         public int ActiveSessionCount { get; set; }
     }

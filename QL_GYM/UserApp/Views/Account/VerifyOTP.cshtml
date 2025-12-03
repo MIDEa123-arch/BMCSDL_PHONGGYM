@@ -1,0 +1,138 @@
+﻿@{
+    Layout = null; // Tắt layout chung
+    ViewBag.Title = "Xác thực bảo mật";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Gym System</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f4f6f9; /* Màu nền xám nhẹ dịu mắt */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .verify-card {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: #e7f1ff;
+            color: #0d6efd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 32px;
+        }
+
+        .otp-input {
+            font-size: 28px;
+            letter-spacing: 12px;
+            text-align: center;
+            font-weight: bold;
+            height: 60px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 20px 0;
+            transition: border-color 0.3s;
+        }
+
+            .otp-input:focus {
+                border-color: #0d6efd;
+                box-shadow: none;
+                outline: none;
+            }
+
+        .btn-confirm {
+            background-color: #0d6efd;
+            border: none;
+            height: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+            .btn-confirm:hover {
+                background-color: #0b5ed7;
+            }
+
+        .text-small {
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-card">
+        <div class="icon-box">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h3 class="mb-3">Xác thực đăng nhập</h3>
+        <p class="text-small mb-4">
+            Chúng tôi phát hiện truy cập từ thiết bị lạ. <br />
+            Vui lòng nhập mã OTP gồm 6 số đã được gửi tới Email của bạn.
+        </p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle mr-2"></i> @ViewBag.Error
+            </div>
+        }
+
+        @using (Html.BeginForm("VerifyOTP", "Account", FormMethod.Post)) // Nhớ sửa "Account" nếu tên controller khác
+        {
+            <div class="form-group">
+                <input type="text"
+                       name="otpInput"
+                       class="form-control otp-input"
+                       placeholder="000000"
+                       maxlength="6"
+                       required
+                       autofocus
+                       autocomplete="off"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-confirm">
+                XÁC NHẬN
+            </button>
+        }
+
+        <div class="mt-4">
+            <p class="text-small">
+                Chưa nhận được mã?
+                <a href="@Url.Action("Login", "Account")" class="text-decoration-none font-weight-bold">Gửi lại / Đăng nhập lại</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
