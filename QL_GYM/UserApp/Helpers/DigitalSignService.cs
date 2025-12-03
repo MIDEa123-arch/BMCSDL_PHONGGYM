@@ -46,7 +46,7 @@ namespace UserApp.Helpers
         {
             using (RSA rsa = RSA.Create(2048))
             {
-                var req = new CertificateRequest(subjectName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                var req = new CertificateRequest(subjectName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);    
                 var cert = req.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(5));
 
                 File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, password));

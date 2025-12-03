@@ -52,7 +52,7 @@ namespace UserApp.Controllers
                 var signer = new DigitalSignService();
                 string sigPath = signer.SignFile(pdfPath, pfxPath, "123456", "CN=GymAdmin");
 
-                string relativeFolder = "/Danh sách hóa đơn";
+                string relativeFolder = "/DanhSachHoaDon";
                 hoaDon.FILE_PATH = relativeFolder + "/" + fileName;
                 hoaDon.SIGNATURE_PATH = relativeFolder + "/" + Path.GetFileName(sigPath);
                 hoaDon.PUBLIC_KEY_USED = "GymAdmin";
