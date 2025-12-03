@@ -1,0 +1,230 @@
+﻿@model UserApp.ViewModel.KhachHangRegisterViewModel
+
+@{
+    ViewBag.Title = "Đăng ký tài khoản";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Đăng ký</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        .validation-summary-errors ul {
+            list-style: none;
+            padding-left: 0;
+            margin-left: 0;
+        }
+
+        .gym-logo {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            height: 120px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 18px;
+            user-select: none;
+            z-index: 10;
+        }
+
+            .password-toggle:hover {
+                color: #0d6efd;
+            }
+    </style>
+</head>
+<body class="bg-light pb-5">
+    <div class="text-center mx-auto" style="max-width: 700px">
+
+        <div class="h2 text-primary mb-5" style="margin-top:20px;">Đăng ký trở thành GYM-MEMBER</div>
+        <div class="gym-logo mt-5">
+            <img src="~/Content/Images/logo.png" alt="Logo" class="logo-img" />
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post,
+               new
+               {
+                   role = "form",
+                   style = "max-width: 700px",
+                   @class = "text-center d-flex flex-column align-items-center align-content-center justify-content-center"
+               }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ReturnUrl, new { value = ViewBag.ReturnUrl })
+            <div class="w-100 text-start">
+                <h5 class="mb-3">Thông tin cá nhân</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.TenKH, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.TenKH, new { @class = "form-control", placeholder = "Nhập họ và tên", @style = "max-width: 350px" })
+                        @Html.ValidationMessageFor(m => m.TenKH, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.NgaySinh, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", @style = "max-width: 350px" })
+                        @Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    @Html.Label("Giới tính", new { @class = "form-label" })
+                    <div class="d-flex gap-4 mt-1">
+                        <div class="form-check">
+                            @Html.RadioButtonFor(m => m.GioiTinh, "Nam", new { @class = "form-check-input", id = "Nam" })
+                            <label class="form-check-label" for="Nam">Nam</label>
+                        </div>
+                        <div class="form-check">
+                            @Html.RadioButtonFor(m => m.GioiTinh, "Nữ", new { @class = "form-check-input", id = "Nu" })
+                            <label class="form-check-label" for="Nu">Nữ</label>
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.GioiTinh, "", new { @class = "text-danger small mt-2" })
+                </div>
+            </div>
+
+            <div class="w-100 text-start">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.SDT, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.SDT, new { @class = "form-control", placeholder = "Nhập số điện thoại", @style = "max-width: 350px" })
+                        @Html.ValidationMessageFor(m => m.SDT, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.Email, "Email (Không bắt buộc)", new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Nhập email", @style = "max-width: 350px" })
+                        <label class="form-check-label small text-success mt-2" style="font-size:13px">
+                            ✓ Hóa đơn VAT khi mua hàng sẽ được gửi qua email này
+                        </label>
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-100 text-start">
+                <h4 class="h5 mb-3">Tạo tài khoản</h4>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        @Html.LabelFor(m => m.TenDangNhap, new { @class = "form-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Nhập tên đăng nhập của bạn", @style = "max-width: 700px" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.MatKhau, new { @class = "form-label" })
+                        <div class="password-wrapper">
+                            @Html.PasswordFor(m => m.MatKhau, new { @class = "form-control", placeholder = "Nhập mật khẩu của bạn", @id = "passwordInput1", @style = "max-width: 350px; padding-right: 40px;" })
+                            <i class="bi bi-eye-slash password-toggle" id="togglePassword1"></i>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.MatKhau, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        @Html.LabelFor(m => m.XacNhanMatKhau, new { @class = "form-label" })
+                        <div class="password-wrapper">
+                            @Html.PasswordFor(m => m.XacNhanMatKhau, new { @class = "form-control", placeholder = "Nhập lại mật khẩu", @id = "passwordInput2", @style = "max-width: 350px; padding-right: 40px;" })
+                            <i class="bi bi-eye-slash password-toggle" id="togglePassword2"></i>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.XacNhanMatKhau, "", new { @class = "text-danger small mt-2" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 w-100 text-start">
+                <div class="w-100">
+                    <input type="submit" value="Đăng ký" class="btn btn-primary btn-lg px-3 fs-6" />
+                </div>
+            </div>
+        }
+
+        <div class="d-flex gap-3 w-100 mt-4">
+            @Html.ActionLink(
+                "Quay lại đăng nhập",
+                "Login",
+                "Account",
+                null,
+                new { @class = "text-secondary small" }
+            )
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(function () {
+            $('#togglePassword1').on('click', function () {
+                var $pwd = $('#passwordInput1');
+                if ($pwd.attr('type') === 'password') {
+                    $pwd.attr('type', 'text');
+                    $(this).removeClass('bi-eye-slash').addClass('bi-eye');
+                } else {
+                    $pwd.attr('type', 'password');
+                    $(this).removeClass('bi-eye').addClass('bi-eye-slash');
+                }
+            });
+
+            $('#togglePassword2').on('click', function () {
+                var $pwd = $('#passwordInput2');
+                if ($pwd.attr('type') === 'password') {
+                    $pwd.attr('type', 'text');
+                    $(this).removeClass('bi-eye-slash').addClass('bi-eye');
+                } else {
+                    $pwd.attr('type', 'password');
+                    $(this).removeClass('bi-eye').addClass('bi-eye-slash');
+                }
+            });
+        });
+    </script>
+
+    <script>
+        window.setTimeout(function () {
+            let alertEl = document.querySelector('.alert-dismissible');
+            if (alertEl) {
+                alertEl.classList.remove('show');
+                alertEl.classList.add('hide');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

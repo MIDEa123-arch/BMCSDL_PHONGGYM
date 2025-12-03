@@ -1,0 +1,11 @@
+﻿@model IEnumerable<UserApp.Models.LOAISANPHAM>
+
+@foreach (var item in Model)
+{
+    <li>
+        <a class="dropdown-item py-3" href="@Url.Action("Product", "Product", new {loaisp = @item.TENLOAISP})" style="padding-left: 30px">
+            <img src="@Url.Content("~/Content/Images/" + item.TENLOAISP + ".png")" alt="@item.TENLOAISP" style="width: 5%" />
+            <span>@item.TENLOAISP</span>
+        </a>
+    </li>
+}

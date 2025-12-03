@@ -1,0 +1,11 @@
+﻿@model IEnumerable<String>
+
+<div class="d-flex flex-wrap gap-2 mt-2">
+    @foreach (var item in Model)
+    {
+        <a class="py-2 px-3 text-center btn btn-outline-primary fs-6" href="@Url.Action("Product", "Product", new {xuatXu = @item})">@item</a>
+    }
+</div>
+
+
+

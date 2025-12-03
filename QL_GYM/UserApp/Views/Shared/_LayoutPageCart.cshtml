@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-white fixed-top">
+        <div class="container">
+            <a href="@Url.Action("Index", "Home")">
+                <img src="@Url.Content("~/Content/Images/logo.png")" style="width: 5rem" />
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between ms-5">
+                <ul class="navbar-nav flex-grow-1 d-flex gap-4 ">
+                    <li class="nav-item dropdown danhmuc p-0">
+                        <a class="nav-link d-flex align-items-center gap-2 pe-0"
+                           href="#"
+                           id="danhmucDropdown"
+                           role="button"
+                           aria-expanded="false">
+                            <span class="navbar-toggler-icon small"></span>
+                            <span class="text-black fs-6 text-uppercase">Danh mục</span>
+                        </a>
+
+                        <div class="dropdown-menu danhmuc-dropdown border-0 bg-white shadow-sm" aria-labelledby="danhmucDropdown">
+                            <div class="w-100 d-flex justify-content-end align-items-center mb-4 px-4">
+                                <a href=""
+                                   class="d-flex align-items-center justify-content-between w-100 px-3 py-2 border-bottom text-decoration-none fs-6 fw-bold text-dark"
+                                   style="border-color:#4b4a4a;">
+                                    <span>Tìm kiếm</span>
+                                    <img src="~/Content/Images/search.png" style="width: 9%" />
+                                </a>
+                            </div>
+                            <div class="fs-5 fw-bold text-uppercase" style="padding-left: 40px">Danh mục sản phẩm</div>
+                            <ul class="ps-2 pb-3">
+                                @Html.Action("CategoriesMenu", "Product")
+                            </ul>
+                            <div class="fs-5 fw-bold text-uppercase" style="padding-left: 40px">Tìm kiếm theo</div>
+                            <div class="fs-5 fw-bold" style="padding-left: 40px">Hãng</div>
+                            <div style="padding-left: 40px" class="mb-3">
+                                @Html.Action("BrandMenu", "Product")
+                            </div>
+                            <div class="fs-5 fw-bold" style="padding-left: 40px">Quốc gia</div>
+                            <div style="padding-left: 40px" class="mb-3">
+                                @Html.Action("OriginMenu", "Product")
+                            </div>
+                            <div class="fs-5 fw-bold" style="padding-left: 40px">Mức giá</div>
+                            <div style="padding-left: 40px">
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+
+                                    <a class="py-2 px-3 text-center btn btn-outline-primary fs-6"
+                                       href="@Url.Action("Product", "Product", new { minPrice = 0, maxPrice = 100000 })">
+                                        Dưới 100.000đ
+                                    </a>
+
+                                    <a class="py-2 px-3 text-center btn btn-outline-primary fs-6"
+                                       href="@Url.Action("Product", "Product", new { minPrice = 100000, maxPrice = 300000 })">
+                                        100.000đ - 300.000đ
+                                    </a>
+
+                                    <a class="py-2 px-3 text-center btn btn-outline-primary fs-6"
+                                       href="@Url.Action("Product", "Product", new { minPrice = 300000, maxPrice = 500000 })">
+                                        300.000đ - 500.000đ
+                                    </a>
+
+                                    <a class="py-2 px-3 text-center btn btn-outline-primary fs-6"
+                                       href="@Url.Action("Product", "Product", new { minPrice = 500000, maxPrice = 1000000 })">
+                                        500.000đ - 1.000.000đ
+                                    </a>
+
+                                    <a class="py-2 px-3 text-center btn btn-outline-primary fs-6"
+                                       href="@Url.Action("Product", "Product", new { minPrice = 1000000, maxPrice = 99999999})">
+                                        Trên 1.000.000đ
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </li>
+                    <li class="nav-item dropdown dich-vu-dropdown">
+                        <a class="nav-link text-black fs-6 dropdown-toggle  text-uppercase fs-6" href="#">
+                            Dịch vụ
+                        </a>
+                        <ul class="dropdown-menu border-0 bg-light p-0">
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle py-2 fs-6 pe-5" href="#">
+                                    Lớp học
+                                </a>
+                                <ul class="dropdown-menu border-0 bg-light">
+                                    @Html.Action("ClassMenu", "Product")
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item py-2 fs-6 pe-5" href="#">Đăng ký PT</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>@Html.ActionLink("Tìm lớp", "About", "Home", new { area = "" }, new { @class = "nav-link text-black fs-6 text-uppercase" })</li>
+                    <li>@Html.ActionLink("Gói tập", "Contact", "Home", new { area = "" }, new { @class = "nav-link text-black fs-6 text-uppercase" })</li>
+                </ul>
+                <div class="w-50 d-flex justify-content-end">
+                    <form class="d-flex w-100 justify-content-end gap-3">
+                        <input class="form-control w-75 py-2" type="search" placeholder="Nhập thông tin cần tìm kiếm" aria-label="Search" required>
+                        <button class="btn btn-primary py-2" type="submit">Tìm kiếm</button>
+                    </form>
+                </div>
+            </div>
+            <div class="d-flex align-items-center ms-3">
+                @if (Session["TenKH"] == null)
+                {
+                    <a class="login-btn text-decoration-none d-flex justify-content-center" href="@Url.Action("Login", "Account", new { returnUrl = Request.RawUrl })">
+                        <span class="text-dark" style="font-size: 16px">Đăng nhập</span>
+                        <img src="@Url.Content("~/Content/Images/user.png")" class="ms-2" style="width: 15%" />
+                    </a>
+                }
+                else
+                {
+                    <div class="dropdown">
+                        <a class="login-btn d-flex text-decoration-none justify-content-center" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="text-dark fw-bold" style="font-size: 16px;">@Session["TenKH"]</span>
+                            <img src="@Url.Content("~/Content/Images/user.png")" class="ms-2" style="width: 15%" />
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="@Url.Action("Profile", "Account")">Xem thông tin</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("ToCheckOut", "CartCheckout")">Giỏ hàng</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+
+                }
+            </div>
+
+        </div>
+    </nav>
+    <div class="container-fluid bg-white p-0" style="margin-top: 90px">
+        @RenderBody()
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const danhmucLink = document.getElementById('danhmucDropdown');
+            const danhmucDropdown = document.querySelector('.danhmuc-dropdown');
+
+            if (!danhmucLink || !danhmucDropdown) return;
+
+            // Tắt positioning mặc định của Bootstrap
+            danhmucLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Toggle class show
+                if (danhmucDropdown.classList.contains('show')) {
+                    danhmucDropdown.classList.remove('show');
+                } else {
+                    danhmucDropdown.classList.add('show');
+                    // Reset inline styles do Bootstrap tạo ra
+                    danhmucDropdown.style.position = '';
+                    danhmucDropdown.style.inset = '';
+                    danhmucDropdown.style.margin = '';
+                    danhmucDropdown.style.transform = '';
+                }
+            });
+
+            // Đóng menu khi click ra ngoài
+            document.addEventListener('click', function (e) {
+                if (!danhmucLink.contains(e.target) && !danhmucDropdown.contains(e.target)) {
+                    danhmucDropdown.classList.remove('show');
+                }
+            });
+
+            // Đóng menu khi nhấn ESC
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && danhmucDropdown.classList.contains('show')) {
+                    danhmucDropdown.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

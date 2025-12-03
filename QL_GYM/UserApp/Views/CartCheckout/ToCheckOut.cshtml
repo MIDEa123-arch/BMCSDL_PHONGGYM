@@ -1,0 +1,189 @@
+﻿@model IEnumerable<UserApp.ViewModel.GioHangViewModel>
+@{
+    ViewBag.Title = "ToCheckOut";
+    Layout = "~/Views/Shared/_LayoutPageCart.cshtml";
+}
+<form method="post" action="@Url.Action("XoaVaThanhToan", "CartCheckout")">
+    @Html.AntiForgeryToken()
+    <div class="mt-2 d-flex flex-column mx-auto justify-content-center px-5" style="margin-top: 200px; margin-bottom: 90px; width: 38rem">
+        <div class="py-3 position-relative border-bottom border-1">
+            <a href="@Url.Action("Index", "Home")" class="text-decoration-none position-absolute">
+                <img src="@Url.Content("~/Content/Images/back.png")" style="width: 1.6rem; left: 3rem" />
+            </a>
+            <div class="w-100 text-center">
+                <span class="fs-5 fw-bold text-black">Giỏ hàng của bạn</span>
+            </div>
+        </div>
+
+        <div class="w-100 mt-3 d-flex flex-column">
+            <a class="btn bg-primary text-white fw-semibold fs-6" href="@Url.Action("ToCheckOut", "CartCheckout")" style="width: 7rem">Giỏ hàng</a>
+            <div class="d-flex justify-content-between mt-3">
+                <div>
+                    <input id="select-all" type="checkbox" class="form-check-input" />
+                    <label class="form-check-label small" for="select-all">Chọn tất cả</label>
+                </div>
+                <button class="text-muted small fst-italic p-0 border-0 bg-transparent" name="actionType" value="delete">Xóa sản phẩm đã chọn</button>
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex flex-column w-100 gap-3">
+            @foreach (var item in Model)
+            {
+                var price = item.GiaKhuyenMaiSP != null && item.GiaKhuyenMaiSP < item.DonGia ? item.GiaKhuyenMaiSP.Value : item.DonGia;
+                <div class="card w-100 p-0 product-item" data-price="@price" data-original="@item.DonGia">
+                    <div class="card-body row">
+                        <div class="col-3 d-flex justify-content-center position-relative">
+                            <input class="form-check-input rounded-circle position-absolute select-item"
+                                   type="checkbox" style="top: -0.3rem; left: 0.5rem"
+                                   name="selectedItems" value="@(item.MaSP ?? item.MaGoiTap ?? item.MaLop)" />
+
+                            @if (!string.IsNullOrEmpty(item.AnhDaiDienSP))
+                            {
+                                <img src="@Url.Content("~/Content/Images/" + item.AnhDaiDienSP)" style="width: 7rem" />
+                            }
+                        </div>
+
+                        <div class="col-9 d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between">
+                                @{
+                                    var itemId = item.MaSP ?? item.MaGoiTap ?? item.MaLop;
+                                }
+                                <a class="text-wrap text-black fs-6 text-decoration-none"
+                                   href="@Url.Action("ProductDetail", "Product", new { id = itemId })">
+                                    @item.TenMonHang
+                                </a>
+                                <div>
+                                    <a href="@Url.Action("XoaDon", "CartCheckout", new { id = item.MaSP ?? item.MaGoiTap ?? item.MaLop })" class="bg-transparent border-0 text-muted small text-decoration-none">Xóa</a>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                @if (item.GiaKhuyenMaiSP != null && item.GiaKhuyenMaiSP < item.DonGia)
+                                {
+                                    <div class="fs-6 text-danger mt-1">
+                                        @item.GiaKhuyenMaiSP.Value.ToString("N0").Replace(",", ".") VNĐ
+                                        <span class="text-secondary text-decoration-line-through ms-1 small">
+                                            @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                        </span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="fs-6 text-dark mt-1">
+                                        @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                    </div>
+                                }
+
+                                @if (item.MaSP != null)
+                                {
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <a class="btn btn-secondary text-white p-0 text-decoration-none text-center d-flex align-items-center justify-content-center" href="@Url.Action("GiamSoLuong", "CartCheckout", new {id = itemId})" style="width: 30px; height: 30px">
+                                            <img src="@Url.Content("~/Content/Images/minus-sign.png")" style="width: 0.6rem" />
+                                        </a>
+                                        @if (item.SoLuong > item.SoLuongTon) { item.SoLuong = item.SoLuongTon; }
+                                        <span class="quantity" data-qty="@item.SoLuong"> @item.SoLuong</span>
+
+                                        <a class="btn btn-secondary text-white text-decoration-none p-0 text-center d-flex align-items-center justify-content-center" href="@Url.Action("TangSoLuong", "CartCheckout", new {id = itemId})" style="width: 30px; height: 30px">
+                                            <img src="@Url.Content("~/Content/Images/plus.png")" style="width: 0.6rem" />
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-2 d-flex mx-auto px-5 fixed-bottom rounded-3" style="margin-top: 200px; width: 38rem">
+        <div class="d-flex justify-content-between w-100 bg-light px-2 py-3">
+            <div class="d-flex flex-column">
+                <div class="fw-semibold fs-6">
+                    Tạm tính:
+                    <span id="total-price" class="fw-bold fs-6 text-danger">0 VNĐ</span>
+                </div>
+                <div class="small">Tiết kiệm <span id="saved" class="text-info">0 VNĐ</span></div>
+            </div>
+            <button class="btn btn-info px-3 d-flex align-items-center text-white text-decoration-none fw-semibold" name="actionType" value="checkout">Mua ngay</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("select-all");
+        const totalEl = document.getElementById("total-price");
+        const savedEl = document.getElementById("saved");
+        const checkoutBtn = document.querySelector('button[name="actionType"][value="checkout"]');
+        const deleteSelectedBtn = document.querySelector('button[name="actionType"][value="delete"]');
+
+        function updateTotal() {
+            let total = 0;
+            let saved = 0;
+            let anyChecked = false;
+
+            document.querySelectorAll(".product-item").forEach(item => {
+                const checkbox = item.querySelector(".select-item");
+                const qtyInput = item.querySelector(".quantity");
+                const qty = parseInt(qtyInput?.dataset.qty) || 1;
+                const price = parseFloat(item.dataset.price);
+                const original = parseFloat(item.dataset.original);
+
+                if (checkbox.checked) {
+                    anyChecked = true;
+                    total += qty * price;
+                    if (original > price) {
+                        saved += (original - price) * qty;
+                    }
+                }
+            });
+
+            // update totals
+            totalEl.textContent = total.toLocaleString('vi-VN') + " VNĐ";
+            savedEl.textContent = saved.toLocaleString('vi-VN') + " VNĐ";
+
+            // update checkout button
+            if (anyChecked) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.classList.remove('btn-secondary');
+                checkoutBtn.classList.add('btn-info');
+
+                deleteSelectedBtn.disabled = false;
+                deleteSelectedBtn.classList.remove('text-muted');
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.classList.remove('btn-info');
+                checkoutBtn.classList.add('btn-secondary');
+
+                deleteSelectedBtn.disabled = true;
+                deleteSelectedBtn.classList.add('text-muted'); // làm mờ text
+            }
+        }
+
+        // select all checkbox
+        selectAll.addEventListener("change", function () {
+            const isChecked = this.checked;
+            document.querySelectorAll(".select-item").forEach(cb => cb.checked = isChecked);
+            updateTotal();
+        });
+
+        // individual checkboxes
+        document.querySelectorAll(".select-item").forEach(cb => {
+            cb.addEventListener("change", function () {
+                const all = document.querySelectorAll(".select-item");
+                const checked = document.querySelectorAll(".select-item:checked");
+                selectAll.checked = all.length === checked.length;
+                updateTotal();
+            });
+        });
+
+        // quantity change
+        document.querySelectorAll(".quantity").forEach(inp => inp.addEventListener("input", updateTotal));
+
+        // initial calculation
+        updateTotal();
+    });
+</script>
+
+

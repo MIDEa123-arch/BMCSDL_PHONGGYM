@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="ea71e12f2f7644209144d0beb88ee94f" Name="Diagram1">
+        <EntityTypeShape EntityType="GYM.CHECKIN" Width="1.5" PointX="5.25" PointY="7.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.CHITIETGIOHANG" Width="1.5" PointX="13.5" PointY="13.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.CHITIETHOADON" Width="1.5" PointX="10.5" PointY="17.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.CHUCVU" Width="1.5" PointX="0.75" PointY="16.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.CHUYENMON" Width="1.5" PointX="3.75" PointY="3.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.DANGKYGOITAP" Width="1.5" PointX="5.25" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.DANGKYLOP" Width="1.5" PointX="8.25" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.DANGKYPT" Width="1.5" PointX="5.25" PointY="14.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.DIACHI" Width="1.5" PointX="5.25" PointY="21.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.GOITAP" Width="1.5" PointX="3" PointY="7" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.HINHANH" Width="1.5" PointX="10.5" PointY="31.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.HOADON" Width="1.5" PointX="5.25" PointY="24.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.KHACHHANG" Width="1.5" PointX="3" PointY="10.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.LICHLOP" Width="1.5" PointX="8.25" PointY="7.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.LICHTAPPT" Width="1.5" PointX="7.5" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.LOAIKHACHHANG" Width="1.5" PointX="0.75" PointY="11.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.LOAISANPHAM" Width="1.5" PointX="6" PointY="31.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.LOPHOC" Width="1.5" PointX="6" PointY="2.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.NHANVIEN" Width="1.5" PointX="3" PointY="15.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="GYM.SANPHAM" Width="1.5" PointX="8.25" PointY="30.125" IsExpanded="true" />
+        <AssociationConnector Association="GYM.FK_CHECKIN_KH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_GIOHANG_GOITAP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_GIOHANG_LOPHOC" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_GIOHANG_SANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_CT_HD" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_CT_HD_DKGT" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_CT_HD_DKLOP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_CT_HD_DKPT" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_CT_SP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_NHANVIEN_CHUCVU" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_LOP_CM" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKGT_GT" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKGT_KH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKLOP_KH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKLOP_LOP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKPT_KH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DKPT_NV" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_LICHPT_DKPT" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_DIACHI_KHACHHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_HINHANH_SANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_HOADON_KH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_KHACHHANG_LOAIKH" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_LICHLOP_LOP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_LICHLOP_NV" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.FK_SP_LSP" ManuallyRouted="false" />
+        <AssociationConnector Association="GYM.NHANVIENCHUYENMON" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

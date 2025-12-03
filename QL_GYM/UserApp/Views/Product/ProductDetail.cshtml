@@ -1,0 +1,546 @@
+﻿@model UserApp.ViewModel.SanPhamViewModel
+
+@{
+    ViewBag.Title = Model.TenSP;
+}
+
+<style>
+    #cartToast {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1055;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .nav-tabs .nav-link:hover {
+            color: #0d6efd;
+            border-bottom: 3px solid #0d6efd !important;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background: transparent;
+            border-bottom: 3px solid #0d6efd !important;
+        }
+
+    .border-start:hover {
+        background-color: #e7f1ff !important;
+        transform: translateX(5px);
+        transition: all 0.3s ease;
+    }
+
+    .badge.bg-primary {
+        transition: transform 0.3s ease;
+    }
+
+    .border-start:hover .badge.bg-primary {
+        transform: scale(1.1);
+    }
+</style>
+
+<div class="container py-4 bg-white">
+    <div class="row g-4">
+        <div class="col-lg-7 col-md-7 p-0">
+            <div id="productCarousel" class="carousel slide mb-3 rounded-4 border" data-bs-ride="carousel">
+                <div class="carousel-inner text-center">
+                    <div class="carousel-item active">
+                        <img src="@Url.Content("~/Content/Images/" + Model.UrlHinhAnhChinh)"
+                             class="d-block mx-auto rounded-4"
+                             style="object-fit: cover; width: 20rem; height: 21rem;"
+                             alt="@Model.TenSP" />
+                    </div>
+
+                    @if (Model.UrlHinhAnhsPhu != null)
+                    {
+                        foreach (var img in Model.UrlHinhAnhsPhu)
+                        {
+                            <div class="carousel-item">
+                                <img src="@Url.Content("~/Content/Images/" + img)"
+                                     class="d-block mx-auto rounded-4"
+                                     style="object-fit: cover; width: 20rem; height: 21rem;"
+                                     alt="@Model.TenSP" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                @{
+                    var allImages = new List<string> { Model.UrlHinhAnhChinh };
+                    allImages.AddRange(Model.UrlHinhAnhsPhu ?? new List<string>());
+                }
+
+                @for (int i = 0; i < allImages.Count; i++)
+                {
+                    <img src="@Url.Content("~/Content/Images/" + allImages[i])"
+                         data-bs-target="#productCarousel"
+                         data-bs-slide-to="@i"
+                         class="rounded border"
+                         style="width: 5rem; height: 5rem; object-fit: cover; cursor: pointer;"
+                         alt="Thumbnail" />
+                }
+            </div>
+        </div>
+
+
+        <div class="col-lg-5 col-md-5 ps-5">
+            <div class="d-flex flex-column h-100">
+                <h5 class="fw-bold mb-2 p-0">@Model.TenSP</h5>
+                <div class="mb-1">
+                    @if (Model.SoLuongTon > 0)
+                    {
+                        <span class="badge bg-success">Còn hàng (@Model.SoLuongTon sản phẩm)</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Hết hàng</span>
+                    }
+                </div>
+                <div class="d-flex gap-3">
+                    <p class="text-muted small">Thương hiệu: <span class="text-primary">@Model.Hang</span></p>
+                    <span class="text-muted small">Xuất xứ: <span class="text-primary">@Model.XuatXu </span></span>
+                </div>
+                @if (Model.GiaKhuyenMai != null && Model.GiaKhuyenMai < Model.DonGia)
+                {
+                    <div class="mb-3">
+                        <span class="fs-5 fw-bold text-danger">
+                            @Model.GiaKhuyenMai.Value.ToString("N0").Replace(",", ".") VNĐ
+                        </span>
+                        <span class="fs-6 text-muted text-decoration-line-through ms-2">
+                            @Model.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                        </span>
+                        <span class="badge bg-danger ms-2 small">
+                            -@(((Model.DonGia - Model.GiaKhuyenMai) / Model.DonGia * 100).Value.ToString("0"))%
+                        </span>
+                        <p class="small">(Tiết kiệm: <span class="fs-6 text-danger">@((Model.DonGia - Model.GiaKhuyenMai).Value.ToString("N0").Replace(",", ".")) VNĐ</span>)</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <span class="fs-4 fw-bold text-dark">
+                            @Model.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                        </span>
+                    </div>
+                }
+                <div>
+                    @if (Model.SoLuongTon > 0)
+                    {
+                        if (Session["MaKH"] != null)
+                        {
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <label class="fw-semibold text-nowrap">Số lượng:</label>
+                                    <input id="quantity" type="number" class="form-control" value="1" min="1" max="@Model.SoLuongTon" style="width: 5rem; height: 3rem;" />
+                                </div>
+                                <button id="btnAddToCart" data-id="@Model.MaSP"
+                                        class="btn btn-outline-primary flex-grow-1 fw-semibold text-uppercase"
+                                        style="font-size: 14px">
+                                    Thêm vào giỏ hàng
+                                </button>
+                            </div>
+                            <form class="p-0 m-0" action="@Url.Action("AddToCart", "CartCheckout")" method="post">
+                                @Html.AntiForgeryToken()
+                                <input id="quantityHidden" type="hidden" name="soLuong" />
+                                <input id="IdHidden" type="hidden" name="maSP" value="@Model.MaSP" />
+                                <button id="btnBuyNow" data-id="@Model.MaSP"
+                                        class="btn btn-primary btn-lg w-100 d-flex flex-column">
+                                    <span class="fw-semibold text-uppercase text-white" style="font-size: 14px">Mua ngay</span>
+                                    <span class="fw-semibold text-uppercase text-white" style="font-size: 14px">
+                                        Giao hàng tận nơi hoặc nhận tại cửa hàng
+                                    </span>
+                                </button>
+                            </form>
+
+                            <div class="mt-2 w-100 text-center">
+                                <p style="font-size: 14px">
+                                    Gọi đặt mua <a class="text-primary text-decoration-none" href="tel:66663636" style="font-size: 14px">6666.3636</a> (8:00 - 22:00)
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <label class="fw-semibold text-nowrap">Số lượng:</label>
+                                    <input disabled type="number" class="form-control" value="1" style="width: 5rem; height: 3rem;" />
+                                </div>
+                                <button class="btn btn-outline-primary flex-grow-1 fw-semibold text-uppercase" style="font-size: 14px"
+                                        data-bs-toggle="modal" data-bs-target="#loginModal">
+                                    Thêm vào giỏ hàng
+                                </button>
+                            </div>
+
+                            <button class="btn btn-primary btn-lg w-100 d-flex flex-column"
+                                    data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <span class="fw-semibold text-uppercase text-white" style="font-size: 14px">Mua ngay</span>
+                                <span class="fw-semibold text-uppercase text-white" style="font-size: 14px">
+                                    Đăng nhập để mua hàng
+                                </span>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="btn btn-outline-danger btn-lg w-100 rounded-2 fs-6">
+                            Hết hàng
+                        </div>
+                    }
+                </div>
+
+
+                <div class="w-100 mt-3 d-flex flex-column">
+                    <span class="fw-semibold" style="font-size: 15px">Phương thức thanh toán</span>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/money.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">Tiền mặt</span>
+                        </a>
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/visa.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">Visa</span>
+                        </a>
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/mastercard.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">Mastercard</span>
+                        </a>
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/qr-code.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">QR Code</span>
+                        </a>
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/cod.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">COD</span>
+                        </a>
+                        <a class="d-flex flex-column justify-content-center text-center w-auto align-content-center align-items-center text-decoration-none" href="">
+                            <img src="@Url.Content("~/Content/Images/online-payment.png")" style="width: 2.6rem" />
+                            <span style="font-size: 0.7rem" class="mt-1 text-decoration-none text-dark">Internet Banking</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 p-0">
+        <div class="col-12">
+            <ul class="nav nav-tabs nav-fill border-0" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-semibold text-uppercase px-5 py-3"
+                            id="description-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#description"
+                            type="button"
+                            role="tab"
+                            style="border-bottom: 3px solid transparent;">
+                        <i class="bi bi-file-text me-2"></i>Mô Tả Sản Phẩm
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold text-uppercase px-5 py-3"
+                            id="details-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#details"
+                            type="button"
+                            role="tab"
+                            style="border-bottom: 3px solid transparent;">
+                        <i class="bi bi-list-check me-2"></i>Thông Tin Chi Tiết
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content border border-top-0 rounded-bottom p-4 bg-light" id="productTabsContent">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    @if (!string.IsNullOrEmpty(Model.MoTaChung))
+                    {
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <h5 class="fw-bold text-primary p-0 mb-3">
+                                Giới thiệu sản phẩm
+                            </h5>
+                            <p class="text-secondary mb-0" style="line-height: 2; font-size: 15px; text-align: justify;">
+                                @Model.MoTaChung
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3">Chưa có mô tả cho sản phẩm này.</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="tab-pane fade" id="details" role="tabpanel">
+                    @if (!string.IsNullOrEmpty(Model.MaTaChiTiet))
+                    {
+                        var chiTietList = Convert.ToString(Model.MaTaChiTiet).Split('|').Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+
+                        if (chiTietList.Any())
+                        {
+                            <div class="bg-white p-4 rounded shadow-sm">
+                                <h5 class="fw-bold text-primary mb-4">
+                                    Thông số kỹ thuật
+                                </h5>
+                                <div class="row g-3">
+                                    @for (int i = 0; i < chiTietList.Count; i++)
+                                    {
+                                        var trimmedItem = chiTietList[i].Trim();
+                                        if (!string.IsNullOrEmpty(trimmedItem))
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-start p-3 border-start border-primary border-3 bg-light rounded">
+                                                    <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                         style="width: 30px; height: 30px; font-size: 12px;">
+                                                        @(i + 1)
+                                                    </div>
+                                                    <span style="font-size: 15px; line-height: 1.8; flex: 1;">@trimmedItem</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-3">Chưa có thông tin chi tiết cho sản phẩm này.</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3">Chưa có thông tin chi tiết cho sản phẩm này.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.SpDiCung != null && ((List<UserApp.ViewModel.SanPhamViewModel>)ViewBag.SpDiCung).Any())
+    {
+        <div class="row mt-5 p-0">
+            <div class="col-12 mb-3">
+                <h4 class="fw-bold text-uppercase">
+                    Sản phẩm thường đi cùng
+                </h4>
+            </div>
+            <div class="col-12">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                    @foreach (var item in ViewBag.SpDiCung)
+                    {
+                        <div class="col">
+                            <a href="@Url.Action("ProductDetail", "Product", new { id = item.MaSP })"
+                               class="card h-100 border-1 text-decoration-none product-card">
+                                <div class="position-relative">
+                                    <img src="@Url.Content("~/Content/Images/" + item.UrlHinhAnhChinh)"
+                                         class="card-img-top" alt="@item.TenSP" style="object-fit: cover; height: 14rem;">
+
+                                    @if (item.SoLuongTon == 0)
+                                    {
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+                                             style="background-color: rgba(0,0,0,0.5);">
+                                            <span class="badge bg-danger fs-6 py-2 px-3">HẾT HÀNG</span>
+                                        </div>
+                                    }
+
+                                    <span class="badge bg-white text-dark position-absolute bottom-0 start-0 m-2 small fw-semibold">
+                                        @item.XuatXu
+                                    </span>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div style="height: 4rem">
+                                        <div class="fw-bold small text-dark">@item.TenSP</div>
+                                        <div class="text-secondary small">@item.Hang</div>
+                                    </div>
+                                    @if (item.SoLuongTon == 0)
+                                    {
+                                        <div class="fw-bold text-muted mt-1">
+                                            <span class="badge bg-secondary">Hết hàng</span>
+                                        </div>
+                                    }
+                                    else if (item.GiaKhuyenMai != null && item.GiaKhuyenMai < item.DonGia)
+                                    {
+                                        <div class="fw-bold text-danger mt-1">
+                                            @item.GiaKhuyenMai.ToString("N0").Replace(",", ".") VNĐ
+                                            <span class="text-secondary text-decoration-line-through ms-1 small">
+                                                @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-bold text-dark mt-1">@item.DonGia.ToString("N0").Replace(",", ".") VNĐ</div>
+                                    }
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (ViewBag.SpCungPhanKhuc != null && ((List<UserApp.ViewModel.SanPhamViewModel>)ViewBag.SpCungPhanKhuc).Any())
+    {
+        <div class="row mt-5 mb-5 p-0">
+            <div class="col-12 mb-3">
+                <h4 class="fw-bold text-uppercase">
+                    Sản phẩm cùng phân khúc giá
+                </h4>
+            </div>
+            <div class="col-12">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                    @foreach (var item in ViewBag.SpCungPhanKhuc)
+                    {
+                        <div class="col">
+                            <a href="@Url.Action("ProductDetail", "Product", new { id = item.MaSP })"
+                               class="card h-100 border-1 text-decoration-none product-card">
+                                <div class="position-relative">
+                                    <img src="@Url.Content("~/Content/Images/" + item.UrlHinhAnhChinh)"
+                                         class="card-img-top" alt="@item.TenSP" style="object-fit: cover; height: 14rem;">
+
+                                    @if (item.SoLuongTon == 0)
+                                    {
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+                                             style="background-color: rgba(0,0,0,0.5);">
+                                            <span class="badge bg-danger fs-6 py-2 px-3">HẾT HÀNG</span>
+                                        </div>
+                                    }
+
+                                    <span class="badge bg-white text-dark position-absolute bottom-0 start-0 m-2 small fw-semibold">
+                                        @item.XuatXu
+                                    </span>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div style="height: 4rem">
+                                        <div class="fw-bold small text-dark">@item.TenSP</div>
+                                        <div class="text-secondary small">@item.Hang</div>
+                                    </div>
+                                    @if (item.SoLuongTon == 0)
+                                    {
+                                        <div class="fw-bold text-muted mt-1">
+                                            <span class="badge bg-secondary">Hết hàng</span>
+                                        </div>
+                                    }
+                                    else if (item.GiaKhuyenMai != null && item.GiaKhuyenMai < item.DonGia)
+                                    {
+                                        <div class="fw-bold text-danger mt-1">
+                                            @item.GiaKhuyenMai.ToString("N0").Replace(",", ".") VNĐ
+                                            <span class="text-secondary text-decoration-line-through ms-1 small">
+                                                @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-bold text-dark mt-1">@item.DonGia.ToString("N0").Replace(",", ".") VNĐ</div>
+                                    }
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 w-75 mx-auto shadow-lg border-0 position-relative">
+            <div class="mt-3 border-0 text-center w-100">
+                <h5 class="modal-title fw-bold text-primary text-center" id="loginModalLabel">THE-GYM MEMBER</h5>
+            </div>
+            <img src="@Url.Content("~/Content/Images/Logo.png")" class="mx-auto" style="width: 5rem" />
+            <div class="modal-body text-center py-2">
+                <p class="mb-4 fw-semibold" style="font-size: 16px">
+                    Vui lòng đăng nhập tài khoản <strong>The GYM</strong> để xem ưu đãi và thanh toán dễ dàng hơn.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="@Url.Action("Login", "Account", new { returnUrl = Request.RawUrl })" class="btn btn-primary py-2 fw-semibold" style="width: 10rem">
+                        Đăng nhập
+                    </a>
+                    <a href="@Url.Action("Register", "Account", new { returnUrl = Request.RawUrl })" class="btn btn-outline-primary py-2 fw-semibold" style="width: 10rem">
+                        Đăng ký
+                    </a>
+                </div>
+            </div>
+            <button type="button" class="btn-close position-absolute mt-2" data-bs-dismiss="modal" style="right: 0.7rem" aria-label="Đóng"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast thông báo thêm vào giỏ hàng -->
+<div class="toast align-items-center text-white bg-success border-0" id="cartToast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class="toast-body">
+            Thêm vào giỏ hàng thành công!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var toastEl = document.getElementById('cartToast');
+    var toast = new bootstrap.Toast(toastEl);
+
+    var btnAddToCart = document.getElementById('btnAddToCart');
+    var quantityInput = document.getElementById('quantity');
+    var hiddenQty = document.getElementById('quantityHidden');
+    var tonKho = parseInt(quantityInput.max);
+
+    // Đồng bộ hidden input
+    hiddenQty.value = quantityInput.value;
+
+    // Khi thay đổi số lượng
+    quantityInput.addEventListener("input", function () {
+        let val = parseInt(this.value) || 1;
+
+        if (val >= tonKho) {
+            val = tonKho; // không vượt quá tồn kho
+            this.value = val;
+        } else if (val <= 1) {
+            val = 1; // không nhỏ hơn 1
+            this.value = val;
+        }
+
+        hiddenQty.value = val;
+    });
+
+    btnAddToCart?.addEventListener('click', function () {
+        var maSP = this.dataset.id;
+        var soLuong = parseInt(quantityInput.value);
+
+        fetch('@Url.Action("AddToCart", "Product")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maSP: parseInt(maSP), soLuong: soLuong })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                toast.show();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    });
+});
+</script>
+
+
+

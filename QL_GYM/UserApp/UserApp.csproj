@@ -1,0 +1,739 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{65E5B3AE-2CF2-4274-97F6-A102F1AFE19E}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UserApp</RootNamespace>
+    <AssemblyName>UserApp</AssemblyName>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44340</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.3\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.23.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.23.26.0\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess.EntityFramework, Version=6.122.23.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.EntityFramework.23.26.0\lib\net472\Oracle.ManagedDataAccess.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=6.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.6.0.2\lib\net461\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Formats.Asn1, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Formats.Asn1.8.0.1\lib\net462\System.Formats.Asn1.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=8.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.8.0.5\lib\net462\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.6.0\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.3.0\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.3.0\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.2.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime">
+      <Private>True</Private>
+      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\CartCheckoutController.cs" />
+    <Compile Include="Controllers\InvoiceController.cs" />
+    <Compile Include="Controllers\ProductController.cs" />
+    <Compile Include="Controllers\StaffController.cs" />
+    <Compile Include="Helpers\CustomListAlphabet.cs" />
+    <Compile Include="Helpers\DesCrypto.cs" />
+    <Compile Include="Helpers\DigitalSignService.cs" />
+    <Compile Include="Helpers\Euclid.cs" />
+    <Compile Include="Helpers\GiaiMa.cs" />
+    <Compile Include="Helpers\MaHoa.cs" />
+    <Compile Include="Models\ACTIVE_WEB_LOGINS.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CHECKIN.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CHITIETGIOHANG.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CHITIETHOADON.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CHUCVU.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CHUYENMON.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DANGKYGOITAP.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DANGKYLOP.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DANGKYPT.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DIACHI.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GOITAP.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\HINHANH.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\HOADON.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\KHACHHANG.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LICHLOP.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LICHTAPPT.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LOAIKHACHHANG.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LOAISANPHAM.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LOPHOC.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\NHANVIEN.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\QL_PHONGGYM.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QL_PHONGGYM.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\QL_PHONGGYM.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\QL_PHONGGYM.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SANPHAM.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\USER_SESSIONS.cs">
+      <DependentUpon>QL_PHONGGYM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Repositories\AccountRepository.cs" />
+    <Compile Include="Repositories\CartRepository.cs" />
+    <Compile Include="Repositories\HoaDonRepository.cs" />
+    <Compile Include="Repositories\InvoiceRepository.cs" />
+    <Compile Include="Repositories\KhachHangRepository.cs" />
+    <Compile Include="Repositories\ProductRepository.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\SanPhamRepository.cs" />
+    <Compile Include="Repositories\UserService.cs" />
+    <Compile Include="ViewModel\AccountModel.cs" />
+    <Compile Include="ViewModel\GioHangViewModel.cs" />
+    <Compile Include="ViewModel\InvoiceFullData.cs" />
+    <Compile Include="ViewModel\KhachHangLoginResult.cs" />
+    <Compile Include="ViewModel\KhachHangLoginViewModel.cs" />
+    <Compile Include="ViewModel\KhachHangRegisterViewModel.cs" />
+    <Compile Include="ViewModel\SanPhamViewModel.cs" />
+    <Compile Include="ViewModel\StaffAccountModel.cs" />
+    <Compile Include="ViewModel\UserInfo.cs" />
+    <Compile Include="ViewModel\UserViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\bootstrap-grid.css" />
+    <Content Include="Content\bootstrap-grid.min.css" />
+    <Content Include="Content\bootstrap-grid.rtl.css" />
+    <Content Include="Content\bootstrap-grid.rtl.min.css" />
+    <Content Include="Content\bootstrap-reboot.css" />
+    <Content Include="Content\bootstrap-reboot.min.css" />
+    <Content Include="Content\bootstrap-reboot.rtl.css" />
+    <Content Include="Content\bootstrap-reboot.rtl.min.css" />
+    <Content Include="Content\bootstrap-utilities.css" />
+    <Content Include="Content\bootstrap-utilities.min.css" />
+    <Content Include="Content\bootstrap-utilities.rtl.css" />
+    <Content Include="Content\bootstrap-utilities.rtl.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\bootstrap.rtl.css" />
+    <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\Images\abe-preworkout-energy-1.jpg" />
+    <Content Include="Content\Images\abe-preworkout-energy-2.jpg" />
+    <Content Include="Content\Images\abe-preworkout-energy-3.jpg" />
+    <Content Include="Content\Images\abe-preworkout-facts-4.jpg" />
+    <Content Include="Content\Images\Aerobics.jpg" />
+    <Content Include="Content\Images\ao-balo-nam-trang-1.jpg" />
+    <Content Include="Content\Images\ao-balo-nam-trang-2.jpg" />
+    <Content Include="Content\Images\ao-balo-nam-trang-3.jpg" />
+    <Content Include="Content\Images\ao-balo-nam-trang-4.jpg" />
+    <Content Include="Content\Images\ao-bra-nu-hong-1.jpg" />
+    <Content Include="Content\Images\ao-bra-nu-hong-2.jpg" />
+    <Content Include="Content\Images\ao-bra-nu-hong-3.jpg" />
+    <Content Include="Content\Images\ao-bra-nu-hong-4.jpg" />
+    <Content Include="Content\Images\ao-croptop-nu-trang-1.jpg" />
+    <Content Include="Content\Images\ao-croptop-nu-trang-2.jpg" />
+    <Content Include="Content\Images\ao-croptop-nu-trang-3.jpg" />
+    <Content Include="Content\Images\ao-croptop-nu-trang-4.jpg" />
+    <Content Include="Content\Images\ao-hoodie-be-1.jpg" />
+    <Content Include="Content\Images\ao-hoodie-be-2.jpg" />
+    <Content Include="Content\Images\ao-hoodie-be-3.jpg" />
+    <Content Include="Content\Images\ao-hoodie-be-4.jpg" />
+    <Content Include="Content\Images\ao-khoac-gio-den-1.jpg" />
+    <Content Include="Content\Images\ao-khoac-gio-den-2.jpg" />
+    <Content Include="Content\Images\ao-khoac-gio-den-3.jpg" />
+    <Content Include="Content\Images\ao-khoac-gio-den-4.jpg" />
+    <Content Include="Content\Images\ao-polo-nam-navy-1.jpg" />
+    <Content Include="Content\Images\ao-polo-nam-navy-2.jpg" />
+    <Content Include="Content\Images\ao-polo-nam-navy-3.jpg" />
+    <Content Include="Content\Images\ao-polo-nam-navy-4.jpg" />
+    <Content Include="Content\Images\ao-thun-nam-den-1.jpg" />
+    <Content Include="Content\Images\ao-thun-nam-den-2.jpg" />
+    <Content Include="Content\Images\ao-thun-nam-den-3.jpg" />
+    <Content Include="Content\Images\ao-thun-nam-den-4.jpg" />
+    <Content Include="Content\Images\ao-thun-nu-luoi-hong-1.jpg" />
+    <Content Include="Content\Images\ao-thun-nu-luoi-hong-2.jpg" />
+    <Content Include="Content\Images\ao-thun-nu-luoi-hong-3.jpg" />
+    <Content Include="Content\Images\ao-thun-nu-luoi-hong-4.jpg" />
+    <Content Include="Content\Images\applied-collagen-1.jpg" />
+    <Content Include="Content\Images\applied-collagen-2.jpg" />
+    <Content Include="Content\Images\applied-collagen-3.jpg" />
+    <Content Include="Content\Images\applied-collagen-4.jpg" />
+    <Content Include="Content\Images\arrow.png" />
+    <Content Include="Content\Images\back.png" />
+    <Content Include="Content\Images\bang-goi-1.jpg" />
+    <Content Include="Content\Images\bang-goi-2.jpg" />
+    <Content Include="Content\Images\bang-goi-3.jpg" />
+    <Content Include="Content\Images\bang-goi-4.jpg" />
+    <Content Include="Content\Images\bang-khuyu-tay-1.jpg" />
+    <Content Include="Content\Images\bang-khuyu-tay-2.jpg" />
+    <Content Include="Content\Images\bang-khuyu-tay-3.jpg" />
+    <Content Include="Content\Images\bang-khuyu-tay-4.jpg" />
+    <Content Include="Content\Images\binh-nuoc-1lit5-1.jpg" />
+    <Content Include="Content\Images\binh-nuoc-1lit5-2.jpg" />
+    <Content Include="Content\Images\binh-nuoc-1lit5-3.jpg" />
+    <Content Include="Content\Images\binh-nuoc-1lit5-4.jpg" />
+    <Content Include="Content\Images\bo-day-band-5muc-1.jpg" />
+    <Content Include="Content\Images\bo-day-band-5muc-2.jpg" />
+    <Content Include="Content\Images\bo-day-band-5muc-3.jpg" />
+    <Content Include="Content\Images\bo-day-band-5muc-4.jpg" />
+    <Content Include="Content\Images\bong-yoga-65cm-1.jpg" />
+    <Content Include="Content\Images\bong-yoga-65cm-2.jpg" />
+    <Content Include="Content\Images\bong-yoga-65cm-3.jpg" />
+    <Content Include="Content\Images\bong-yoga-65cm-4.jpg" />
+    <Content Include="Content\Images\Boxing.jpg" />
+    <Content Include="Content\Images\cod.png" />
+    <Content Include="Content\Images\con-lan-bung-1.jpg" />
+    <Content Include="Content\Images\con-lan-bung-2.jpg" />
+    <Content Include="Content\Images\con-lan-bung-3.jpg" />
+    <Content Include="Content\Images\con-lan-bung-4.jpg" />
+    <Content Include="Content\Images\curse-preworkout-facts-4.jpg" />
+    <Content Include="Content\Images\curse-preworkout-punch-1.jpg" />
+    <Content Include="Content\Images\curse-preworkout-punch-2.jpg" />
+    <Content Include="Content\Images\curse-preworkout-punch-3.jpg" />
+    <Content Include="Content\Images\dai-lung-cung-da-1.jpg" />
+    <Content Include="Content\Images\dai-lung-cung-da-2.jpg" />
+    <Content Include="Content\Images\dai-lung-cung-da-3.jpg" />
+    <Content Include="Content\Images\dai-lung-cung-da-4.jpg" />
+    <Content Include="Content\Images\dai-lung-mem-1.jpg" />
+    <Content Include="Content\Images\dai-lung-mem-2.jpg" />
+    <Content Include="Content\Images\dai-lung-mem-3.jpg" />
+    <Content Include="Content\Images\dai-lung-mem-4.jpg" />
+    <Content Include="Content\Images\day-keo-lung-1.jpg" />
+    <Content Include="Content\Images\day-keo-lung-2.jpg" />
+    <Content Include="Content\Images\day-keo-lung-3.jpg" />
+    <Content Include="Content\Images\day-keo-lung-4.jpg" />
+    <Content Include="Content\Images\day-nhay-toc-do-1.jpg" />
+    <Content Include="Content\Images\day-nhay-toc-do-2.jpg" />
+    <Content Include="Content\Images\day-nhay-toc-do-3.jpg" />
+    <Content Include="Content\Images\day-nhay-toc-do-4.jpg" />
+    <Content Include="Content\Images\day-quan-co-tay-1.jpg" />
+    <Content Include="Content\Images\day-quan-co-tay-2.jpg" />
+    <Content Include="Content\Images\day-quan-co-tay-3.jpg" />
+    <Content Include="Content\Images\day-quan-co-tay-4.jpg" />
+    <Content Include="Content\Images\Dụng cụ tập nhỏ.png" />
+    <Content Include="Content\Images\foam-roller-gai-1.jpg" />
+    <Content Include="Content\Images\foam-roller-gai-2.jpg" />
+    <Content Include="Content\Images\foam-roller-gai-3.jpg" />
+    <Content Include="Content\Images\foam-roller-gai-4.jpg" />
+    <Content Include="Content\Images\gach-yoga-1.jpg" />
+    <Content Include="Content\Images\gach-yoga-2.jpg" />
+    <Content Include="Content\Images\gach-yoga-3.jpg" />
+    <Content Include="Content\Images\gach-yoga-4.jpg" />
+    <Content Include="Content\Images\gang-tay-nam-cuon-co-tay-1.jpg" />
+    <Content Include="Content\Images\gang-tay-nam-cuon-co-tay-2.jpg" />
+    <Content Include="Content\Images\gang-tay-nam-cuon-co-tay-3.jpg" />
+    <Content Include="Content\Images\gang-tay-nam-cuon-co-tay-4.jpg" />
+    <Content Include="Content\Images\gang-tay-nu-hong-1.jpg" />
+    <Content Include="Content\Images\gang-tay-nu-hong-2.jpg" />
+    <Content Include="Content\Images\gang-tay-nu-hong-3.jpg" />
+    <Content Include="Content\Images\gang-tay-nu-hong-4.jpg" />
+    <Content Include="Content\Images\isoxp-cafelatte-1.jpg" />
+    <Content Include="Content\Images\isoxp-cafelatte-2.jpg" />
+    <Content Include="Content\Images\isoxp-cafelatte-3.jpg" />
+    <Content Include="Content\Images\isoxp-facts-4.jpg" />
+    <Content Include="Content\Images\khan-lanh-1.jpg" />
+    <Content Include="Content\Images\khan-lanh-2.jpg" />
+    <Content Include="Content\Images\khan-lanh-3.jpg" />
+    <Content Include="Content\Images\khan-lanh-4.jpg" />
+    <Content Include="Content\Images\logo.png" />
+    <Content Include="Content\Images\mastercard.png" />
+    <Content Include="Content\Images\minus-sign.png" />
+    <Content Include="Content\Images\money.png" />
+    <Content Include="Content\Images\mu-the-thao-den-1.jpg" />
+    <Content Include="Content\Images\mu-the-thao-den-2.jpg" />
+    <Content Include="Content\Images\mu-the-thao-den-3.jpg" />
+    <Content Include="Content\Images\mu-the-thao-den-4.jpg" />
+    <Content Include="Content\Images\mutant-mass-choco-1.jpg" />
+    <Content Include="Content\Images\mutant-mass-choco-2.jpg" />
+    <Content Include="Content\Images\mutant-mass-choco-3.jpg" />
+    <Content Include="Content\Images\mutant-mass-facts-4.jpg" />
+    <Content Include="Content\Images\New Combat.jpg" />
+    <Content Include="Content\Images\New Pump.jpg" />
+    <Content Include="Content\Images\nike-brasilia-bag-den-1.jpg" />
+    <Content Include="Content\Images\nike-brasilia-bag-den-2.jpg" />
+    <Content Include="Content\Images\nike-brasilia-bag-den-3.jpg" />
+    <Content Include="Content\Images\nike-brasilia-bag-den-4.jpg" />
+    <Content Include="Content\Images\nike-cap-heritage-trang-1.jpg" />
+    <Content Include="Content\Images\nike-cap-heritage-trang-2.jpg" />
+    <Content Include="Content\Images\nike-cap-heritage-trang-3.jpg" />
+    <Content Include="Content\Images\nike-cap-heritage-trang-4.jpg" />
+    <Content Include="Content\Images\nike-dri-fit-short-xam-1.jpg" />
+    <Content Include="Content\Images\nike-dri-fit-short-xam-2.jpg" />
+    <Content Include="Content\Images\nike-dri-fit-short-xam-3.jpg" />
+    <Content Include="Content\Images\nike-dri-fit-short-xam-4.jpg" />
+    <Content Include="Content\Images\nike-gloves-nam-1.jpg" />
+    <Content Include="Content\Images\nike-gloves-nam-2.jpg" />
+    <Content Include="Content\Images\nike-gloves-nam-3.jpg" />
+    <Content Include="Content\Images\nike-gloves-nam-4.jpg" />
+    <Content Include="Content\Images\nike-indy-bra-trang-1.jpg" />
+    <Content Include="Content\Images\nike-indy-bra-trang-2.jpg" />
+    <Content Include="Content\Images\nike-indy-bra-trang-3.jpg" />
+    <Content Include="Content\Images\nike-indy-bra-trang-4.jpg" />
+    <Content Include="Content\Images\nike-one-legging-nu-den-1.jpg" />
+    <Content Include="Content\Images\nike-one-legging-nu-den-2.jpg" />
+    <Content Include="Content\Images\nike-one-legging-nu-den-3.jpg" />
+    <Content Include="Content\Images\nike-one-legging-nu-den-4.jpg" />
+    <Content Include="Content\Images\nike-pro-dri-fit-den-1.jpg" />
+    <Content Include="Content\Images\nike-pro-dri-fit-den-2.jpg" />
+    <Content Include="Content\Images\nike-pro-dri-fit-den-3.jpg" />
+    <Content Include="Content\Images\nike-pro-dri-fit-den-4.jpg" />
+    <Content Include="Content\Images\nike-pro-tights-nam-1.jpg" />
+    <Content Include="Content\Images\nike-pro-tights-nam-2.jpg" />
+    <Content Include="Content\Images\nike-pro-tights-nam-3.jpg" />
+    <Content Include="Content\Images\nike-pro-tights-nam-4.jpg" />
+    <Content Include="Content\Images\nike-socks-combo-1.jpg" />
+    <Content Include="Content\Images\nike-socks-combo-2.jpg" />
+    <Content Include="Content\Images\nike-socks-combo-3.jpg" />
+    <Content Include="Content\Images\nike-socks-combo-4.jpg" />
+    <Content Include="Content\Images\nike-tech-fleece-den-1.jpg" />
+    <Content Include="Content\Images\nike-tech-fleece-den-2.jpg" />
+    <Content Include="Content\Images\nike-tech-fleece-den-3.jpg" />
+    <Content Include="Content\Images\nike-tech-fleece-den-4.jpg" />
+    <Content Include="Content\Images\now-omega3-1.jpg" />
+    <Content Include="Content\Images\now-omega3-2.jpg" />
+    <Content Include="Content\Images\now-omega3-3.jpg" />
+    <Content Include="Content\Images\now-omega3-facts-4.jpg" />
+    <Content Include="Content\Images\now-vitd3-1.jpg" />
+    <Content Include="Content\Images\now-vitd3-2.jpg" />
+    <Content Include="Content\Images\now-vitd3-3.jpg" />
+    <Content Include="Content\Images\now-vitd3-4.jpg" />
+    <Content Include="Content\Images\nutrabolics-eaa-1.jpg" />
+    <Content Include="Content\Images\nutrabolics-eaa-2.jpg" />
+    <Content Include="Content\Images\nutrabolics-eaa-3.jpg" />
+    <Content Include="Content\Images\nutrabolics-eaa-4.jpg" />
+    <Content Include="Content\Images\on-protein-bar-box-1.jpg" />
+    <Content Include="Content\Images\on-protein-bar-facts-4.jpg" />
+    <Content Include="Content\Images\on-protein-bar-single-2.jpg" />
+    <Content Include="Content\Images\on-protein-bar-single-3.jpg" />
+    <Content Include="Content\Images\on-serious-mass-banana-1.jpg" />
+    <Content Include="Content\Images\on-serious-mass-banana-2.jpg" />
+    <Content Include="Content\Images\on-serious-mass-banana-3.jpg" />
+    <Content Include="Content\Images\on-serious-mass-banana-4.jpg" />
+    <Content Include="Content\Images\on-serious-mass-facts-4.jpg" />
+    <Content Include="Content\Images\on-whey-facts-4.jpg" />
+    <Content Include="Content\Images\on-whey-vanilla-1.jpg" />
+    <Content Include="Content\Images\on-whey-vanilla-2.jpg" />
+    <Content Include="Content\Images\on-whey-vanilla-3.jpg" />
+    <Content Include="Content\Images\online-payment.png" />
+    <Content Include="Content\Images\Phụ kiện tập luyện.png" />
+    <Content Include="Content\Images\plus.png" />
+    <Content Include="Content\Images\poster.jpeg" />
+    <Content Include="Content\Images\poster1.jpeg" />
+    <Content Include="Content\Images\poster2.jpeg" />
+    <Content Include="Content\Images\poster3.jpeg" />
+    <Content Include="Content\Images\poster4.jpeg" />
+    <Content Include="Content\Images\poster5.jpeg" />
+    <Content Include="Content\Images\PosterProduct.jpeg" />
+    <Content Include="Content\Images\power-band-vang-1.jpg" />
+    <Content Include="Content\Images\power-band-vang-2.jpg" />
+    <Content Include="Content\Images\power-band-vang-3.jpg" />
+    <Content Include="Content\Images\power-band-vang-4.jpg" />
+    <Content Include="Content\Images\promotion1.jpg" />
+    <Content Include="Content\Images\promotion2.jpg" />
+    <Content Include="Content\Images\promotion3.jpg" />
+    <Content Include="Content\Images\promotion4.jpg" />
+    <Content Include="Content\Images\qr-code.png" />
+    <Content Include="Content\Images\quan-dui-nam-xam-1.jpg" />
+    <Content Include="Content\Images\quan-dui-nam-xam-2.jpg" />
+    <Content Include="Content\Images\quan-dui-nam-xam-3.jpg" />
+    <Content Include="Content\Images\quan-dui-nam-xam-4.jpg" />
+    <Content Include="Content\Images\quan-jogger-nam-xam-1.jpg" />
+    <Content Include="Content\Images\quan-jogger-nam-xam-2.jpg" />
+    <Content Include="Content\Images\quan-jogger-nam-xam-3.jpg" />
+    <Content Include="Content\Images\quan-jogger-nam-xam-4.jpg" />
+    <Content Include="Content\Images\quan-legging-nam-den-1.jpg" />
+    <Content Include="Content\Images\quan-legging-nam-den-2.jpg" />
+    <Content Include="Content\Images\quan-legging-nam-den-3.jpg" />
+    <Content Include="Content\Images\quan-legging-nam-den-4.jpg" />
+    <Content Include="Content\Images\quan-legging-nu-den-1.jpg" />
+    <Content Include="Content\Images\quan-legging-nu-den-2.jpg" />
+    <Content Include="Content\Images\quan-legging-nu-den-3.jpg" />
+    <Content Include="Content\Images\quan-legging-nu-den-4.jpg" />
+    <Content Include="Content\Images\quan-short-nu-xanh-1.jpg" />
+    <Content Include="Content\Images\quan-short-nu-xanh-2.jpg" />
+    <Content Include="Content\Images\quan-short-nu-xanh-3.jpg" />
+    <Content Include="Content\Images\quan-short-nu-xanh-4.jpg" />
+    <Content Include="Content\Images\Quần áo tập luyện.png" />
+    <Content Include="Content\Images\rule1-casein-choco-1.jpg" />
+    <Content Include="Content\Images\rule1-casein-choco-2.jpg" />
+    <Content Include="Content\Images\rule1-casein-choco-3.jpg" />
+    <Content Include="Content\Images\rule1-casein-facts-4.jpg" />
+    <Content Include="Content\Images\rule1-creatine-1.jpg" />
+    <Content Include="Content\Images\rule1-creatine-2.jpg" />
+    <Content Include="Content\Images\rule1-creatine-3.jpg" />
+    <Content Include="Content\Images\rule1-creatine-4.jpg" />
+    <Content Include="Content\Images\rule1-whey-choco-1.jpg" />
+    <Content Include="Content\Images\rule1-whey-choco-2.jpg" />
+    <Content Include="Content\Images\rule1-whey-choco-3.jpg" />
+    <Content Include="Content\Images\rule1-whey-facts-4.jpg" />
+    <Content Include="Content\Images\search.png" />
+    <Content Include="Content\Images\shaker-3ngan-den-1.jpg" />
+    <Content Include="Content\Images\shaker-3ngan-den-2.jpg" />
+    <Content Include="Content\Images\shaker-3ngan-den-3.jpg" />
+    <Content Include="Content\Images\shaker-3ngan-den-4.jpg" />
+    <Content Include="Content\Images\tat-co-cao-combo-1.jpg" />
+    <Content Include="Content\Images\tat-co-cao-combo-2.jpg" />
+    <Content Include="Content\Images\tat-co-cao-combo-3.jpg" />
+    <Content Include="Content\Images\tat-co-cao-combo-4.jpg" />
+    <Content Include="Content\Images\tham-yoga-tpe-1.jpg" />
+    <Content Include="Content\Images\tham-yoga-tpe-2.jpg" />
+    <Content Include="Content\Images\tham-yoga-tpe-3.jpg" />
+    <Content Include="Content\Images\tham-yoga-tpe-4.jpg" />
+    <Content Include="Content\Images\Thực phẩm bổ sung.png" />
+    <Content Include="Content\Images\tui-the-thao-den-1.jpg" />
+    <Content Include="Content\Images\tui-the-thao-den-2.jpg" />
+    <Content Include="Content\Images\tui-the-thao-den-3.jpg" />
+    <Content Include="Content\Images\tui-the-thao-den-4.jpg" />
+    <Content Include="Content\Images\user.png" />
+    <Content Include="Content\Images\user1.png" />
+    <Content Include="Content\Images\user2.png" />
+    <Content Include="Content\Images\user3.png" />
+    <Content Include="Content\Images\visa.png" />
+    <Content Include="Content\Images\xtend-bcaa-facts-4.jpg" />
+    <Content Include="Content\Images\xtend-bcaa-watermelon-1.jpg" />
+    <Content Include="Content\Images\xtend-bcaa-watermelon-2.jpg" />
+    <Content Include="Content\Images\xtend-bcaa-watermelon-3.jpg" />
+    <Content Include="Content\Images\Yoga.jpg" />
+    <Content Include="favicon.ico" />
+    <Content Include="Global.asax" />
+    <Content Include="Content\Layout.css" />
+    <Content Include="Models\QL_PHONGGYM.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+      <LastGenOutput>QL_PHONGGYM.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Models\QL_PHONGGYM.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+      <LastGenOutput>QL_PHONGGYM.cs</LastGenOutput>
+    </Content>
+    <Content Include="Scripts\bootstrap.bundle.js" />
+    <Content Include="Scripts\bootstrap.bundle.min.js" />
+    <Content Include="Scripts\bootstrap.esm.js" />
+    <Content Include="Scripts\bootstrap.esm.min.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <EntityDeploy Include="Models\QL_PHONGGYM.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>QL_PHONGGYM.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Models\QL_PHONGGYM.edmx.diagram">
+      <DependentUpon>QL_PHONGGYM.edmx</DependentUpon>
+    </Content>
+    <None Include="Oracle.DataAccess.Common.Configuration.Section.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Oracle.ManagedDataAccess.Client.Configuration.Section.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\jquery-3.7.0.js" />
+    <Content Include="Scripts\jquery-3.7.0.min.js" />
+    <Content Include="Scripts\jquery-3.7.0.slim.js" />
+    <Content Include="Scripts\jquery-3.7.0.slim.min.js" />
+    <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Web.config" />
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Views\Home\Contact.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Account\Register.cshtml" />
+    <Content Include="Views\Product\BrandMenu.cshtml" />
+    <Content Include="Views\Product\CategoriesMenu.cshtml" />
+    <Content Include="Views\Product\ClassMenu.cshtml" />
+    <Content Include="Views\Product\OriginMenu.cshtml" />
+    <Content Include="Views\Product\Product.cshtml" />
+    <Content Include="Views\Product\ProductDetail.cshtml" />
+    <Content Include="Views\Shared\_LayoutPageCart.cshtml" />
+    <Content Include="Views\CartCheckout\ToCheckOut.cshtml" />
+    <Content Include="Views\CartCheckout\ThanhToan.cshtml" />
+    <Content Include="Views\CartCheckout\ThanhToanfinal.cshtml" />
+    <Content Include="Views\CartCheckout\ThanhToanThanhCong.cshtml" />
+    <Content Include="Views\Shared\_LayoutLogin.cshtml" />
+    <Content Include="Views\Shared\_LayoutStaff.cshtml" />
+    <Content Include="Views\Staff\HoaDon.cshtml" />
+    <Content Include="Views\Staff\SanPham.cshtml" />
+    <Content Include="Views\Staff\Login.cshtml" />
+    <Content Include="Views\Shared\_LayoutAdmin.cshtml" />
+    <Content Include="Views\Admin\NguoiDung.cshtml" />
+    <Content Include="Views\Admin\ThemNguoiDung.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Views\Default\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\bootstrap.rtl.min.css.map" />
+    <Content Include="Content\bootstrap.rtl.css.map" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.css.map" />
+    <Content Include="Content\bootstrap-utilities.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.css.map" />
+    <Content Include="Content\bootstrap-reboot.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.css.map" />
+    <Content Include="Content\bootstrap-grid.min.css.map" />
+    <Content Include="Content\bootstrap-grid.css.map" />
+    <None Include="packages.config" />
+    <Content Include="Scripts\bootstrap.min.js.map" />
+    <Content Include="Scripts\bootstrap.js.map" />
+    <Content Include="Scripts\bootstrap.esm.min.js.map" />
+    <Content Include="Scripts\bootstrap.esm.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.js.map" />
+    <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
+    <Content Include="Scripts\jquery-3.7.0.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>56574</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>https://localhost:44340/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

@@ -1,0 +1,179 @@
+﻿@model IEnumerable<UserApp.ViewModel.GioHangViewModel>
+
+@{
+    ViewBag.Title = "ThanhToan";
+    Layout = "~/Views/Shared/_LayoutPageCart.cshtml";
+    var giamGia = @Model.Sum(sp => sp.ThanhTien) * @ViewBag.LoaiKh.MUCGIAM / 100;
+    var ThanhTien = @Model.Sum(sp => sp.ThanhTien) - (@Model.Sum(sp => sp.ThanhTien) * @ViewBag.LoaiKh.MUCGIAM / 100);
+}
+<style>
+    #Email:focus {
+        outline: none;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+        outline: none;
+        border-color: #0dcaf0 !important;
+    }
+
+    select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+<form id="shippingForm" action="@Url.Action("TaoHoaDon", "CartCheckout")" method="post">
+    @Html.AntiForgeryToken()
+    <input name="tongTien" value="@Model.Sum(sp => sp.ThanhTien)" hidden />
+    <input name="thanhTien" value="@ThanhTien" hidden />
+    <input name="giamGia" value="@giamGia" hidden />
+    <div class="mt-2 d-flex flex-column mx-auto justify-content-center px-5" style="margin-top: 200px; margin-bottom: 300px; width: 40rem">
+        <div class="py-3 position-relative border-bottom border-1">
+            <a href="@Url.Action("ThanhToan", "CartCheckout")" class="text-decoration-none position-absolute">
+                <img src="@Url.Content("~/Content/Images/back.png")" style="width: 1.6rem; left: 3rem" />
+            </a>
+            <div class="w-100 text-center">
+                <span class="fs-5 fw-bold text-black">Thanh toán</span>
+            </div>
+        </div>
+        <div class="p-1 d-flex gap-3 justify-content-center w-100">
+
+            <div class="text-center p-1 border-bottom border-3 fs-6 fw-bolder text-uppercase w-50" style="border-color: #c2bfbf; color: #c2bfbf ">
+                1. Thông tin
+            </div>
+            <div class="text-center p-1 border-bottom border-3 border-info fs-6 fw-bolder text-info text-uppercase w-50">
+                2. Thanh toán
+            </div>
+        </div>
+
+        <div class="mt-3 w-100 border-1 rounded-3 border p-3">
+            <div class="d-flex justify-content-between">
+                <span class="fs-6 text-muted">Số lượng sản phẩm</span>
+                <span class="fs-6">@Model.Sum(sp => sp.SoLuong)</span>
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+                <span class="fs-6 text-muted">Tổng tiền hàng</span>
+                <span class="fs-6">@Model.Sum(sp => sp.ThanhTien).ToString("N0")đ</span>
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+                <span class="fs-6 text-muted">Phí vận chuyển</span>
+                <span class="fs-6">Miễn phí</span>
+            </div>
+            <div class="d-flex justify-content-between mt-3 py-3 border-top border-bottom border-1 border-secondary">
+                <span class="fs-6 text-muted">Giảm giá trực tiếp</span>
+
+                <span class="fs-6 text-danger">- @giamGia.ToString("N0")đ</span>
+            </div>
+            <div class="d-flex justify-content-between mt-3 py-3">
+                <span class="fs-6 fw-bolder">Tổng tiền</span>
+
+                <span class="fs-6 fw-bolder">@ThanhTien.ToString("N0")đ</span>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-uppercase">Thông tin thanh toán</span>
+            <div class="bg-white mt-2">
+                <div class="payment-option p-3 border rounded-3 mb-3" data-payment="COD">
+                    <div class="d-flex align-items-center gap-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="codPayment" value="COD" checked>
+                        <label class="form-check-label flex-grow-1" for="codPayment" style="cursor: pointer;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-light rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-cash" viewBox="0 0 16 16">
+                                            <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+                                            <path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Thanh toán khi nhận hàng</div>
+                                        <small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Phương thức 2: Chuyển khoản ngân hàng -->
+                <div class="payment-option p-3 border rounded-3" data-payment="BANK">
+                    <div class="d-flex align-items-center gap-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="bankTransfer" value="BANK">
+                        <label class="form-check-label flex-grow-1" for="bankTransfer" style="cursor: pointer;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-light rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-qr-code" viewBox="0 0 16 16">
+                                            <path d="M2 2h2v2H2z" />
+                                            <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+                                            <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+                                            <path d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z" />
+                                            <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Chuyển khoản ngân hàng</div>
+                                        <small class="text-muted">Quét mã QR để thanh toán</small>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-uppercase">Thông tin nhận hàng</span>
+                <div class="bg-white border-1 rounded-3 border mt-2 p-3">
+                    <div class="d-flex justify-content-between p-0">
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-6 text-muted">Khách hàng</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            @if (ViewBag.LoaiKh != null)
+                            {
+                                <div class="border-1 border border-primary rounded-2 p-1 small text-primary">@ViewBag.LoaiKh.TENLOAI</div>
+                            }
+                            <span class="fs-6">@ViewBag.Khachhang.TENKH</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between p-0 mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-6 text-muted">Số điện thoại</span>
+                        </div>
+                        <span class="fs-6">@ViewBag.Khachhang.SDT</span>
+                    </div>
+                    <div class="d-flex justify-content-between p-0 mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-6 text-muted">Email</span>
+                        </div>
+                        <span class="fs-6">@ViewBag.Khachhang.EMAIL</span>
+                    </div>
+                    <div class="d-flex justify-content-between p-0 mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-6 text-muted">Nhận hàng tại</span>
+                        </div>
+                        <div class="w-75 text-wrap text-end">
+                            <span class="fs-6">@ViewBag.DiaChi.DIACHICUTHE, @ViewBag.DiaChi.PHUONGXA, @ViewBag.DiaChi.QUANHUYEN, @ViewBag.DiaChi.TINHTHANHPHO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-5 mx-auto px-5 fixed-bottom rounded-3" style="margin-top: 200px; width: 40rem">
+            <div class="d-flex w-100 bg-light px-2 py-2 flex-column">
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bolder fs-6">Tổng tiền tạm tính: </span>
+                    <span class="text-info fw-bolder">@ThanhTien.ToString("N0")đ VNĐ</span>
+                </div>
+                <div class="py-2 w-100">
+                    <button id="continueBtn" class="btn btn-primary text-white text-center w-100">Thanh toán</button>
+                </div>
+            </div>
+        </div>
+</form>
+

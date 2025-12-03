@@ -1,0 +1,144 @@
+﻿@model IEnumerable<UserApp.ViewModel.SanPhamViewModel>
+
+@{
+    ViewBag.Title = "Product";
+}
+<style>
+    .sort-btn:hover {
+        color: #06a6ed;
+    }
+</style>
+<div class="container bg-white mx-auto p-3 d-flex flex-column">
+    <div class="mb-3 w-75">
+        <span class="text-uppercase fs-1 fw-bold">Everything You Need</span>
+        <p class="mt-2 fw-normal fs-5" style="font-family:Arial">Gear up for every workout with our essentials: Supplements (protein, pre-workouts), performance Workout Apparel, key Training Accessories (gloves, shakers, bags), and Small Training Equipment like bands and rollers. Hit your goals equipped.</p>
+    </div>
+    <img class="img-fluid mb-5" src="@Url.Content("~/Content/Images/PosterProduct.jpeg")" />
+    <div class="container bg-white mx-auto p-0 row d-flex justify-content-between">
+        <div class="col-2" style="flex: 0 0 auto; width: 16%;">
+            <div class="text-start d-flex flex-column border-bottom border-1 py-3 border-end pe-3" style="border-color: #d3d3d3">
+                <span class="text-uppercase mb-3">Ưu đãi</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <input name="khuyenmai" type="checkbox" class="form-check-input m-0" id="khuyenmai" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="khuyenmai">Khuyến mãi</label>
+                </div>
+            </div>
+            <div class="text-start d-flex flex-column border-bottom border-1 py-3 border-end pe-3" style="border-color: #d3d3d3">
+                <span class="text-uppercase mb-3">Tồn kho</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <input name="conhang" type="checkbox" class="form-check-input m-0" id="conhang" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="conhang">Còn hàng</label>
+                </div>
+            </div>
+            <div class="text-start d-flex flex-column border-bottom border-1 py-3 border-end pe-3" style="border-color: #d3d3d3">
+                <span class="text-uppercase mb-3">Giá</span>
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input name="gia" type="checkbox" class="form-check-input m-0" id="gia-duoi-100k" value="0-100000" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="gia-duoi-100k">Dưới 100.000đ</label>
+                </div>
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input name="gia" type="checkbox" class="form-check-input m-0" id="gia-100k-300k" value="100000-300000" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="gia-100k-300k">100.000đ - 300.000đ</label>
+                </div>
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input name="gia" type="checkbox" class="form-check-input m-0" id="gia-300k-500k" value="300000-500000" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="gia-300k-500k">300.000đ - 500.000đ</label>
+                </div>
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input name="gia" type="checkbox" class="form-check-input m-0" id="gia-500k-1tr" value="500000-1000000" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="gia-500k-1tr">500.000đ - 1.000.000đ</label>
+                </div>
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input name="gia" type="checkbox" class="form-check-input m-0" id="gia-tren-1tr" value="1000000-999999999" style="width: 16px; height: 16px; flex-shrink: 0;" />
+                    <label class="small mb-0" for="gia-tren-1tr">Trên 1.000.000đ</label>
+                </div>
+            </div>
+            <div class="text-start d-flex flex-column border-bottom border-1 py-3 border-end pe-3" style="border-color: #d3d3d3">
+                <span class="text-uppercase mb-3">Loại sản phẩm</span>
+                @if (ViewBag.LoaiSP != null)
+                {
+                    foreach (var item in ViewBag.LoaiSP)
+                    {
+                        <div class="d-flex gap-2 mb-2 align-items-center">
+                            <input name="loaisanpham" type="checkbox" class="form-check-input m-0"
+                                   id="loai-@item.MALOAISP" value="@item.TENLOAISP"
+                                   style="width: 16px; height: 16px; flex-shrink: 0;" />
+                            <label class="small mb-0" for="loai-@item.MALOAISP">@item.TENLOAISP</label>
+                        </div>
+                    }
+                }
+            </div>
+            @if (ViewBag.Hang != null && ((IEnumerable<string>)ViewBag.Hang).Count() > 1)
+            {
+                <div class="text-start d-flex flex-column border-1 py-3 border-end pe-3" style="border-color: #d3d3d3">
+                    <span class="text-uppercase mb-3">Hãng</span>
+                    @foreach (var item in ViewBag.Hang)
+                    {
+                        <div class="d-flex gap-2 mb-2 align-items-center">
+                            <input name="hang" type="checkbox" class="form-check-input m-0"
+                                   id="hang-@item.Replace(" ", "-")" value="@item"
+                                   style="width: 16px; height: 16px; flex-shrink: 0;" />
+                            <label class="small mb-0" for="hang-@item.Replace(" ", "-")">@item</label>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="col-10 ps-2">
+            <div class="d-flex gap-3 mb-3">
+                <span>Sắp xếp: </span>
+                <button class="border-0 sort-btn bg-transparent p-0 small">Tên A → Z</button>
+                <button class="border-0 sort-btn bg-transparent p-0 small">Tên Z → A</button>
+                <button class="border-0 sort-btn bg-transparent p-0 small">Giá tăng dần</button>
+                <button class="border-0 sort-btn bg-transparent p-0 small">Giá giảm dần</button>
+            </div>
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2">
+                @foreach (var item in Model)
+                {
+                    <div class="col">
+                        <a href="@Url.Action("ProductDetail", "Product", new { id = item.MaSP })"
+                           class="card h-100 border-1 text-decoration-none">
+                            <div class="position-relative">
+                                <img src="@Url.Content("~/Content/Images/" + item.UrlHinhAnhChinh)"
+                                     class="card-img-top" alt="@item.TenSP" style="object-fit: cover; height: 16rem;">
+                                <span class="badge bg-white text-dark position-absolute bottom-0 start-0 m-2 small fw-semibold">
+                                    @item.XuatXu
+                                </span>
+                            </div>
+                            <div class="card-body p-2">
+                                <div style="height: 4rem">
+                                    <div class="fw-bold small text-dark">@item.TenSP</div>
+                                    <div class="text-secondary small">@item.Hang</div>
+                                </div>
+                                @if (item.SoLuongTon == 0)
+                                {
+                                    <div class="fw-bold text-muted mt-1">
+                                        <span class="badge bg-secondary">Hết hàng</span>
+                                    </div>
+                                }
+                                else if (item.GiaKhuyenMai != null && item.GiaKhuyenMai < item.DonGia)
+                                {
+                                    <div class="fw-bold text-danger mt-1">
+                                        @item.GiaKhuyenMai.Value.ToString("N0").Replace(",", ".").Replace("'", ".") VNĐ
+                                        <span class="text-secondary text-decoration-line-through ms-1 small">
+                                            @item.DonGia.ToString("N0").Replace(",", ".").Replace("'", ".") VNĐ
+                                        </span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="fw-bold text-dark mt-1">@item.DonGia.ToString("N0").Replace(",", ".").Replace("'", ".") VNĐ</div>
+                                }
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <hr class="mt-5" />
+    <div class="w-100">
+        <span class="text-uppercase fs-5 fw-bold">Gym Accessories</span>
+        <p class="mt-2 fw-normal fs-6 me-3" style="font-family:Arial">Explore our collection of essential gym accessories designed to support every workout. Keep sweat managed with absorbent gym towels, stay hydrated with our durable water bottles and shakers, and carry your gear in style with functional gym bags. Don't forget performance boosters like gloves, lifting belts, and straps. Pair these necessities with our performance workout apparel for outfits that help you train at your best. Elevate your workouts with the right gear.</p>
+    </div>
+</div>

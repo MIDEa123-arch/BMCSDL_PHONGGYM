@@ -1,0 +1,122 @@
+﻿body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0,0,0,0.8)' stroke-width='2' stroke-linecap='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.form-control:focus,
+.btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.login-btn {
+    background-color: #f3f3f3;
+    width: 150px;
+    border-radius: 6px;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .login-btn:hover {
+        background-color: #e6e6e6;
+    }
+
+/* ===== SIDEBAR MENU CHO DANH MỤC ===== */
+.danhmuc .dropdown-menu.danhmuc-dropdown {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 350px !important;
+    max-width: 350px !important;
+    min-width: 350px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    background-color: #fff !important;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2) !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+    z-index: 1050 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 20px 0 20px 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    inset: 0 auto auto 0 !important;
+}
+
+    .danhmuc .dropdown-menu.danhmuc-dropdown.show {
+        transform: translateX(0) !important;
+        display: block !important;
+    }
+
+    .danhmuc .dropdown-menu.danhmuc-dropdown li {
+        list-style: none;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .danhmuc .dropdown-menu.danhmuc-dropdown a.dropdown-item {
+        font-size: 16px !important;
+        color: #333 !important;
+        transition: all 0.2s ease !important;
+        border-left: 3px solid transparent !important;
+        background-color: transparent !important;
+        white-space: normal !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+        .danhmuc .dropdown-menu.danhmuc-dropdown a.dropdown-item:hover {
+            background-color: #f8f9fa !important;
+            color: #0d6efd !important;
+            border-left-color: #0d6efd !important;
+            padding-left: 25px !important;
+        }
+
+        /* Style cho hình ảnh và text trong menu item */
+        .danhmuc .dropdown-menu.danhmuc-dropdown a.dropdown-item img {
+            object-fit: cover !important;
+            flex-shrink: 0 !important;
+        }
+
+        .danhmuc .dropdown-menu.danhmuc-dropdown a.dropdown-item span {
+            font-size: 17px;
+            flex: 1 !important;
+            font-weight: 500 !important;
+        }
+
+/* ===== DỊCH VỤ DROPDOWN ===== */
+.dich-vu-dropdown:hover > .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.dich-vu-dropdown .dropdown-submenu {
+    position: relative;
+}
+
+    .dich-vu-dropdown .dropdown-submenu > .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 100%;
+        margin-left: 0.1rem;
+    }
+
+    .dich-vu-dropdown .dropdown-submenu:hover > .dropdown-menu {
+        display: block;
+    }

@@ -1,0 +1,297 @@
+﻿@model IEnumerable<UserApp.ViewModel.GioHangViewModel>
+
+@{
+    ViewBag.Title = "ThanhToan";
+    Layout = "~/Views/Shared/_LayoutPageCart.cshtml";
+}
+<style>
+    .form-select:focus {
+        box-shadow: none !important;
+        border-color: #17a2b8 !important;
+    }
+
+    #Email:focus {
+        outline: none;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+        outline: none;
+        border-color: #0dcaf0 !important;
+    }
+
+    select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+<form id="shippingForm" action="@Url.Action("ThanhToanfinal", "CartCheckout")" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mt-2 d-flex flex-column mx-auto justify-content-center px-5" style="margin-top: 200px; margin-bottom: 300px; width: 40rem">
+        <div class="py-3 position-relative border-bottom border-1">
+            <a href="@Url.Action("ToCheckOut", "CartCheckout")" class="text-decoration-none position-absolute">
+                <img src="@Url.Content("~/Content/Images/back.png")" style="width: 1.6rem; left: 3rem" />
+            </a>
+            <div class="w-100 text-center">
+                <span class="fs-5 fw-bold text-black">Thông tin</span>
+            </div>
+        </div>
+        <div class="p-1 d-flex gap-3 justify-content-center w-100">
+            <div class="text-center p-1 border-bottom border-3 border-info fs-6 fw-bolder text-info text-uppercase w-50">
+                1. Thông tin
+            </div>
+            <div class="text-center p-1 border-bottom border-3 fs-6 fw-bolder text-uppercase w-50" style="border-color: #c2bfbf; color: #c2bfbf ">
+                2. Thanh toán
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex flex-column w-100 gap-3">
+            @foreach (var item in Model)
+            {
+                var price = item.GiaKhuyenMaiSP != null && item.GiaKhuyenMaiSP < item.DonGia ? item.GiaKhuyenMaiSP.Value : item.DonGia;
+                <div class="card w-100 p-0 product-item" data-price="@price" data-original="@item.DonGia">
+                    <div class="card-body row">
+                        <div class="col-3 d-flex justify-content-center position-relative">
+                            @if (!string.IsNullOrEmpty(item.AnhDaiDienSP))
+                            {
+                                <img src="@Url.Content("~/Content/Images/" + item.AnhDaiDienSP)" style="width: 7em" />
+                            }
+                        </div>
+
+                        <div class="col-9 d-flex flex-column">
+                            <span class="text-wrap text-black fs-6">
+                                @item.TenMonHang
+                            </span>
+                            @if (item.GiaKhuyenMaiSP != null && item.GiaKhuyenMaiSP < item.DonGia)
+                            {
+                                <div class="fs-6 text-danger mt-1">
+                                    @item.GiaKhuyenMaiSP.Value.ToString("N0").Replace(",", ".") VNĐ
+                                    <span class="text-secondary text-decoration-line-through ms-1 small">
+                                        @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="fs-6 text-dark mt-1">
+                                    @item.DonGia.ToString("N0").Replace(",", ".") VNĐ
+                                </div>
+                            }
+                            <div class="d-flex justify-content-end align-items-center gap-2 w-100 h-100">
+                                Số lượng: <span class="text-primary">@item.SoLuong</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="mt-4">
+            <span class="text-uppercase">Thông tin khách hàng</span>
+            <div class="bg-white border-1 rounded-3 border mt-2 p-3">
+                <div class="d-flex justify-content-between p-0">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fs-6">@ViewBag.Khachhang.TENKH</span>
+                        @if (ViewBag.LoaiKh != null)
+                        {
+                            <div class="border-1 border border-primary rounded-2 p-1 small text-primary">@ViewBag.LoaiKh.TENLOAI</div>
+                        }
+                    </div>
+                    <div class="text-muted fs-6">@ViewBag.Khachhang.SDT</div>
+                </div>
+                <div class="mt-3">
+                    <span class="small text-uppercase text-muted">email</span>
+                    <input id="Email" name="email" type="email" value="@ViewBag.Khachhang.EMAIL" class="mt-1 py-1 border-0 border-bottom border-1 border-secondary w-100 small" />
+                </div>
+                <div class="text-muted mt-4" style="font-size: 11px">(*) Hóa đơn VAT sẽ được gửi qua email này</div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-uppercase">Thông tin nhận hàng</span>
+            <div class="bg-white border-1 rounded-3 border mt-2 p-3">
+                <div class="row mb-3 g-3">
+                    <div class="col-4">
+                        <label class="small text-uppercase text-muted mb-2">Tỉnh / Thành phố</label>
+                        <select id="province" name="province"
+                                class="form-select form-select-sm border-0 border-bottom border-1 border-secondary rounded-0"
+                                required>
+                            <option value="">Chọn</option>
+                            @if (ViewBag.DiaChi != null)
+                            {
+                                <option value="@ViewBag.DiaChi.TINHTHANHPHO" selected>@ViewBag.DiaChi.TINHTHANHPHO</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <label class="small text-uppercase text-muted mb-2">Quận / Huyện</label>
+                        <select id="district" name="district"
+                                class="form-select form-select-sm border-0 border-bottom border-1 border-secondary rounded-0"
+                                required @(ViewBag.DiaChi == null ? "disabled" : "")>
+                            <option value="">Chọn</option>
+                            @if (ViewBag.DiaChi != null)
+                            {
+                                <option value="@ViewBag.DiaChi.QUANHUYEN" selected>@ViewBag.DiaChi.QUANHUYEN</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <label class="small text-uppercase text-muted mb-2">Phường / Xã</label>
+                        <select id="ward" name="ward"
+                                class="form-select form-select-sm border-0 border-bottom border-1 border-secondary rounded-0"
+                                required @(ViewBag.DiaChi == null ? "disabled" : "")>
+                            <option value="">Chọn</option>
+                            @if (ViewBag.DiaChi != null)
+                            {
+                                <option value="@ViewBag.DiaChi.PHUONGXA" selected>@ViewBag.DiaChi.PHUONGXA</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <input type="text" class="mt-1 py-2 border-0 border-bottom border-1 border-secondary w-100 small"
+                           id="address" name="address"
+                           value="@(ViewBag.DiaChi != null ? ViewBag.DiaChi.DIACHICUTHE : "")"
+                           placeholder="Số nhà, tên đường (Vui lòng chọn quận/huyện và phường/xã trước)"
+                           required />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 mx-auto px-5 fixed-bottom rounded-3" style="margin-top: 200px; width: 40rem">
+        <div class="d-flex w-100 bg-light px-2 py-2 flex-column">
+            <div class="d-flex justify-content-between">
+                <span class="fw-bolder fs-6">Tổng tiền tạm tính: </span>
+                <span class="text-info fw-bolder">@Model.Sum(sp => sp.ThanhTien).ToString("N0") VNĐ</span>
+            </div>
+            <div class="py-2 w-100">
+                <button id="continueBtn" class="btn btn-primary text-white text-center w-100">Tiếp tục</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    const API_BASE_URL = 'https://provinces.open-api.vn/api';
+
+    let provinces = [];
+    let districts = [];
+    let wards = [];
+
+    // Load provinces on page load
+    document.addEventListener('DOMContentLoaded', async function () {
+        await loadProvinces();
+        setupEventListeners();
+    });
+
+    // Load provinces from API
+    async function loadProvinces() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/p/`);
+            provinces = await response.json();
+
+            const provinceSelect = document.getElementById('province');
+            provinces.forEach(province => {
+                const name = province.name.replace('Thành phố ', '').replace('Tỉnh ', '');
+                const option = document.createElement('option');
+                option.value = name;   // lưu tên trực tiếp
+                option.textContent = name;
+                provinceSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+            alert('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại!');
+        }
+    }
+
+    // Load districts based on selected province
+    async function loadDistricts(provinceName) {
+        try {
+            // Tìm province object từ tên
+            const province = provinces.find(p => p.name.replace('Thành phố ', '').replace('Tỉnh ', '') === provinceName);
+            if (!province) return;
+
+            const response = await fetch(`${API_BASE_URL}/p/${province.code}?depth=2`);
+            const data = await response.json();
+            districts = data.districts;
+
+            const districtSelect = document.getElementById('district');
+            districtSelect.innerHTML = '<option value="">Chọn</option>';
+
+            districts.forEach(district => {
+                const name = district.name.replace('Quận ', '').replace('Huyện ', '').replace('Thành phố ', '').replace('Thị xã ', '');
+                const option = document.createElement('option');
+                option.value = name;   // lưu tên trực tiếp
+                option.textContent = name;
+                districtSelect.appendChild(option);
+            });
+
+            districtSelect.disabled = false;
+            const wardSelect = document.getElementById('ward');
+            wardSelect.disabled = true;
+            wardSelect.innerHTML = '<option value="">Chọn</option>';
+        } catch (error) {
+            console.error('Error loading districts:', error);
+            alert('Không thể tải danh sách quận/huyện. Vui lòng thử lại!');
+        }
+    }
+
+    // Load wards based on selected district
+    async function loadWards(districtName) {
+        try {
+            const district = districts.find(d => d.name.replace('Quận ', '').replace('Huyện ', '').replace('Thành phố ', '').replace('Thị xã ', '') === districtName);
+            if (!district) return;
+
+            const response = await fetch(`${API_BASE_URL}/d/${district.code}?depth=2`);
+            const data = await response.json();
+            wards = data.wards;
+
+            const wardSelect = document.getElementById('ward');
+            wardSelect.innerHTML = '<option value="">Chọn</option>';
+
+            wards.forEach(ward => {
+                const name = ward.name.replace('Phường ', '').replace('Xã ', '').replace('Thị trấn ', '');
+                const option = document.createElement('option');
+                option.value = name;   // lưu tên trực tiếp
+                option.textContent = name;
+                wardSelect.appendChild(option);
+            });
+
+            wardSelect.disabled = false;
+        } catch (error) {
+            console.error('Error loading wards:', error);
+            alert('Không thể tải danh sách phường/xã. Vui lòng thử lại!');
+        }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        const provinceSelect = document.getElementById('province');
+        const districtSelect = document.getElementById('district');
+        const wardSelect = document.getElementById('ward');
+
+        provinceSelect.addEventListener('change', function () {
+            const provinceName = this.value;
+            if (provinceName) {
+                loadDistricts(provinceName);
+            } else {
+                districtSelect.disabled = true;
+                wardSelect.disabled = true;
+                districtSelect.innerHTML = '<option value="">Chọn</option>';
+                wardSelect.innerHTML = '<option value="">Chọn</option>';
+            }
+        });
+
+        districtSelect.addEventListener('change', function () {
+            const districtName = this.value;
+            if (districtName) {
+                loadWards(districtName);
+            } else {
+                wardSelect.disabled = true;
+                wardSelect.innerHTML = '<option value="">Chọn</option>';
+            }
+        });
+    }
+</script>
+
