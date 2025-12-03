@@ -21,8 +21,14 @@ namespace UserApp.Repositories // Chú ý namespace
         {
             _context = new QL_PHONGGYMEntities(true); 
         }
-        public InvoiceFullData GetInvoiceById(int id)
+
+        public HOADON GetHoaDon(int maHd)
         {
+            return _context.HOADONs.Find(maHd);
+        }
+
+        public InvoiceFullData GetInvoiceById(int id)
+        {            
             var listHoaDon = _context.CHITIETHOADONs
                                      .Include("HOADON")
                                      .Include("HOADON.KHACHHANG")
