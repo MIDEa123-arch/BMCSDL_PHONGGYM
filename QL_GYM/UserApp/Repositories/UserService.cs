@@ -1,4 +1,5 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -142,22 +143,24 @@ namespace UserApp.Repositories
 
             return list;
         }
-        public int Login(string username, string password)
+        public (int status, int sid, int serial) Login(string username, string password)
         {
             var adminBuilder = new OracleConnectionStringBuilder(_adminRawConnection);
             string adminUser = adminBuilder.UserID;
             string adminPassword = adminBuilder.Password;
 
-            if (username.Equals(adminUser, StringComparison.OrdinalIgnoreCase) && password == adminPassword)
+            if (username.Equals(adminUser, StringComparison.OrdinalIgnoreCase)
+                && password == adminPassword)
             {
-                return 2;
+                return (2, 0, 0); // admin không cần SID, SERIAL
             }
 
-
+            // Encrypt
             password = MaHoa.MaHoaNhan(MaHoa.MaHoaNhan(password, 7), 7);
 
             try
             {
+                // Resolve login limit
                 using (var connAdmin = new OracleConnection(_adminRawConnection))
                 using (var cmd = new OracleCommand("SP_RESOLVE_LOGIN_LIMIT", connAdmin))
                 {
@@ -167,7 +170,7 @@ namespace UserApp.Repositories
                     cmd.ExecuteNonQuery();
                 }
 
-                // 2. Tạo EF connection string cho user staff
+                // Build EF connection for staff
                 var entityBuilder = new EntityConnectionStringBuilder(_adminEfConnection);
                 var oracleBuilder = new OracleConnectionStringBuilder(entityBuilder.ProviderConnectionString);
 
@@ -177,47 +180,79 @@ namespace UserApp.Repositories
                 entityBuilder.ProviderConnectionString = oracleBuilder.ToString();
                 _connectionStringUser = entityBuilder.ToString();
 
-                // 3. Test login user bằng Oracle raw connection
+                // Open user connection to get SID & SERIAL#
+                int sid = 0, serial = 0;
+
                 using (var connUser = new OracleConnection(oracleBuilder.ToString()))
                 {
                     connUser.Open();
+
+                    using (var cmd2 = new OracleCommand("ADMINGYM.SP_CHECK_OWN_SESSION", connUser))
+                    {
+                        cmd2.CommandType = CommandType.StoredProcedure;
+
+                        var sidParam = cmd2.Parameters.Add("p_sid", OracleDbType.Int32);
+                        sidParam.Direction = ParameterDirection.Output;
+
+                        var serialParam = cmd2.Parameters.Add("p_serial", OracleDbType.Int32);
+                        serialParam.Direction = ParameterDirection.Output;
+
+                        cmd2.ExecuteNonQuery();
+
+                        sid = ((OracleDecimal)cmd2.Parameters["p_sid"].Value).ToInt32();
+                        serial = ((OracleDecimal)cmd2.Parameters["p_serial"].Value).ToInt32();
+                    }
                 }
-
-                return 1;
-            }
-            catch (OracleException ex)
-            {
-                throw ex;
-            }
-
-        }
-
-        // Check connection alive
-        public bool CheckConnectionAlive(string efConnectionString)
-        {
-            if (string.IsNullOrEmpty(efConnectionString)) return false;
-
-            try
-            {
-                var entityBuilder = new EntityConnectionStringBuilder(efConnectionString);
-                string rawOracleConnectionString = entityBuilder.ProviderConnectionString;
-
-                using (var conn = new OracleConnection(rawOracleConnectionString))
-                using (var cmd = new OracleCommand("SP_TEST_CONNECTION", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add("p_alive", OracleDbType.Int32).Direction = ParameterDirection.Output;
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                }
-
-                return true;
+                return (1, sid, serial);
             }
             catch
             {
-                return false;
+                throw;
             }
         }
+
+
+        // Check connection alive
+        // Trả về int để phân biệt lỗi: 1=OK, 0=Bị Kill, -1=Mất tích
+        public int CheckSessionAlive(string username, string sid, string serial)
+        {
+            try
+            {
+                using (var conn = new OracleConnection(ConfigurationManager.ConnectionStrings["ADMIN_DB"].ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new OracleCommand("SP_CHECK_USER_SESSION", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        // Input
+                        cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
+                        cmd.Parameters.Add("p_sid", OracleDbType.Int32).Value = int.Parse(sid);
+                        cmd.Parameters.Add("p_serial", OracleDbType.Int32).Value = int.Parse(serial);
+
+                        // Output
+                        var pStatus = new OracleParameter("p_status", OracleDbType.Int32);
+                        pStatus.Direction = ParameterDirection.Output;
+                        cmd.Parameters.Add(pStatus);
+
+                        cmd.ExecuteNonQuery();
+
+                        // Lấy kết quả trả về
+                        if (pStatus.Value != DBNull.Value)
+                        {
+                            // Convert OracleDecimal to int
+                            return int.Parse(pStatus.Value.ToString());
+                        }
+                        return -1;
+                    }
+                }
+            }
+            catch
+            {
+                return -1; // Lỗi kết nối coi như mất session
+            }
+        }
+
 
         // Logout staff
         public bool Logout(string username)

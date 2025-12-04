@@ -22,13 +22,13 @@ namespace UserApp.Helpers
             if (!File.Exists(inputFilePath))
                 throw new FileNotFoundException($"Không tìm thấy file gốc: {inputFilePath}");
 
-            using (var cert = new X509Certificate2(pfxAbsolutePath, password, X509KeyStorageFlags.Exportable))
+            using (var cert = new X509Certificate2(pfxAbsolutePath, password, X509KeyStorageFlags.Exportable)) // Sử dụng chứng chỉ số X509
             {
                 if (!string.IsNullOrEmpty(expectedSubject) && !cert.Subject.Contains(expectedSubject))
                     throw new Exception($"File PFX không hợp lệ! Mong muốn: {expectedSubject}, thực tế: {cert.Subject}");
 
-                byte[] data = File.ReadAllBytes(inputFilePath);
-                var contentInfo = new ContentInfo(data);
+                byte[] data = File.ReadAllBytes(inputFilePath); // Đọc file
+                var contentInfo = new ContentInfo(data); // Đóng gói
                 var signedCms = new SignedCms(contentInfo, true);
                 var cmsSigner = new CmsSigner(cert);
                 signedCms.ComputeSignature(cmsSigner);
@@ -44,7 +44,7 @@ namespace UserApp.Helpers
 
         private void CreateSelfSignedPfx(string pfxPath, string password, string subjectName)
         {
-            using (RSA rsa = RSA.Create(2048))
+            using (RSA rsa = RSA.Create(2048)) // Tạo 2 khóa
             {
                 var req = new CertificateRequest(subjectName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);    
                 var cert = req.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(5));

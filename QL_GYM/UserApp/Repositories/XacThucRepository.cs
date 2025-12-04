@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using UserApp.Models;
+using UserApp.Helpers;
 
 namespace UserApp.Repositories
 {
@@ -17,7 +18,7 @@ namespace UserApp.Repositories
 
         public bool Verify(int logId, string otpInput)
         {
-            int key = 12345678; 
+            string key = "12345678";
             string encryptedInput = MaHoa.MahoaDes(otpInput, key);
 
             var logRecord = _context.LOGINHISTORies.FirstOrDefault(x => x.ID == logId);
@@ -55,7 +56,7 @@ namespace UserApp.Repositories
             }
 
             string otp = new Random().Next(100000, 999999).ToString();
-            int key = 12345678;
+            string key = "12345678";
             string encryptedOtp = MaHoa.MahoaDes(otp, key);
 
             var pendingLog = new LOGINHISTORY

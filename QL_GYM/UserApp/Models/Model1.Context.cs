@@ -18,10 +18,10 @@ namespace UserApp.Models
     public partial class QL_PHONGGYMEntities : DbContext
     {
         public QL_PHONGGYMEntities()
-            : base("name=QL_PHONGGYMEntities")
+    : base("name=QL_PHONGGYMEntities")
         {
         }
-        
+
         public QL_PHONGGYMEntities(bool userAdmin)
             : base("name=ADMIN_ENTITY")
         {

@@ -43,17 +43,18 @@ namespace UserApp.Helpers
             }
             return new string(result.ToArray());
         }
-        public static string MahoaDes(string input, int k)
+        public static string MahoaDes(string input, string k)
         {
             byte[] keyBytes = new byte[8];
-            byte[] kBytes = BitConverter.GetBytes(k);
+            byte[] kBytes = Encoding.UTF8.GetBytes(k);
+
             for (int i = 0; i < 8; i++)
                 keyBytes[i] = (i < kBytes.Length) ? kBytes[i] : (byte)0;
 
             using (DESCryptoServiceProvider des = new DESCryptoServiceProvider())
             {
                 des.Key = keyBytes;
-                des.IV = keyBytes;
+                des.IV = keyBytes; 
 
                 byte[] inputBytes = Encoding.UTF8.GetBytes(input);
                 using (MemoryStream ms = new MemoryStream())
@@ -61,6 +62,7 @@ namespace UserApp.Helpers
                 {
                     cs.Write(inputBytes, 0, inputBytes.Length);
                     cs.FlushFinalBlock();
+
                     return Convert.ToBase64String(ms.ToArray());
                 }
             }

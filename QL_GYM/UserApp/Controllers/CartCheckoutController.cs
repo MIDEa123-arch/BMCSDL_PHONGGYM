@@ -158,7 +158,8 @@ namespace UserApp.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult AddToCart(int maSP, int soLuong)
         {
-            int maKH = (int)Session["MaKH"];
+            int maKH = Convert.ToInt32(Session["MaKH"]);
+
 
             var add = _cartRepo.AddToCart(maKH, maSP, null, null, soLuong);
             Session["cart"] = _cartRepo.GetCart(maKH);

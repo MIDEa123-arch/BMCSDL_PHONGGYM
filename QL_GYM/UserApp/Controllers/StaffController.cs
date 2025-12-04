@@ -34,28 +34,39 @@ namespace UserApp.Controllers
             connStr = new SanPhamRepository(Session["connectionString"] as string);
             var list = connStr.GetAll();
             return View(list);
-        }
+        }      
+
+
 
         [HttpPost]
         public JsonResult CheckSessionAlive()
         {
-            var connStr = Session["connectionString"] as string;
+            if (Session["sid"] == null)
+                return Json(new { alive = false, msg = "Mất kết nối với Server." });
 
-            if (string.IsNullOrEmpty(connStr))
+            string username = Session["user"].ToString();
+            string sid = Session["sid"].ToString();
+            string serial = Session["serial"].ToString();
+
+            // Gọi hàm trả về số nguyên (1, 0, -1)
+            int status = userService.CheckSessionAlive(username, sid, serial);
+
+            if (status != 1)
             {
-                return Json(new { alive = false });
-            }
-
-            bool alive = userService.CheckConnectionAlive(connStr);
-
-            if (!alive)
-            {
-
+                // Xóa sạch session Web
                 Session.Clear();
                 Session.Abandon();
+
+                string message = "";
+                if (status == 0)
+                    message = "Phiên làm việc đã hết hạn.";
+                else
+                    message = "Tài khoản đã đăng xuất.";
+
+                return Json(new { alive = false, msg = message });
             }
 
-            return Json(new { alive = alive });
+            return Json(new { alive = true });
         }
 
         [HttpPost]
@@ -89,21 +100,31 @@ namespace UserApp.Controllers
 
             try
             {
+                var loginResult = userService.Login(username, password);
 
-                int result = userService.Login(username, password);
+                int status = loginResult.status;
+                int sid = loginResult.sid;
+                int serial = loginResult.serial;
 
-                if (result == 1)
+                if (status == 1)  // Staff
                 {
                     Session["user"] = username;
                     Session["connectionString"] = userService.ConnectionStringUser;
+                    Session["sid"] = sid;
+                    Session["serial"] = serial;
                     Session["loginDate"] = DateTime.Now.ToString("dd/MM/yyyy");
+
                     return RedirectToAction("HoaDon", "Staff");
+                }
+                else if (status == 2) // Admin
+                {
+                    Session["Admin"] = username;
+                    return RedirectToAction("NguoiDung", "Admin");
                 }
                 else
                 {
-                    Session["Admin"] = username;
-                    
-                    return RedirectToAction("NguoiDung", "Admin");
+                    TempData["Error"] = "Sai thông tin đăng nhập!";
+                    return RedirectToAction("Login");
                 }
             }
             catch (OracleException ex)
@@ -111,16 +132,18 @@ namespace UserApp.Controllers
                 if (ex.Number == 1017)
                 {
                     TempData["Error"] = "Sai mật khẩu hoặc tài khoản!";
-
                 }
-                if (ex.Number == 28000)
+                else if (ex.Number == 28000)
                 {
                     TempData["Error"] = "Tài khoản bạn đã bị khóa!";
-
                 }
+                else
+                {
+                    TempData["Error"] = "Lỗi đăng nhập!";
+                }
+
                 return RedirectToAction("Login");
             }
-
         }
         public ActionResult VerifySignatureById(int id)
         {

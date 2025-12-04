@@ -319,34 +319,38 @@
             }
         });
     </script>
+
     <script type="text/javascript">
-        $(function () {
-            @if (Session["user"] != null)
-            {
-                <text>
-                var sessionCheckInterval = setInterval(function () {
-                    $.ajax({
-                        type: "POST",
-                        url: "@Url.Action("CheckSessionAlive", "Staff")",
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        success: function (response) {
-                            if (response.alive === false) {
-                                clearInterval(sessionCheckInterval);
-                                alert("Phiên đăng nhập của bạn đã hết hạn hoặc bị đăng xuất từ một thiết bị khác.");
-                                window.location.href = "@Url.Action("Login", "Staff")";
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Lỗi khi kiểm tra session: " + error);
+    $(function () {
+        @if (Session["user"] != null)
+        {
+            <text>
+            var sessionCheckInterval = setInterval(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CheckSessionAlive", "Staff")", // Sửa lại Controller của bạn
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        // Nếu alive = false thì hiện thông báo và đá văng
+                        if (response.alive === false) {
                             clearInterval(sessionCheckInterval);
+
+                            // Hiện thông báo thân thiện lấy từ Controller
+                            alert(response.msg);
+
                             window.location.href = "@Url.Action("Login", "Staff")";
                         }
-                    });
-                }, 1000); // Lặp lại mỗi 10 giây
-                </text>
-            }
-        });
+                    },
+                    error: function () {
+                        // Lỗi mạng thì kệ nó, chờ lần check sau
+                        console.log("Check session failed.");
+                    }
+                });
+            }, 5000); // Check mỗi 5 giây
+            </text>
+        }
+    });
     </script>
 </body>
 </html>
