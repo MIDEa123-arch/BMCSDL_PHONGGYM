@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace UserApp.Repositories // Chú ý namespace
+namespace UserApp.Repositories 
 {
     public class HoaDonRepository
     {

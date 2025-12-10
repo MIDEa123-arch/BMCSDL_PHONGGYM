@@ -1,25 +1,28 @@
-﻿using UserApp.Helpers;
-using UserApp.Repositories;
-using UserApp.ViewModel;
-using Oracle.ManagedDataAccess.Client;
+﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
-using System.Web.Mvc;
+using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Web;
-using System.IO;
-using System.Data.Entity;
+using System.Web.Mvc;
+using UserApp.Helpers;
+using UserApp.Models;
+using UserApp.Repositories;
+using UserApp.ViewModel;
 
 namespace UserApp.Controllers
 {
     public class StaffController : Controller
     {
         public UserService userService;
-        public SanPhamRepository connStr;
         public HoaDonRepository hoaDonRepository;
-
+        public SanPhamRepository _spRepo;
+        private QL_PHONGGYMEntities _context;
         public StaffController()
         {
+            _context = new QL_PHONGGYMEntities();
+            _spRepo = new SanPhamRepository();
             userService = new UserService();
         }
 
@@ -31,10 +34,10 @@ namespace UserApp.Controllers
         }
         public ActionResult SanPham()
         {
-            connStr = new SanPhamRepository(Session["connectionString"] as string);
-            var list = connStr.GetAll();
+            _spRepo = new SanPhamRepository(Session["connectionString"] as string);
+            var list = _spRepo.GetAll();
             return View(list);
-        }      
+        }
 
 
 
@@ -208,11 +211,109 @@ namespace UserApp.Controllers
 
             return View("VerifySignatureResult");
         }
+        [HttpGet]
+        public ActionResult ThemSanPham()
+        {
+            if (Session["user"] == null) return RedirectToAction("Login", "Staff");
+            ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP");
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateInput(false)]
+        [ValidateAntiForgeryToken]
+        public ActionResult ThemSanPham(SANPHAM model, HttpPostedFileBase MainImage, HttpPostedFileBase[] SubImages)
+        {
+            if (Session["user"] == null) return RedirectToAction("Login", "Staff");
+
+            List<string> uploadedFiles = new List<string>();
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    throw new Exception("Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.");
+                }
+
+                string uploadFolder = Server.MapPath("~/Content/Images/");
+                if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
+
+                List<HINHANH> listImagesDb = new List<HINHANH>();
+
+                if (MainImage != null && MainImage.ContentLength > 0)
+                {
+                    string uniqueName = $"{DateTime.Now.Ticks}_Main_{MainImage.FileName}";
+                    string path = Path.Combine(uploadFolder, uniqueName);
+
+                    MainImage.SaveAs(path);
+                    uploadedFiles.Add(path);
+
+                    listImagesDb.Add(new HINHANH { 
+                        URL = uniqueName, 
+                        ISMAIN = true 
+                    });
+                }
+                else
+                {
+                    throw new Exception("Vui lòng chọn ảnh chính cho sản phẩm!");
+                }
+                if (SubImages != null)
+                {
+                    int count = 0;
+                    foreach (var file in SubImages)
+                    {
+                        if (file != null && file.ContentLength > 0 && count < 3)
+                        {
+                            string uniqueName = $"{DateTime.Now.Ticks}_Sub_{count}_{file.FileName}";
+                            string path = Path.Combine(uploadFolder, uniqueName);
+
+                            file.SaveAs(path);
+                            uploadedFiles.Add(path);
+
+                            listImagesDb.Add(new HINHANH { 
+                                URL = uniqueName, 
+                                ISMAIN = false
+                            });
+                            count++;
+                        }
+                    }
+                }
+                _spRepo.AddWithImages(model, listImagesDb);
+                TempData["Success"] = $"Đã thêm sản phẩm '{model.TENSP}' thành công! Mời bạn nhập tiếp sản phẩm mới.";
+                ModelState.Clear();
+                ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                foreach (var filePath in uploadedFiles)
+                {
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        try { System.IO.File.Delete(filePath); } catch 
+                        {
+                        }
+                    }
+                }
+                string message = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    message += " | Chi tiết: " + ex.InnerException.Message;
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        message += " | Gốc: " + ex.InnerException.InnerException.Message;
+                    }
+                }
+
+                TempData["Error"] = "Có lỗi xảy ra: " + message;
+              ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
+                return View(model);
+            }
+        }
         public ActionResult Index()
         {
             return View();
         }
-
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";

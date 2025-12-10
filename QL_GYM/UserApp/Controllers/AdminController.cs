@@ -232,5 +232,6 @@ namespace UserApp.Controllers
                 model.Roles = new List<string>();
             }
         }
+
     }
 }

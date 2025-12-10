@@ -669,6 +669,7 @@
     <Content Include="Views\Staff\VerifySignatureResult.cshtml" />
     <Content Include="Views\Account\VerifyOTP.cshtml" />
     <Content Include="Views\Admin\PhanQuyen.cshtml" />
+    <Content Include="Views\Staff\ThemSanPham.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

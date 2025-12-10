@@ -1,0 +1,230 @@
+﻿@model UserApp.Models.SANPHAM
+
+@{
+    ViewBag.Title = "Thêm Sản Phẩm Mới";
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+}
+
+<div class="container-fluid" style="padding-top: 20px;">
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+            <h5 class="m-0 font-weight-bold">Thêm Sản Phẩm Mới</h5>
+        </div>
+
+        <div class="card-body">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa fa-check-circle"></i> @TempData["Success"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-triangle"></i> @Html.Raw(TempData["Error"])
+                </div>
+            }
+
+            @using (Html.BeginForm("ThemSanPham", "Staff", FormMethod.Post, new { enctype = "multipart/form-data", @id = "form-product" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="row">
+
+                    <div class="col-lg-8 col-md-12">
+                        <h5 class="text-info border-bottom pb-2">Thông tin chung</h5>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tên sản phẩm <span class="text-danger">(*)</span></label>
+                            @Html.EditorFor(model => model.TENSP, new { htmlAttributes = new { @class = "form-control", required = "required", placeholder = "Nhập tên sản phẩm..." } })
+                            @Html.ValidationMessageFor(model => model.TENSP, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Loại sản phẩm <span class="text-danger">(*)</span></label>
+                            @Html.DropDownList("MALOAISP", (IEnumerable<SelectListItem>)ViewBag.MaLoaiSP, "--- Chọn loại sản phẩm ---", new { @class = "form-control", required = "required" })
+                            @Html.ValidationMessageFor(model => model.MALOAISP, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Đơn giá gốc (VNĐ) <span class="text-danger">(*)</span></label>
+                                @Html.EditorFor(model => model.DONGIA, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", required = "required" } })
+                                @Html.ValidationMessageFor(model => model.DONGIA, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Giá khuyến mãi (VNĐ)</label>
+                                @Html.EditorFor(model => model.GIAKHUYENMAI, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", placeholder = "Để trống nếu không giảm giá" } })
+                                @Html.ValidationMessageFor(model => model.GIAKHUYENMAI, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Hãng sản xuất</label>
+                                @Html.EditorFor(model => model.HANG, new { htmlAttributes = new { @class = "form-control", placeholder = "VD: Nike, MuscleTech..." } })
+                                @Html.ValidationMessageFor(model => model.HANG, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Xuất xứ</label>
+                                @Html.EditorFor(model => model.XUATXU, new { htmlAttributes = new { @class = "form-control", placeholder = "VD: USA, Vietnam..." } })
+                                @Html.ValidationMessageFor(model => model.XUATXU, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Chế độ bảo hành</label>
+                                @Html.EditorFor(model => model.BAOHANH, new { htmlAttributes = new { @class = "form-control", placeholder = "VD: 12 Tháng, 1 đổi 1..." } })
+                                @Html.ValidationMessageFor(model => model.BAOHANH, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Số lượng tồn kho <span class="text-danger">(*)</span></label>
+                                @Html.EditorFor(model => model.SOLUONGTON, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", required = "required" } })
+                                @Html.ValidationMessageFor(model => model.SOLUONGTON, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3 p-3 bg-light border rounded">
+                            <label class="font-weight-bold text-primary">
+                                <i class="fa fa-list"></i> Thông số kỹ thuật / Mô tả chi tiết
+                            </label>
+                            <p class="small text-muted mb-2">Nhập từng dòng thông số, hệ thống sẽ tự động định dạng.</p>
+
+                            @Html.HiddenFor(model => model.MOTACHITIET, new { @id = "RealMotaChiTiet" })
+
+                            <div id="attribute-list">
+                                <div class="input-group mb-2 attribute-row">
+                                    <input type="text" class="form-control attr-input" placeholder="VD: Hương vị: Chocolate" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-danger" type="button" onclick="removeRow(this)"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-info mt-2" onclick="addRow()">
+                                <i class="fa fa-plus-circle"></i> Thêm dòng thông số
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Mô tả ngắn (Giới thiệu chung)</label>
+                            @Html.TextAreaFor(model => model.MOTACHUNG, new { @class = "form-control", rows = "3" })
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-4 col-md-12">
+                        <h5 class="text-info border-bottom pb-2">Hình ảnh sản phẩm</h5>
+
+                        <div class="card mb-3 border-primary">
+                            <div class="card-header bg-primary text-white text-center">
+                                <strong>Ảnh Đại Diện (Cover)</strong> <span class="text-warning">(*)</span>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <img id="previewMain" src="https://via.placeholder.com/300x300?text=Chưa+chọn+ảnh"
+                                         alt="Preview" class="img-fluid img-thumbnail"
+                                         style="max-height: 250px; object-fit: cover;" />
+                                </div>
+                                <div class="custom-file text-left">
+                                    <input type="file" name="MainImage" class="form-control-file" accept="image/*" required onchange="previewImage(this, 'previewMain')" />
+                                    <small class="text-muted d-block mt-1">Bắt buộc phải có 1 ảnh chính.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-secondary">
+                            <div class="card-header bg-secondary text-white">
+                                <strong>Ảnh Chi Tiết (Tối đa 3)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Ảnh 1:</label>
+                                    <input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Ảnh 2:</label>
+                                    <input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Ảnh 3:</label>
+                                    <input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="form-group text-center mt-4">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="fa fa-save"></i> Lưu Sản Phẩm
+                    </button>
+                    <a href="@Url.Action("Index", "Staff")" class="btn btn-secondary btn-lg px-4 ml-2">
+                        <i class="fa fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Xem trước ảnh (Preview Image)
+    function previewImage(input, previewId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var img = document.getElementById(previewId);
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 2. Thêm dòng mô tả chi tiết
+    function addRow() {
+        var html = `
+            <div class="input-group mb-2 attribute-row">
+                <input type="text" class="form-control attr-input" placeholder="Nhập thông số..." />
+                <div class="input-group-append">
+                    <button class="btn btn-outline-danger" type="button" onclick="removeRow(this)">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+        // Thêm vào cuối danh sách
+        document.getElementById('attribute-list').insertAdjacentHTML('beforeend', html);
+    }
+
+    // 3. Xóa dòng mô tả
+    function removeRow(btn) {
+        var list = document.getElementsByClassName('attribute-row');
+        if (list.length > 0) {
+            btn.closest('.attribute-row').remove();
+        }
+    }
+
+    // 4. Xử lý sự kiện Submit Form (Nối chuỗi mô tả)
+    document.getElementById('form-product').addEventListener('submit', function (e) {
+        var inputs = document.querySelectorAll('.attr-input');
+        var values = [];
+
+        inputs.forEach(function (input) {
+            var val = input.value.trim();
+            if (val) {
+                val = val.replace(/\|/g, "-");
+                values.push(val);
+            }
+        });
+        var finalString = values.join('|');
+        document.getElementById('RealMotaChiTiet').value = finalString;
+    });
+</script>
