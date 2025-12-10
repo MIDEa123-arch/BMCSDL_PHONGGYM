@@ -28,7 +28,7 @@
                             <span class="badge badge-light text-primary px-3 py-2 shadow-sm">
                                 <i class="fas fa-link mr-1"></i> Connected
                             </span>
-                        </div>
+                        </div>  
                     </div>
 
                     <div class="card-body p-5">
@@ -131,7 +131,18 @@
                                 </div>
                             </div>
                         </div>
+                        <hr class="my-4">
 
+                        <div class="row justify-content-center mb-4">
+                            <div class="col-12 text-center">
+                                <h5 class="text-info text-uppercase font-weight-bold mb-3">
+                                    <i class="fas fa-eye mr-2"></i>QUYỀN HẠN HIỆN CÓ
+                                </h5>
+                                <div id="existingPrivilegesDisplay" class="p-3 bg-light rounded border shadow-sm">
+                                    <p class="text-muted mb-0">Vui lòng chọn **Đối Tượng Nhận Quyền** và **Bảng Dữ Liệu** để xem.</p>
+                                </div>
+                            </div>
+                        </div>
                         <hr class="my-4">
 
                         <!-- THÔNG BÁO LỖI/THÀNH CÔNG -->
@@ -191,6 +202,88 @@
             document.getElementById("ddlUser").selectedIndex = 0;
         }
     }
+    // Khi chọn User thì reset Role về mặc định
+    function resetRole() {
+        var userVal = document.getElementById("ddlUser").value;
+        if (userVal !== "") {
+            document.getElementById("ddlRole").selectedIndex = 0;
+        }
+        // Gọi hàm kiểm tra quyền khi User thay đổi
+        checkExistingPrivileges();
+    }
+
+    // Khi chọn Role thì reset User về mặc định
+    function resetUser() {
+        var roleVal = document.getElementById("ddlRole").value;
+        if (roleVal !== "") {
+            document.getElementById("ddlUser").selectedIndex = 0;
+        }
+        // Gọi hàm kiểm tra quyền khi Role thay đổi
+        checkExistingPrivileges();
+    }
+
+    // Thêm hàm này
+    function checkExistingPrivileges() {
+        var user = $("#ddlUser").val();
+        var role = $("#ddlRole").val();
+        var table = $("#SelectedTable").val(); // ddlTable được đổi tên trong dropdownlistfor thành SelectedTable
+
+        var target = user || role; // User có ưu tiên cao hơn (vì chỉ chọn 1 trong 2)
+        var displayDiv = $("#existingPrivilegesDisplay");
+      
+        // 1. Kiểm tra đủ điều kiện gọi AJAX
+        if (!target || !table) {
+            displayDiv.html('<p class="text-muted mb-0">Vui lòng chọn **Đối Tượng Nhận Quyền** và **Bảng Dữ Liệu** để xem.</p>');
+            return;
+        }
+
+        // 2. Gọi AJAX
+        $.ajax({
+            url: '@Url.Action("GetExistingPrivileges", "Admin")',
+            type: "GET",
+            data: { target: target, tableName: table },
+            beforeSend: function() {
+                displayDiv.html('<i class="fas fa-spinner fa-spin mr-2"></i> Đang tải quyền...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    var privs = response.data;
+                    var htmlContent = '';
+
+                    if (privs.length === 0) {
+                        htmlContent = '<span class="badge badge-secondary p-2 shadow-sm text-dark">Chưa có quyền nào</span>';
+                    } else {
+                        // Tạo các badge màu cho từng quyền
+                        $.each(privs, function(index, value) {
+                            var badgeClass = '';
+                            switch (value) {
+                                case 'SELECT': badgeClass = 'badge-light text-dark'; break;
+                                case 'INSERT': badgeClass = 'badge-light text-dark'; break;
+                                case 'UPDATE': badgeClass = 'badge-light text-dark'; break;
+                                case 'DELETE': badgeClass = 'badge-light text-dark'; break;
+                                default: badgeClass = 'badge-light text-dark';
+                            }
+                            htmlContent += '<span class="badge ' + badgeClass + ' p-2 mx-1 shadow-sm font-weight-bold scale-checkbox">' + value + '</span>';
+                        });
+                    }
+                    displayDiv.html(htmlContent);
+                } else {
+                    displayDiv.html('<p class="text-danger mb-0">Lỗi: ' + response.message + '</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                displayDiv.html('<p class="text-danger mb-0">Lỗi kết nối Server: ' + error + '</p>');
+            }
+        });
+    }
+
+    // Gắn sự kiện thay đổi cho Dropdown Bảng
+    $(document).ready(function() {
+        $("#SelectedTable").on("change", checkExistingPrivileges);
+
+        // Gọi lần đầu khi trang load nếu đã có sẵn dữ liệu
+        checkExistingPrivileges();
+    });
 </script>
 
 <!-- CSS TÙY CHỈNH CHO VIEW NÀY -->

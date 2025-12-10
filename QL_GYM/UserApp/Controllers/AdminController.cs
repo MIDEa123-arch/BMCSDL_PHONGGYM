@@ -13,7 +13,7 @@ namespace UserApp.Controllers
     {
         public UserService userService;
 
-       
+
         private QL_PHONGGYMEntities _context = new QL_PHONGGYMEntities();
         private readonly PhanQuyenRepository _phanQuyenRepository;
 
@@ -39,7 +39,7 @@ namespace UserApp.Controllers
                 return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        
+
         [HttpPost]
         public JsonResult KillSession(int sid, int serial)
         {
@@ -49,7 +49,7 @@ namespace UserApp.Controllers
             }
 
             try
-            {                
+            {
                 bool result = userService.KillSession(sid, serial);
 
                 if (result)
@@ -156,7 +156,7 @@ namespace UserApp.Controllers
         public ActionResult About() { ViewBag.Message = "Description page."; return View(); }
         public ActionResult Contact() { ViewBag.Message = "Contact page."; return View(); }
 
-    
+
 
         // GET: Hiển thị form Phân quyền
         [HttpGet]
@@ -290,5 +290,30 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
-    }
+        // Trong AdminController.cs (Thêm phương thức này)
+
+        // GET: Lấy các quyền hiện có của User/Role trên Table đã chọn
+        [HttpGet]
+        public JsonResult GetExistingPrivileges(string target, string tableName)
+        {
+            // target là SelectedUser hoặc SelectedRole
+            if (string.IsNullOrEmpty(target) || string.IsNullOrEmpty(tableName))
+            {
+                return Json(new { success = false, message = "Thiếu User/Role hoặc Bảng." }, JsonRequestBehavior.AllowGet);
+            }
+
+            try
+            {
+                // Gọi Repository để lấy danh sách quyền
+                var privileges = _phanQuyenRepository.GetExistingPrivileges(target, tableName);
+
+                return Json(new { success = true, data = privileges }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                // Trả về lỗi
+                return Json(new { success = false, message = "Lỗi server khi lấy quyền: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+    } 
 }

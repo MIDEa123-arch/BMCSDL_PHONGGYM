@@ -365,40 +365,24 @@ namespace UserApp.Repositories
                 {
                     conn.Open();
 
-                    // 1. Xây dựng điều kiện lọc SQL
-                    string whereClause = "WHERE owner = 'ADMINGYM' AND timestamp > SYSDATE - (1/24) ";
-                    if (!string.IsNullOrEmpty(username))
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_AUDIT_LOGS", conn))
                     {
-                        // Thêm điều kiện lọc theo username. Sử dụng Parameter để tránh SQL Injection.
-                        whereClause += "AND username = :p_username ";
-                    }
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
 
-                    string sqlQuery = $@"
-                SELECT
-                    TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') AS THOI_GIAN,
-                    username AS DB_USER,
-                    os_username AS MAY_TINH,
-                    obj_name AS TEN_BANG,
-                    action_name AS HANH_DONG,
-                    sql_text AS CAU_LENH_SQL
-                FROM
-                    SYS.DBA_AUDIT_TRAIL
-                {whereClause}
-                ORDER BY
-                    timestamp DESC
-            ";
-
-                    using (var cmd = new OracleCommand(sqlQuery, conn))
-                    {
-                        // 2. Thêm tham số vào Command nếu có lọc
                         if (!string.IsNullOrEmpty(username))
                         {
-                            cmd.Parameters.Add(new OracleParameter("p_username", username.ToUpper()));
+                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
                         }
+                        else
+                        {
+                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = DBNull.Value;
+                        }
+
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                            // ... (Phần còn lại của logic đọc dữ liệu giữ nguyên)
                             while (reader.Read())
                             {
                                 DateTime thoiGian;
@@ -425,7 +409,7 @@ namespace UserApp.Repositories
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Lỗi khi truy vấn Audit Trail: " + ex.Message);
+                    throw new Exception("Lỗi khi gọi Procedure Audit Trail: " + ex.Message);
                 }
             }
 

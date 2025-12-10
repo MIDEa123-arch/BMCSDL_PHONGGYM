@@ -54,7 +54,7 @@ namespace UserApp.Repositories
                                         // Lấy tên bảng (Ví dụ: KHACHHANG)
                                         string tableName = reader.GetString(0);
 
-                                        model.Tables.Add(tableName);
+                                        model.Tables.Add("ADMINGYM." + tableName);
 
                                     }
                                 }
@@ -129,6 +129,64 @@ namespace UserApp.Repositories
                 model.Message = "Lỗi thực thi: " + realError;
                 model.MessageType = "error";
             }
+        }
+        // Trong PhanQuyenRepository.cs (Thay thế phương thức hiện tại)
+
+        public List<string> GetExistingPrivileges(string target, string tableName)
+        {
+            var existingPrivs = new List<string>();
+
+            // Phân tích Table Name (chỉ cần lấy tên bảng)
+            var parts = tableName.Split('.');
+            if (parts.Length != 2) return existingPrivs;
+            string name = parts[1]; // Tên bảng (ví dụ: KHACHHANG)
+
+            // Sử dụng _adminRawConnection
+            using (var conn = new OracleConnection(_adminRawConnection))
+            {
+                try
+                {
+                    conn.Open();
+
+                    // ----------------------------------------------------
+                    // THAY THẾ: Gọi Stored Procedure SP_GET_EXISTING_PRIVS
+                    // ----------------------------------------------------
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_EXISTING_PRIVS", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true; // Sử dụng tên tham số
+
+                        // 1. Tham số đầu vào: TARGET (User/Role)
+                        cmd.Parameters.Add("p_target", OracleDbType.Varchar2).Value = target;
+
+                        // 2. Tham số đầu vào: TABLE_NAME
+                        cmd.Parameters.Add("p_table_name", OracleDbType.Varchar2).Value = name;
+
+                        // 3. Tham số đầu ra: CURSOR (chứa kết quả SELECT)
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
+                        // ExecuteReader sẽ đọc kết quả từ RefCursor
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (!reader.IsDBNull(0))
+                                {
+                                    existingPrivs.Add(reader.GetString(0));
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Xử lý lỗi
+                    // Log lỗi vào Console (hoặc logger thực tế)
+                    Console.WriteLine("Lỗi khi gọi Procedure SP_GET_EXISTING_PRIVS: " + ex.Message);
+                }
+            }
+
+            return existingPrivs;
         }
     }
 }
