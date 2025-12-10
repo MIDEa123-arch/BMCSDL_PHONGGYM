@@ -1,4 +1,5 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using Microsoft.Ajax.Utilities;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -20,7 +21,7 @@ namespace UserApp.Controllers
         public SanPhamRepository _spRepo;
         private QL_PHONGGYMEntities _context;
         public StaffController()
-        {
+        {         
             _context = new QL_PHONGGYMEntities();
             _spRepo = new SanPhamRepository();
             userService = new UserService();
@@ -34,6 +35,7 @@ namespace UserApp.Controllers
         }
         public ActionResult SanPham()
         {
+
             _spRepo = new SanPhamRepository(Session["connectionString"] as string);
             var list = _spRepo.GetAll();
             return View(list);
@@ -226,6 +228,7 @@ namespace UserApp.Controllers
         public ActionResult ThemSanPham(SANPHAM model, HttpPostedFileBase MainImage, HttpPostedFileBase[] SubImages)
         {
             if (Session["user"] == null) return RedirectToAction("Login", "Staff");
+            _spRepo = new SanPhamRepository(Session["connectionString"] as string);
 
             List<string> uploadedFiles = new List<string>();
 
@@ -311,22 +314,109 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
-        public ActionResult Index()
+        
+
+        [HttpGet]
+        public ActionResult SuaSanPham(int id)
         {
-            return View();
+            if (Session["connectionString"] == null) return RedirectToAction("Login", "Staff");
+
+            var repo = new SanPhamRepository(Session["connectionString"] as string);
+            var sp = repo.GetSanPhamById(id);
+
+            if (sp == null) return HttpNotFound();
+
+            ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", sp.MALOAISP);
+            return View(sp);
         }
-        public ActionResult About()
+
+
+        [HttpPost]
+        [ValidateInput(false)]
+        [ValidateAntiForgeryToken]
+        public ActionResult SuaSanPham(SANPHAM model, HttpPostedFileBase[] images, string strDonGia, string strGiaKhuyenMai)
         {
-            ViewBag.Message = "Your application description page.";
+            // 1. Manual Validation & Data Cleaning
+            if (string.IsNullOrEmpty(strDonGia))
+                ModelState.AddModelError("DONGIA", "Vui lòng nhập giá bán!");
+            else
+            {
+                string cleanGia = strDonGia.Replace(".", "").Replace(",", "").Trim();
+                if (decimal.TryParse(cleanGia, out decimal donGia)) model.DONGIA = donGia;
+                else ModelState.AddModelError("DONGIA", "Giá bán không hợp lệ!");
+            }
 
-            return View();
-        }
+            if (!string.IsNullOrEmpty(strGiaKhuyenMai))
+            {
+                string cleanGiaKM = strGiaKhuyenMai.Replace(".", "").Replace(",", "").Trim();
+                if (decimal.TryParse(cleanGiaKM, out decimal giaKM)) model.GIAKHUYENMAI = giaKM;
+            }
 
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
+            if (model.GIAKHUYENMAI.HasValue && model.GIAKHUYENMAI.Value > 0)
+            {
+                if (model.GIAKHUYENMAI.Value >= model.DONGIA)
+                    ModelState.AddModelError("GiaKhuyenMai", "Giá khuyến mãi phải nhỏ hơn giá bán gốc!");
+            }
 
-            return View();
+            if (string.IsNullOrEmpty(model.TENSP)) ModelState.AddModelError("TENSP", "Vui lòng nhập tên sản phẩm!");
+            if (model.MALOAISP == 0) ModelState.AddModelError("MALOAISP", "Vui lòng chọn danh mục!");
+            if (string.IsNullOrEmpty(model.MOTACHUNG)) ModelState.AddModelError("MOTACHUNG", "Vui lòng nhập mô tả ngắn!");
+            if (model.SOLUONGTON == 0) ModelState.AddModelError("SOLUONGTON", "Vui lòng nhập số lượng!");
+
+            // 2. Duplicate Check using Repository
+            string connStr = Session["connectionString"] as string;
+            var repo = new SanPhamRepository(connStr);
+
+            if (!string.IsNullOrEmpty(model.TENSP))
+            {
+                if (repo.IsDuplicateName(model.TENSP, (int)model.MASP))
+                {
+                    ModelState.AddModelError("TENSP", "Tên sản phẩm này đã được sử dụng bởi sản phẩm khác!");
+                }
+            }
+
+            // 3. Process Logic if Valid
+            if (ModelState.IsValid)
+            {
+                // Process File Uploads
+                List<string> newImageNames = new List<string>();
+                string uploadFolder = Server.MapPath("~/Content/Images/");
+
+                // Ensure folder exists
+                if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
+
+                if (images != null && images.Length > 0 && images[0] != null)
+                {
+                    foreach (var file in images)
+                    {
+                        if (file.ContentLength > 0)
+                        {
+                            string extension = Path.GetExtension(file.FileName);
+                            // Use Guid for unique names
+                            string uniqueName = Guid.NewGuid().ToString() + extension;
+                            string path = Path.Combine(uploadFolder, uniqueName);
+
+                            file.SaveAs(path);
+                            newImageNames.Add(uniqueName); // Add filename to list
+                        }
+                    }
+                }
+
+                // Call Repository to Update DB
+                if (repo.UpdateProduct(model, newImageNames, out string err))
+                {
+                    TempData["Success"] = "Cập nhật sản phẩm thành công!";
+                    return RedirectToAction("SanPham"); // Or wherever you list products
+                }
+                else
+                {
+                    TempData["Error"] = err;
+                }
+            }
+
+            // Reload Dropdown if validation fails
+            ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
+            return View(model);
         }
     }
 }

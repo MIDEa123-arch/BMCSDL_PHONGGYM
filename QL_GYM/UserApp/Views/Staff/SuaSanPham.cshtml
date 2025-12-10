@@ -1,0 +1,196 @@
+﻿@model UserApp.Models.SANPHAM
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+}
+
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-primary">Cập nhật sản phẩm: @Model.TENSP</h5>
+    </div>
+
+    <div class="card-body">
+        @using (Html.BeginForm("SuaSanPham", "Staff", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.MASP)
+
+            if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+
+            <div class="row g-3">
+                <div class="col-md-8">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>
+                        @Html.TextBoxFor(m => m.TENSP, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.TENSP, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Danh mục</label>
+                            @Html.DropDownList("MALOAISP", null, new { @class = "form-select", disabled = "disabled" })
+                            @Html.HiddenFor(m => m.MALOAISP)
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Thương hiệu</label>
+                            @Html.TextBoxFor(m => m.HANG, new { @class = "form-control" })
+                        </div>
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Xuất xứ</label>
+                            @Html.TextBoxFor(m => m.XUATXU, new { @class = "form-control" })
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Bảo hành</label>
+                            @Html.TextBoxFor(m => m.BAOHANH, new { @class = "form-control" })
+                        </div>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mô tả ngắn</label>
+                        @Html.TextAreaFor(m => m.MOTACHUNG, new { @class = "form-control", rows = 3 })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mô tả chi tiết</label>
+                        @Html.TextAreaFor(m => m.MOTACHITIET, new { @class = "form-control", rows = 5 })
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold border-bottom pb-2">Giá & Kho</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Giá bán (VNĐ)</label>
+                                <input type="text"
+                                       name="strDonGia"
+                                       class="form-control currency-input"
+                                       placeholder="0"
+                                       value="@(Model.DONGIA > 0 ? Model.DONGIA.ToString("#,##0").Replace(",", ".") : "")" />
+
+                                @Html.ValidationMessageFor(m => m.DONGIA, "", new { @class = "text-danger" })
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label class="form-label">Giá khuyến mãi (VNĐ)</label>
+                                <input type="text"
+                                       name="strGiaKhuyenMai"
+                                       class="form-control currency-input"
+                                       placeholder="Để trống nếu không có"
+                                       value="@(Model.GIAKHUYENMAI > 0 ? Model.GIAKHUYENMAI.Value.ToString("#,##0").Replace(",", ".") : "")" />
+
+                                @Html.ValidationMessageFor(m => m.GIAKHUYENMAI, "", new { @class = "text-danger" })
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label class="form-label">Số lượng tồn kho</label>
+                                @Html.TextBoxFor(m => m.SOLUONGTON, new { @class = "form-control", type = "number" })
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="fw-bold border-bottom pb-2">Hình ảnh hiện tại</h6>
+
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @foreach (var img in Model.HINHANHs)
+                                {
+                                    <img src="@img.URL" class="rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                                }
+                            </div>
+
+                            <label class="form-label small fw-bold">Thêm ảnh mới</label>
+                            <input type="file" name="images" class="form-control" multiple accept="image/*" />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                <a href="@Url.Action("SanPham")" class="btn btn-light border">Quay lại</a>
+                <button type="submit" class="btn btn-success px-4 fw-bold">Cập nhật</button>
+            </div>
+
+        }
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var currencyInputs = document.querySelectorAll('.currency-input');
+        function formatCurrency(input) {
+            var value = input.value.replace(/\D/g, "");
+            if (value !== "") {
+                value = new Intl.NumberFormat('vi-VN').format(value);
+            }
+            input.value = value;
+        }
+        currencyInputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                formatCurrency(this);
+            });
+            formatCurrency(input);
+        });
+        var numberInputs = document.querySelectorAll('.number-only');
+        numberInputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+    });
+    $('.currency-input').on('blur keyup', function () {
+        CheckGiaKhuyenMai();
+    });
+    function CheckGiaKhuyenMai() {
+        var strGiaBan = $('#txtDonGia').val().replace(/\./g, '');
+        var strGiaKM = $('#txtGiaKM').val().replace(/\./g, '');
+        var giaBan = parseFloat(strGiaBan) || 0;
+        var giaKM = parseFloat(strGiaKM) || 0;
+        if (giaKM > 0 && giaKM >= giaBan) {
+            var errorSpan = $('span[data-valmsg-for="GiaKhuyenMai"]');
+            if (errorSpan.length === 0) {
+                $('#txtGiaKM').addClass('is-invalid');
+            } else {
+                errorSpan.text("Giá khuyến mãi phải nhỏ hơn giá gốc!").addClass("field-validation-error").removeClass("field-validation-valid");
+            }
+        } else {
+            $('#txtGiaKM').removeClass('is-invalid');
+            $('span[data-valmsg-for="GiaKhuyenMai"]').text("").addClass("field-validation-valid").removeClass("field-validation-error");
+        }
+    }
+</script>

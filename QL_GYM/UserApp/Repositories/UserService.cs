@@ -355,10 +355,6 @@ namespace UserApp.Repositories
             }
         }
 
-        // --- 2. LẤY DANH SÁCH AUDIT TRAIL ---
-        // --- 2. LẤY DANH SÁCH AUDIT TRAIL ---
-        // --- 2. LẤY DANH SÁCH AUDIT TRAIL ---
-        // CẬP NHẬT: Thêm tham số string username
         public List<AuditLogViewModel> GetAuditLogs(string username = null)
         {
             var list = new List<AuditLogViewModel>();

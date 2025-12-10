@@ -1,11 +1,12 @@
-﻿using UserApp.ViewModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Web.Mvc;
-using UserApp.Repositories;
-using UserApp.Models;
 using System.Linq;  
-
+using System.Web.Mvc;
+using UserApp.Models;
+using UserApp.Repositories;
+using UserApp.ViewModel;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
 namespace UserApp.Controllers
 {
     public class AdminController : AdminBaseController
@@ -14,9 +15,11 @@ namespace UserApp.Controllers
 
        
         private QL_PHONGGYMEntities _context = new QL_PHONGGYMEntities();
+        private readonly PhanQuyenRepository _phanQuyenRepository;
 
         public AdminController()
         {
+            _phanQuyenRepository = new PhanQuyenRepository();
             userService = new UserService();
         }
 
@@ -162,7 +165,7 @@ namespace UserApp.Controllers
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
             var model = new GrantViewModel();
-            LoadMetadata(model); // Tải danh sách User/Table/Role
+            _phanQuyenRepository.LoadMetadata(model); // Tải danh sách User/Table/Role
             return View(model);
         }
 
@@ -172,24 +175,26 @@ namespace UserApp.Controllers
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
-            // 1. Validate dữ liệu
+            // 1. Validate: Chọn Bảng
             if (string.IsNullOrEmpty(model.SelectedTable))
             {
                 model.Message = "Vui lòng chọn bảng dữ liệu!";
                 model.MessageType = "error";
-                LoadMetadata(model);
+                _phanQuyenRepository.LoadMetadata(model);
                 return View(model);
             }
 
+            // 2. Validate: Chọn User hoặc Role
             string target = !string.IsNullOrEmpty(model.SelectedUser) ? model.SelectedUser : model.SelectedRole;
             if (string.IsNullOrEmpty(target))
             {
                 model.Message = "Vui lòng chọn User hoặc Nhóm quyền!";
                 model.MessageType = "error";
-                LoadMetadata(model);
+                _phanQuyenRepository.LoadMetadata(model);
                 return View(model);
             }
 
+            // 3. Validate: Chọn ít nhất 1 quyền
             List<string> permissions = new List<string>();
             if (model.Select) permissions.Add("SELECT");
             if (model.Insert) permissions.Add("INSERT");
@@ -200,44 +205,18 @@ namespace UserApp.Controllers
             {
                 model.Message = "Vui lòng chọn ít nhất một quyền!";
                 model.MessageType = "error";
-                LoadMetadata(model);
+                _phanQuyenRepository.LoadMetadata(model);
                 return View(model);
             }
 
             string permString = string.Join(", ", permissions);
 
-            // 2. Thực thi Stored Procedure
-            try
-            {
-                string sql = "";
-                if (actionType == "GRANT")
-                {
-                    sql = $"BEGIN sp_grant_permission('{target}', '{model.SelectedTable}', '{permString}'); END;";
-                    _context.Database.ExecuteSqlCommand(sql);
-                    model.Message = $"Thành công: Đã cấp quyền {permString} trên bảng {model.SelectedTable} cho {target}.";
-                    model.MessageType = "success";
-                }
-                else if (actionType == "REVOKE")
-                {
-                    sql = $"BEGIN sp_revoke_permission('{target}', '{model.SelectedTable}', '{permString}'); END;";
-                    _context.Database.ExecuteSqlCommand(sql);
-                    model.Message = $"Thành công: Đã thu hồi quyền {permString} trên bảng {model.SelectedTable} khỏi {target}.";
-                    model.MessageType = "warning";
-                }
-            }
-            catch (Exception ex)
-            {
-                // Bắt lỗi chi tiết từ Oracle
-                var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                if (ex.InnerException != null && ex.InnerException.InnerException != null)
-                {
-                    realError += " | Gốc: " + ex.InnerException.InnerException.Message;
-                }
-                model.Message = "Lỗi Database: " + realError;
-                model.MessageType = "error";
-            }
+            // 4. GỌI REPOSITORY ĐỂ THỰC THI (Đã sửa lỗi Connection tại đây)
+            // Thay vì viết OracleCommand dài dòng ở đây, ta gọi hàm đã viết trong Repository
+            _phanQuyenRepository.UpdatePermission(actionType, target, model.SelectedTable, permString, model);
 
-            LoadMetadata(model);
+            // 5. Load lại dữ liệu Dropdown
+            _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
 

@@ -1,7 +1,13 @@
-﻿using UserApp.Models;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System.Web;
+using System.IO;
+
+using UserApp.Models;
+using UserApp.ViewModel;
 namespace UserApp.Repositories
 {
     public class SanPhamRepository
@@ -16,14 +22,48 @@ namespace UserApp.Repositories
         {
             _context = new QL_PHONGGYMEntities(true);
         }
+
+        public SANPHAM GetSanPhamById(int id)
+        {
+            return _context.SANPHAMs.Find(id);
+        }
+
+
+
         public List<SANPHAM> GetAll()
         {
             return _context.SANPHAMs.ToList();
         }
 
-        public SANPHAM GetById(int id)
+        public List<LOAISANPHAM> GetLoai()
         {
-            return _context.SANPHAMs.Find(id);
+            return _context.LOAISANPHAMs.ToList();
+        }
+
+        public List<SanPhamViewModel> GetSanPhams()
+        {
+            var list = (from sp in _context.SANPHAMs
+                        join ha in _context.HINHANHs on sp.MASP equals ha.MASP into haGroup
+                        select new SanPhamViewModel
+                        {
+                            MaSP = (int)sp.MASP,
+                            TenSP = sp.TENSP,
+                            LoaiSP = sp.LOAISANPHAM.TENLOAISP,
+                            DonGia = sp.DONGIA,
+                            SoLuongTon = (int)sp.SOLUONGTON,
+                            GiaKhuyenMai = (decimal)sp.GIAKHUYENMAI,
+                            Hang = sp.HANG,
+                            XuatXu = sp.XUATXU,
+                            BaoHanh = sp.BAOHANH,
+                            MoTaChung = sp.MOTACHUNG,
+                            MaTaChiTiet = sp.MOTACHITIET,
+                            UrlHinhAnhChinh = haGroup.FirstOrDefault(h => h.ISMAIN == true).URL,
+                            UrlHinhAnhsPhu = haGroup.Where(h => h.ISMAIN == false)
+                                                    .Select(h => h.URL)
+                                                    .ToList()
+                        }).ToList();
+
+            return list;
         }
 
         public void Add(SANPHAM sp)
@@ -73,6 +113,120 @@ namespace UserApp.Repositories
                     throw;
                 }
             }
+        }
+
+        public List<HINHANH> GetImagesByProductId(int maSP)
+        {
+            return _context.HINHANHs.Where(x => x.MASP == maSP).ToList();
+        }
+
+        // Hàm xóa hình ảnh (Dùng khi người dùng thay thế ảnh mới)
+        public void DeleteImage(int maHinh)
+        {
+            var img = _context.HINHANHs.Find(maHinh);
+            if (img != null)
+            {
+                _context.HINHANHs.Remove(img);
+                _context.SaveChanges();
+            }
+        }
+
+        // Hàm thêm hình (Dùng lại logic cũ)
+        public void AddImage(HINHANH img)
+        {
+            try
+            {
+                _context.HINHANHs.Add(img);
+                _context.SaveChanges();
+            }
+            catch (OracleException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool UpdateProduct(SANPHAM model, List<string> newImageNames, out string errorMessage)
+        {
+            errorMessage = "";
+            try
+            {
+                var dbItem = _context.SANPHAMs.Find(model.MASP);
+                if (dbItem == null)
+                {
+                    errorMessage = "Sản phẩm không tồn tại.";
+                    return false;
+                }
+
+                // 1. Update basic information
+                dbItem.TENSP = model.TENSP;
+                dbItem.MALOAISP = model.MALOAISP;
+                dbItem.DONGIA = model.DONGIA;
+                dbItem.GIAKHUYENMAI = model.GIAKHUYENMAI;
+                dbItem.SOLUONGTON = model.SOLUONGTON;
+                dbItem.HANG = model.HANG;
+                dbItem.XUATXU = model.XUATXU;
+                dbItem.BAOHANH = model.BAOHANH;
+                dbItem.MOTACHUNG = model.MOTACHUNG;
+                dbItem.MOTACHITIET = model.MOTACHITIET;
+
+                // 2. Add new images (Append only logic)
+                if (newImageNames != null && newImageNames.Count > 0)
+                {
+                    foreach (var imageName in newImageNames)
+                    {
+                        var hinhAnh = new HINHANH
+                        {
+                            MASP = dbItem.MASP,
+                            URL = imageName, // Using just the filename as stored in your logic
+                            ISMAIN = false // Defaulting new uploads to sub-images
+                        };
+                        _context.HINHANHs.Add(hinhAnh);
+                    }
+                }
+
+                _context.SaveChanges();
+                return true;
+            }
+            catch (DbUpdateException ex) // Bắt lỗi của Entity Framework trước
+            {
+                // Hàm đệ quy hoặc vòng lặp để tìm OracleException bên trong
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    if (inner is OracleException oracleEx)
+                    {
+                        // Bắt đúng lỗi ORA-01031
+                        if (oracleEx.Number == 1031 || oracleEx.Number == 6550)
+                        {
+                            errorMessage = "Bạn không có quyền thực hiện thao tác này (ORA-01031: Insufficient Privileges).";
+                            return false;
+                        }
+
+                        // Các lỗi Oracle khác
+                        errorMessage = "Lỗi Database: " + oracleEx.Message;
+                        return false;
+                    }
+                    inner = inner.InnerException;
+                }
+
+                // Nếu không phải lỗi Oracle mà là lỗi khác của EF
+                errorMessage = "Lỗi cập nhật dữ liệu: " + ex.Message;
+                return false;
+            }
+            catch (Exception ex) // Catch các lỗi hệ thống khác (NullReference, v.v.)
+            {
+                errorMessage = "Lỗi hệ thống: " + ex.Message;
+                return false;
+            }
+        }
+
+        // Helper to check for duplicate names (excluding current ID)
+        public bool IsDuplicateName(string tenSp, int maSp)
+        {
+            return _context.SANPHAMs.Any(x =>
+                x.TENSP.ToLower() == tenSp.Trim().ToLower() &&
+                x.MASP != maSp
+            );
         }
     }
 }

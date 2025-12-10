@@ -265,6 +265,7 @@
     </Compile>
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\CartRepository.cs" />
+    <Compile Include="Repositories\PhanQuyenRepository.cs" />
     <Compile Include="Repositories\XacThucRepository.cs" />
     <Compile Include="Repositories\HoaDonRepository.cs" />
     <Compile Include="Repositories\InvoiceRepository.cs" />
