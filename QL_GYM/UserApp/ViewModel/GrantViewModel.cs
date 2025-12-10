@@ -23,7 +23,7 @@ namespace UserApp.Models
         // Thông báo lỗi/thành công
         public string Message { get; set; }
         public string MessageType { get; set; } // "success", "error", "warning"
-
+        public List<string> ExistingPrivileges { get; set; } = new List<string>();
         public GrantViewModel()
         {
             Users = new List<string>();
