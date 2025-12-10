@@ -12,7 +12,45 @@ namespace UserApp.Repositories
     {
 
         private readonly string _adminRawConnection = ConfigurationManager.ConnectionStrings["ADMIN_DB"].ConnectionString;
-  
+
+        // Thêm vào class PhanQuyenRepository
+
+        public List<string> GetUsersByRole(string roleName)
+        {
+            var list = new List<string>();
+            try
+            {
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_USERS_IN_ROLE", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (!reader.IsDBNull(0))
+                                {
+                                    list.Add(reader.GetString(0));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch(OracleException ex) 
+            {
+                throw ex;
+            }
+            return list;
+        }
+
         public void LoadMetadata(GrantViewModel model)
         {
             model.Users = new List<string>();
@@ -86,11 +124,15 @@ namespace UserApp.Repositories
                     using (var cmd = new OracleCommand(procName, conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
+
                         cmd.BindByName = false;
+
                         cmd.Parameters.Add("p_target", OracleDbType.Varchar2).Value = target;
                         cmd.Parameters.Add("p_table", OracleDbType.Varchar2).Value = tableName;
                         cmd.Parameters.Add("p_privs", OracleDbType.Varchar2).Value = privileges;
+
                         cmd.ExecuteNonQuery();
+
                         if (actionType == "GRANT")
                         {
                             model.Message = $"Thành công: Đã cấp quyền {privileges} trên bảng {tableName} cho {target}.";
@@ -117,21 +159,28 @@ namespace UserApp.Repositories
         public List<string> GetExistingPrivileges(string target, string tableName)
         {
             var existingPrivs = new List<string>();
+
             var parts = tableName.Split('.');
             if (parts.Length != 2) return existingPrivs;
             string name = parts[1]; 
+
             using (var conn = new OracleConnection(_adminRawConnection))
             {
                 try
                 {
                     conn.Open();
+
                     using (var cmd = new OracleCommand("ADMINGYM.SP_GET_EXISTING_PRIVS", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.BindByName = true; 
+
                         cmd.Parameters.Add("p_target", OracleDbType.Varchar2).Value = target;
+
                         cmd.Parameters.Add("p_table_name", OracleDbType.Varchar2).Value = name;
+
                         cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -152,34 +201,67 @@ namespace UserApp.Repositories
 
             return existingPrivs;
         }
-        public void CreateNewRole(string roleName)
+        public void RevokeRoleFromUser(string userName, string roleName, GrantViewModel model)
         {
-            using (var conn = new OracleConnection(_adminRawConnection))
+            try
             {
-                conn.Open();
-                using (var cmd = new OracleCommand("ADMINGYM.SP_CREATE_ROLE", conn))
+                using (var conn = new OracleConnection(_adminRawConnection))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.BindByName = true;
-                    cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+                    conn.Open();
 
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_REVOKE_ROLE_FROM_USER", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_user_name", OracleDbType.Varchar2).Value = userName;
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+
+                        cmd.ExecuteNonQuery();
+
+                        model.Message = $"Thành công: Đã thu hồi nhóm quyền '{roleName}' khỏi User '{userName}'.";
+                        model.MessageType = "warning"; // Màu vàng cảnh báo
+                    }
                 }
             }
-        }
-        public void AddUserToRole(string userName, string roleName)
-        {
-            using (var conn = new OracleConnection(_adminRawConnection))
+            catch (Exception ex)
             {
-                conn.Open();
-                using (var cmd = new OracleCommand("ADMINGYM.SP_GRANT_ROLE_TO_USER", conn))
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | " + ex.InnerException.Message;
+                model.Message = "Lỗi thu hồi Role: " + msg;
+                model.MessageType = "error";
+            }
+        }
+
+        public void GrantRoleToUser(string userName, string roleName, GrantViewModel model)
+        {
+            try
+            {
+                using (var conn = new OracleConnection(_adminRawConnection))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.BindByName = true;
-                    cmd.Parameters.Add("p_user_name", OracleDbType.Varchar2).Value = userName;
-                    cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GRANT_ROLE_TO_USER", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_user_name", OracleDbType.Varchar2).Value = userName;
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+
+                        cmd.ExecuteNonQuery();
+
+                        model.Message = $"Thành công: Đã thêm User '{userName}' vào nhóm quyền '{roleName}'.";
+                        model.MessageType = "success";
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | " + ex.InnerException.Message;
+                model.Message = "Lỗi cấp Role: " + msg;
+                model.MessageType = "error";
             }
         }
     }

@@ -156,8 +156,7 @@ namespace UserApp.Repositories
                     errorMessage = "Sản phẩm không tồn tại.";
                     return false;
                 }
-
-                // 1. Update basic information
+                
                 dbItem.TENSP = model.TENSP;
                 dbItem.MALOAISP = model.MALOAISP;
                 dbItem.DONGIA = model.DONGIA;
@@ -168,8 +167,7 @@ namespace UserApp.Repositories
                 dbItem.BAOHANH = model.BAOHANH;
                 dbItem.MOTACHUNG = model.MOTACHUNG;
                 dbItem.MOTACHITIET = model.MOTACHITIET;
-
-                // 2. Add new images (Append only logic)
+                
                 if (newImageNames != null && newImageNames.Count > 0)
                 {
                     foreach (var imageName in newImageNames)
@@ -177,8 +175,8 @@ namespace UserApp.Repositories
                         var hinhAnh = new HINHANH
                         {
                             MASP = dbItem.MASP,
-                            URL = imageName, // Using just the filename as stored in your logic
-                            ISMAIN = false // Defaulting new uploads to sub-images
+                            URL = imageName,
+                            ISMAIN = false
                         };
                         _context.HINHANHs.Add(hinhAnh);
                     }
@@ -187,33 +185,29 @@ namespace UserApp.Repositories
                 _context.SaveChanges();
                 return true;
             }
-            catch (DbUpdateException ex) // Bắt lỗi của Entity Framework trước
-            {
-                // Hàm đệ quy hoặc vòng lặp để tìm OracleException bên trong
+            catch (DbUpdateException ex)
+            {                
                 var inner = ex.InnerException;
                 while (inner != null)
                 {
                     if (inner is OracleException oracleEx)
-                    {
-                        // Bắt đúng lỗi ORA-01031
+                    {                        
                         if (oracleEx.Number == 1031 || oracleEx.Number == 6550)
                         {
-                            errorMessage = "Bạn không có quyền thực hiện thao tác này (ORA-01031: Insufficient Privileges).";
+                            errorMessage = "Bạn không có quyền thực hiện thao tác này.";
                             return false;
                         }
-
-                        // Các lỗi Oracle khác
+                        
                         errorMessage = "Lỗi Database: " + oracleEx.Message;
                         return false;
                     }
                     inner = inner.InnerException;
                 }
-
-                // Nếu không phải lỗi Oracle mà là lỗi khác của EF
+                
                 errorMessage = "Lỗi cập nhật dữ liệu: " + ex.Message;
                 return false;
             }
-            catch (Exception ex) // Catch các lỗi hệ thống khác (NullReference, v.v.)
+            catch (Exception ex)
             {
                 errorMessage = "Lỗi hệ thống: " + ex.Message;
                 return false;

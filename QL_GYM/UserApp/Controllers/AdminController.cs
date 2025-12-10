@@ -152,9 +152,6 @@ namespace UserApp.Controllers
             }
         }
 
-        public ActionResult Index() => View();
-        public ActionResult About() { ViewBag.Message = "Description page."; return View(); }
-        public ActionResult Contact() { ViewBag.Message = "Contact page."; return View(); }
 
         [HttpGet]
         public ActionResult PhanQuyen()
@@ -162,7 +159,7 @@ namespace UserApp.Controllers
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
             var model = new GrantViewModel();
-            _phanQuyenRepository.LoadMetadata(model); 
+            _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
 
@@ -210,31 +207,51 @@ namespace UserApp.Controllers
             return View(model);
         }
 
-        private void LoadMetadata(GrantViewModel model)
+        [HttpPost]
+        public ActionResult GrantUserRole(string userToGrant, string roleToGrant, string actionType)
         {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            var model = new GrantViewModel();
+
+            if (string.IsNullOrEmpty(userToGrant) || string.IsNullOrEmpty(roleToGrant))
+            {
+                model.Message = "Vui lòng chọn cả User và Role!";
+                model.MessageType = "error";
+            }
+            else
+            {
+                if (actionType == "GRANT")
+                {
+                    _phanQuyenRepository.GrantRoleToUser(userToGrant, roleToGrant, model);
+                }
+                else if (actionType == "REVOKE")
+                {
+                    _phanQuyenRepository.RevokeRoleFromUser(userToGrant, roleToGrant, model);
+                }
+            }
+            _phanQuyenRepository.LoadMetadata(model);
+
+            return View("PhanQuyen", model);
+        }
+
+        [HttpGet]
+        public JsonResult GetUsersInRole(string roleName)
+        {
+            if (Session["Admin"] == null)
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
+
+            if (string.IsNullOrEmpty(roleName))
+                return Json(new { success = false, message = "Chưa chọn chức vụ." }, JsonRequestBehavior.AllowGet);
+
             try
             {
-                model.Users = _context.Database.SqlQuery<string>(
-                    "SELECT username FROM SYS.dba_users ORDER BY username"
-                ).ToList();
-
-                model.Tables = _context.Database.SqlQuery<string>(
-                    "SELECT owner || '.' || table_name FROM SYS.dba_tables WHERE owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'CTXSYS', 'MDSYS') ORDER BY owner, table_name"
-                ).ToList();
-
-                model.Roles = _context.Database.SqlQuery<string>(
-                    "SELECT role FROM SYS.dba_roles ORDER BY role"
-                ).ToList();
+                var users = _phanQuyenRepository.GetUsersByRole(roleName);
+                return Json(new { success = true, data = users }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                var msg = ex.Message;
-                model.Message = "Không tải được danh sách từ Oracle (Kiểm tra quyền DBA). Lỗi: " + msg;
-                model.MessageType = "error";
-
-                model.Users = new List<string>();
-                model.Tables = new List<string>();
-                model.Roles = new List<string>();
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
         public ActionResult AuditTrail(string username, string tableName) 
@@ -273,6 +290,7 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
+
         [HttpGet]
         public JsonResult GetExistingPrivileges(string target, string tableName)
         {
