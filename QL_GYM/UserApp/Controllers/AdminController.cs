@@ -219,5 +219,76 @@ namespace UserApp.Controllers
             _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
+
+        // Hàm hỗ trợ: Load dữ liệu từ DBA_USERS, DBA_TABLES, DBA_ROLES
+        private void LoadMetadata(GrantViewModel model)
+        {
+            try
+            {
+                // Load TẤT CẢ Users (cần quyền SELECT ON dba_users)
+                model.Users = _context.Database.SqlQuery<string>(
+                    "SELECT username FROM SYS.dba_users ORDER BY username"
+                ).ToList();
+
+                // Load TẤT CẢ Tables (cần quyền SELECT ON dba_tables)
+                // Lọc bỏ các bảng hệ thống
+                model.Tables = _context.Database.SqlQuery<string>(
+                    "SELECT owner || '.' || table_name FROM SYS.dba_tables WHERE owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'CTXSYS', 'MDSYS') ORDER BY owner, table_name"
+                ).ToList();
+
+                // Load TẤT CẢ Roles (cần quyền SELECT ON dba_roles)
+                model.Roles = _context.Database.SqlQuery<string>(
+                    "SELECT role FROM SYS.dba_roles ORDER BY role"
+                ).ToList();
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                model.Message = "Không tải được danh sách từ Oracle (Kiểm tra quyền DBA). Lỗi: " + msg;
+                model.MessageType = "error";
+
+                // Dữ liệu giả để tránh crash trang web
+                model.Users = new List<string>();
+                model.Tables = new List<string>();
+                model.Roles = new List<string>();
+            }
+        }
+        public ActionResult AuditTrail(string username)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            var model = new AuditFilterViewModel();
+
+            try
+            {
+                // 1. Lấy danh sách Users cho ComboBox
+                var allUsers = userService.GetAllUsers();
+
+                // Chuyển đổi List<UserInfo> sang List<SelectListItem>
+                model.Users = allUsers.Select(u => new SelectListItem
+                {
+                    Value = u.Username,
+                    Text = u.Username,
+                    Selected = u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)
+                }).ToList();
+
+                // Thêm mục "Tất cả Users" vào đầu danh sách
+                model.Users.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Users ---", Selected = string.IsNullOrEmpty(username) });
+
+                // 2. Thiết lập Username đã chọn (nếu có)
+                model.SelectedUsername = username;
+
+                // 3. Lấy dữ liệu Audit Logs (có lọc nếu username khác rỗng)
+                model.AuditLogs = userService.GetAuditLogs(username);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
+                // Trả về model rỗng nếu có lỗi
+                return View(model);
+            }
+        }
     }
 }

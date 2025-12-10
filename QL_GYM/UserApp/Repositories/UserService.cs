@@ -26,16 +26,16 @@ namespace UserApp.Repositories
             var list = new List<SessionInfo>();
 
             try
-            {                
+            {
                 using (var conn = new OracleConnection(_adminRawConnection))
                 {
                     conn.Open();
 
                     using (var cmd = new OracleCommand("GET_USER_SESSIONS", conn))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;                        
+                        cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
-                        
+
                         var refCursor = cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor);
                         refCursor.Direction = ParameterDirection.Output;
 
@@ -53,7 +53,7 @@ namespace UserApp.Repositories
                                     Status = reader["STATUS"]?.ToString(),
                                     Type = reader["TYPE"]?.ToString()
                                 };
-                                
+
                                 if (reader["LOGON_TIME"] != DBNull.Value)
                                 {
                                     session.LogonTime = Convert.ToDateTime(reader["LOGON_TIME"]);
@@ -72,18 +72,18 @@ namespace UserApp.Repositories
 
             return list;
         }
-        
+
         public bool KillSession(int sid, int serial)
         {
             try
-            {                
+            {
                 using (var conn = new OracleConnection(_adminRawConnection))
                 {
                     conn.Open();
 
                     using (var cmd = new OracleCommand("KILL_USER_SESSION", conn))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;                        
+                        cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Add("p_sid", OracleDbType.Int32).Value = sid;
                         cmd.Parameters.Add("p_serial", OracleDbType.Int32).Value = serial;
 
@@ -93,7 +93,7 @@ namespace UserApp.Repositories
                 }
             }
             catch (Exception ex)
-            {                
+            {
                 throw new Exception("Không thể hủy phiên: " + ex.Message);
             }
         }
@@ -355,5 +355,82 @@ namespace UserApp.Repositories
             }
         }
 
+        public List<AuditLogViewModel> GetAuditLogs(string username = null)
+        {
+            var list = new List<AuditLogViewModel>();
+
+            using (var conn = new OracleConnection(_adminRawConnection))
+            {
+                try
+                {
+                    conn.Open();
+
+                    // 1. Xây dựng điều kiện lọc SQL
+                    string whereClause = "WHERE owner = 'ADMINGYM' AND timestamp > SYSDATE - (1/24) ";
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        // Thêm điều kiện lọc theo username. Sử dụng Parameter để tránh SQL Injection.
+                        whereClause += "AND username = :p_username ";
+                    }
+
+                    string sqlQuery = $@"
+                SELECT
+                    TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') AS THOI_GIAN,
+                    username AS DB_USER,
+                    os_username AS MAY_TINH,
+                    obj_name AS TEN_BANG,
+                    action_name AS HANH_DONG,
+                    sql_text AS CAU_LENH_SQL
+                FROM
+                    SYS.DBA_AUDIT_TRAIL
+                {whereClause}
+                ORDER BY
+                    timestamp DESC
+            ";
+
+                    using (var cmd = new OracleCommand(sqlQuery, conn))
+                    {
+                        // 2. Thêm tham số vào Command nếu có lọc
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            cmd.Parameters.Add(new OracleParameter("p_username", username.ToUpper()));
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            // ... (Phần còn lại của logic đọc dữ liệu giữ nguyên)
+                            while (reader.Read())
+                            {
+                                DateTime thoiGian;
+                                DateTime.TryParseExact(
+                                    reader["THOI_GIAN"]?.ToString(),
+                                    "dd/MM/yyyy HH:mm:ss",
+                                    null,
+                                    System.Globalization.DateTimeStyles.None,
+                                    out thoiGian
+                                );
+
+                                var log = new AuditLogViewModel
+                                {
+                                    ThoiGian = thoiGian,
+                                    DbUser = reader["DB_USER"]?.ToString(),
+                                    TenDoiTuong = reader["TEN_BANG"] != DBNull.Value ? reader["TEN_BANG"].ToString() : "N/A",
+                                    HanhDong = reader["HANH_DONG"]?.ToString(),
+                                    CauLenhSql = reader["CAU_LENH_SQL"] != DBNull.Value ? reader["CAU_LENH_SQL"].ToString() : "(Không có)"
+                                };
+                                list.Add(log);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Lỗi khi truy vấn Audit Trail: " + ex.Message);
+                }
+            }
+
+            return list;
+        }
     }
 }
+
