@@ -66,5 +66,6 @@ namespace UserApp.Repositories
 
             return list;
         }
+   
     }
 }
