@@ -267,6 +267,7 @@
     </Compile>
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\CartRepository.cs" />
+    <Compile Include="Repositories\PhanQuyenRepository.cs" />
     <Compile Include="Repositories\XacThucRepository.cs" />
     <Compile Include="Repositories\HoaDonRepository.cs" />
     <Compile Include="Repositories\InvoiceRepository.cs" />
@@ -670,6 +671,7 @@
     <Content Include="Views\Account\VerifyOTP.cshtml" />
     <Content Include="Views\Admin\PhanQuyen.cshtml" />
     <Content Include="Views\Staff\ThemSanPham.cshtml" />
+    <Content Include="Views\Staff\SuaSanPham.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
