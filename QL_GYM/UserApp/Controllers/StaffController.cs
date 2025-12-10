@@ -313,186 +313,147 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
-        // GET: Hiển thị form sửa sản phẩm
+        // GET: Hiển thị form sửa
+        // File: StaffController.cs (Action SuaSanPham - HTTP GET)
         [HttpGet]
         public ActionResult SuaSanPham(int id)
         {
-            // Kiểm tra đăng nhập
-            if (Session["user"] == null) return RedirectToAction("Login", "Staff");
+            if (Session["user"] == null || Session["connectionString"] == null) return RedirectToAction("Login", "Staff");
 
-            try
+            string connStr = Session["connectionString"].ToString();
+
+            using (var userContext = new QL_PHONGGYMEntities(connStr))
             {
-                // 1. Tìm sản phẩm theo ID
-                var sp = _context.SANPHAMs.Find(id);
-                if (sp == null)
+                try
                 {
-                    TempData["Error"] = "Không tìm thấy sản phẩm có ID = " + id;
+                    // Tải sản phẩm VÀ ép tải luôn các bảng liên quan (LOAISANPHAM, HINHANHS)
+                    var sp = userContext.SANPHAMs
+                        // .Include("LOAISANPHAM") // Thử nếu cách dưới không hoạt động
+                        // .Include("HINHANHs")    // Thử nếu cách dưới không hoạt động
+                        .FirstOrDefault(s => s.MASP == id);
+
+                    if (sp == null)
+                    {
+                        TempData["Error"] = "Không tìm thấy sản phẩm.";
+                        return RedirectToAction("SanPham");
+                    }
+
+                    // Nếu bạn không muốn dùng .Include, hãy ép tải dữ liệu như sau:
+                    // 1. Ép tải LOAISANPHAM (FIX lỗi Model.LOAISANPHAM.TENLOAISP)
+                    var tenLoai = sp.LOAISANPHAM.TENLOAISP;
+
+                    // 2. Ép tải HINHANHS (FIX lỗi Model.HINHANHs)
+                    sp.HINHANHs = userContext.HINHANHs.Where(x => x.MASP == id).ToList();
+
+                    // FIX lỗi DataBinding: TENLOAI -> TENLOAISP
+                    ViewBag.MaLoaiSP = new SelectList(userContext.LOAISANPHAMs.ToList(), "MALOAISP", "TENLOAISP", sp.MALOAISP);
+
+                    return View(sp);
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = "Lỗi khi tải dữ liệu: " + ex.Message;
                     return RedirectToAction("SanPham");
                 }
-
-                // 2. Load danh sách hình ảnh (FIX lỗi NullReferenceException ở View)
-                // Lưu ý: Kiểm tra kỹ tên bảng trong _context là HINHANH hay HINHANHs
-                sp.HINHANHs = _context.HINHANHs.Where(x => x.MASP == id).ToList();
-
-                // 3. Tạo Dropdown loại sản phẩm
-                // Lưu ý: Value là MALOAISP, Text hiển thị là TENLOAISP (Sửa lỗi DataBinding)
-                ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", sp.MALOAISP);
-
-                return View(sp);
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Lỗi khi tải dữ liệu: " + ex.Message;
-                return RedirectToAction("SanPham");
             }
         }
 
-        // POST: Xử lý cập nhật
+        // POST: Xử lý cập nhật CHỈ TÊN VÀ GIÁ
         [HttpPost]
-        [ValidateInput(false)] // Cho phép nhập HTML trong mô tả
+        [ValidateInput(false)]
         [ValidateAntiForgeryToken]
         public ActionResult SuaSanPham(SANPHAM model, HttpPostedFileBase MainImage, HttpPostedFileBase[] SubImages)
         {
             // 1. Kiểm tra session
-         
-            _spRepo = new SanPhamRepository(Session["connectionString"] as string);
-            // Khai báo đường dẫn ảnh
-            string uploadFolder = Server.MapPath("~/Content/Images/");
+            if (Session["user"] == null || Session["connectionString"] == null)
+                return RedirectToAction("Login", "Staff");
 
-            try
+            string connStr = Session["connectionString"].ToString();
+
+            // Khởi tạo Context với user hiện tại
+            using (var userContext = new QL_PHONGGYMEntities(connStr))
             {
-                // 2. Kiểm tra dữ liệu đầu vào (Server validation)
-                if (!ModelState.IsValid)
+                // Sử dụng Transaction
+                using (var transaction = userContext.Database.BeginTransaction())
                 {
-                    // Lấy danh sách lỗi chi tiết từ ModelState để hiện ra (nếu cần)
-                    string err = string.Join("; ", ModelState.Values
-                                               .SelectMany(v => v.Errors)
-                                               .Select(e => e.ErrorMessage));
-                    throw new Exception("Dữ liệu nhập chưa đúng: " + err);
-                }
-
-                // 3. LẤY DỮ LIỆU CŨ TỪ DB (Thay vì dùng Repo Update chung chung)
-                // Cách này giúp ta kiểm soát được cột nào được sửa, cột nào không.
-                var dbItem = _context.SANPHAMs.Find(model.MASP);
-                if (dbItem == null) throw new Exception("Sản phẩm không tồn tại trong hệ thống.");
-
-                // --- CẬP NHẬT THÔNG TIN (TRỪ SỐ LƯỢNG TỒN) ---
-                dbItem.TENSP = model.TENSP;
-                dbItem.MALOAISP = model.MALOAISP;
-                dbItem.DONGIA = model.DONGIA;
-                dbItem.GIAKHUYENMAI = model.GIAKHUYENMAI;
-                dbItem.HANG = model.HANG;
-                dbItem.XUATXU = model.XUATXU;
-                dbItem.BAOHANH = model.BAOHANH;
-                dbItem.MOTACHUNG = model.MOTACHUNG;
-                dbItem.MOTACHITIET = model.MOTACHITIET; // Chuỗi đã nối dấu |
-
-                // QUAN TRỌNG: KHÔNG cập nhật dbItem.SOLUONGTON
-                // dbItem.SOLUONGTON = model.SOLUONGTON; // <-- Bỏ dòng này đi
-
-                // 4. XỬ LÝ ẢNH CHÍNH (Nếu có upload mới)
-                if (MainImage != null && MainImage.ContentLength > 0)
-                {
-                    // Tìm ảnh chính cũ
-                    var oldMain = _context.HINHANHs.FirstOrDefault(x => x.MASP == model.MASP && x.ISMAIN == true);
-
-                    // Xóa ảnh cũ (DB + File vật lý)
-                    if (oldMain != null)
+                    try
                     {
-                        string oldPath = Path.Combine(uploadFolder, oldMain.URL);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                        _context.HINHANHs.Remove(oldMain);
+                        // Kiểm tra dữ liệu đầu vào cơ bản
+                        if (string.IsNullOrEmpty(model.TENSP) || model.DONGIA <= 0 || !ModelState.IsValid)
+                            throw new Exception("Vui lòng nhập Tên sản phẩm và Đơn giá hợp lệ.");
+
+                        // 2. TÌM DỮ LIỆU CŨ VÀ CẬP NHẬT
+                        var dbItem = userContext.SANPHAMs.Find(model.MASP);
+                        if (dbItem == null) throw new Exception("Sản phẩm không tồn tại.");
+
+                        // --- CHỈ CẬP NHẬT 3 THUỘC TÍNH NÀY ---
+                        dbItem.TENSP = model.TENSP;
+                        dbItem.DONGIA = model.DONGIA;
+                        dbItem.GIAKHUYENMAI = model.GIAKHUYENMAI;
+
+                        // KHÔNG SỬA: MALOAISP, SOLUONGTON, HANG, XUATXU, MOTACHITIET, HINHANHs
+
+                        // 3. LƯU VÀ HOÀN TẤT
+                        userContext.SaveChanges();
+                        transaction.Commit();
+
+                        TempData["Success"] = "Cập nhật Tên và Giá sản phẩm thành công!";
+                        return View(model);
                     }
-
-                    // Lưu ảnh mới
-                    string uniqueName = $"{DateTime.Now.Ticks}_Main_{MainImage.FileName}";
-                    MainImage.SaveAs(Path.Combine(uploadFolder, uniqueName));
-
-                    // Thêm record vào DB
-                    _context.HINHANHs.Add(new HINHANH { MASP = model.MASP, URL = uniqueName, ISMAIN = true });
-                }
-
-                // 5. XỬ LÝ ẢNH PHỤ (Nếu có upload mới)
-                if (SubImages != null && SubImages[0] != null)
-                {
-                    // Tìm và xóa toàn bộ ảnh phụ cũ
-                    var oldSubs = _context.HINHANHs.Where(x => x.MASP == model.MASP && x.ISMAIN == false).ToList();
-                    foreach (var img in oldSubs)
+                    catch (Exception ex)
                     {
-                        string oldPath = Path.Combine(uploadFolder, img.URL);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                        _context.HINHANHs.Remove(img);
-                    }
+                        transaction.Rollback();
 
-                    // Thêm loạt ảnh phụ mới
-                    int count = 0;
-                    foreach (var file in SubImages)
-                    {
-                        if (file != null && file.ContentLength > 0 && count < 3)
+                        // 1. Logic bóc tách lỗi Oracle (ORA-01031)
+                        string message = ex.Message;
+                        bool is1031 = false;
+                        Exception tempEx = ex;
+
+                        while (tempEx != null)
                         {
-                            string uniqueName = $"{DateTime.Now.Ticks}_Sub_{count}_{file.FileName}";
-                            file.SaveAs(Path.Combine(uploadFolder, uniqueName));
-                            _context.HINHANHs.Add(new HINHANH { MASP = model.MASP, URL = uniqueName, ISMAIN = false });
-                            count++;
+                            if (tempEx is Oracle.ManagedDataAccess.Client.OracleException oracleEx)
+                            {
+                                if (oracleEx.Number == 1031)
+                                {
+                                    is1031 = true;
+                                    break;
+                                }
+                            }
+                            tempEx = tempEx.InnerException;
                         }
-                    }
-                }
 
-                // 6. LƯU TẤT CẢ VÀO DATABASE
-                _context.SaveChanges();
-
-                TempData["Success"] = "Cập nhật sản phẩm thành công!";
-                return RedirectToAction("SanPham","Staff"); // Quay về danh sách
-            }
-            catch (Exception ex)
-            {
-                // 1. Logic tìm lỗi gốc (Deep dive)
-                // Biến để xác định xem có phải lỗi 1031 không
-                bool isPrivilegeError = false;
-
-                // Tạo biến tạm để duyệt qua các lớp Exception con
-                Exception tempEx = ex;
-                while (tempEx != null)
-                {
-                    // Kiểm tra nếu exception hiện tại là OracleException
-                    if (tempEx is Oracle.ManagedDataAccess.Client.OracleException oracleEx)
-                    {
-                        if (oracleEx.Number == 1031) // Bắt đúng mã 1031
+                        // 2. Xử lý thông báo
+                        if (is1031)
                         {
-                            isPrivilegeError = true;
-                            break; // Tìm thấy rồi thì thoát vòng lặp
+                            message = "LỖI QUYỀN HẠN (ORA-01031): Tài khoản " + Session["user"] + " không đủ quyền để cập nhật sản phẩm này. Vui lòng kiểm tra quyền DELETE/UPDATE trên bảng SANPHAM và HINHANH.";
                         }
-                    }
-                    // Nếu không phải, đi tiếp vào bên trong
-                    tempEx = tempEx.InnerException;
-                }
-
-                // 2. Xử lý thông báo lỗi ra màn hình
-                if (isPrivilegeError)
-                {
-                    TempData["Error"] = "Tài khoản của bạn không đủ quyền để thực hiện thao tác này.";
-                }
-                else
-                {
-                    // Nếu không phải lỗi 1031 thì hiện lỗi chi tiết như bình thường
-                    string message = ex.Message;
-                    if (ex.InnerException != null)
-                    {
-                        message += " | Chi tiết: " + ex.InnerException.Message;
-                        // Đào thêm 1 cấp nữa nếu có
-                        if (ex.InnerException.InnerException != null)
+                        else
                         {
-                            message += " | Gốc: " + ex.InnerException.InnerException.Message;
+                            // Nếu không phải 1031, hiển thị lỗi chi tiết
+                            // (Code này giữ nguyên logic hiển thị lỗi gốc đã viết trước đó)
+                            tempEx = ex;
+                            while (tempEx.InnerException != null) tempEx = tempEx.InnerException;
+                            message = "Lỗi Database: " + tempEx.Message;
                         }
-                    }
-                    TempData["Error"] = "CÓ LỖI XẢY RA: " + message;
-                }
 
-                // 3. Load lại Dropdown và trả về View
-                ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
-                return View(model);
+                        TempData["Error"] = "CÓ LỖI XẢY RA: " + message;
+
+                        // 3. Tải lại dữ liệu cho Dropdown và trả về View
+                        using (var freshContext = new QL_PHONGGYMEntities(connStr))
+                        {
+                            ViewBag.MaLoaiSP = new SelectList(freshContext.LOAISANPHAMs.ToList(), "MALOAISP", "TENLOAISP", model.MALOAISP);
+                        }
+
+                        // Cần tải lại item gốc để View không bị lỗi
+                        var currentItem = userContext.SANPHAMs.Find(model.MASP);
+                        if (currentItem != null) currentItem.HINHANHs = userContext.HINHANHs.Where(x => x.MASP == currentItem.MASP).ToList();
+
+                        return View(currentItem ?? model);
+                    }
+                }
             }
         }
+     
         public ActionResult Index()
         {
             return View();

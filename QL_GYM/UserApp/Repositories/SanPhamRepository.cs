@@ -75,71 +75,12 @@ namespace UserApp.Repositories
                 }
             }
         }
-        // Trong SanPhamRepository.cs
-        public bool UpdateProduct(SANPHAM sp, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                var dbEntry = _context.SANPHAMs.Find(sp.MASP);
-                if (dbEntry == null)
-                {
-                    errorMessage = "Sản phẩm không tồn tại.";
-                    return false;
-                }
 
-                // Cập nhật từng trường dữ liệu
-                dbEntry.TENSP = sp.TENSP;
-                dbEntry.MALOAISP = sp.MALOAISP;
-                dbEntry.DONGIA = sp.DONGIA;
-                dbEntry.SOLUONGTON = sp.SOLUONGTON;
-                dbEntry.GIAKHUYENMAI = sp.GIAKHUYENMAI;
-                dbEntry.HANG = sp.HANG;
-                dbEntry.XUATXU = sp.XUATXU;
-                dbEntry.BAOHANH = sp.BAOHANH;
-                dbEntry.MOTACHUNG = sp.MOTACHUNG;
-                dbEntry.MOTACHITIET = sp.MOTACHITIET;
-
-                // Lưu ý: Không cập nhật hình ảnh ở hàm này, hình ảnh xử lý riêng
-                _context.SaveChanges();
-                return true;
-            }
-            catch (OracleException ex)
-            {
-                throw ex;
-
-            }
-        }
-
-        // Hàm lấy danh sách hình ảnh theo MASP
+        // Hàm này được gọi để tải ảnh ngay lập tức
         public List<HINHANH> GetImagesByProductId(int maSP)
         {
+            // Đảm bảo tên DbSet là HINHANHs hoặc HINHANH tùy theo Context của bạn
             return _context.HINHANHs.Where(x => x.MASP == maSP).ToList();
-        }
-
-        // Hàm xóa hình ảnh (Dùng khi người dùng thay thế ảnh mới)
-        public void DeleteImage(int maHinh)
-        {
-            var img = _context.HINHANHs.Find(maHinh);
-            if (img != null)
-            {
-                _context.HINHANHs.Remove(img);
-                _context.SaveChanges();
-            }
-        }
-
-        // Hàm thêm hình (Dùng lại logic cũ)
-        public void AddImage(HINHANH img)
-        {
-            try
-            {
-                _context.HINHANHs.Add(img);
-                _context.SaveChanges();
-            }
-            catch (OracleException ex)
-            {
-                throw ex;
-            }
         }
     }
 }

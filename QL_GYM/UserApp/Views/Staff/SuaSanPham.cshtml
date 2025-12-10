@@ -2,16 +2,12 @@
 
 @{
     ViewBag.Title = "Cập Nhật Sản Phẩm";
-    Layout = "~/Views/Shared/_LayoutStaff.cshtml"; // Đảm bảo đúng layout của bạn
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
 
-    // Tách ảnh để hiển thị
-    // Kiểm tra null để tránh lỗi nếu sản phẩm chưa có ảnh nào
-    var listHinh = Model.HINHANHs ?? new List<UserApp.Models.HINHANH>();
-    var mainImg = listHinh.FirstOrDefault(x => x.ISMAIN == true);
-    var subImgs = listHinh.Where(x => x.ISMAIN == false).ToList();
+
 }
 
-<div class="container-fluid" style="padding-top: 20px;">
+<div class="container" style="padding-top: 20px;">
 
     @if (TempData["Success"] != null)
     {
@@ -31,16 +27,19 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3 bg-warning text-white">
-            <h5 class="m-0 font-weight-bold"><i class="fa fa-edit"></i> Cập Nhật Sản Phẩm: @Model.TENSP</h5>
+            <h5 class="m-0 font-weight-bold"><i class="fa fa-edit"></i> CHỈNH SỬA TÊN VÀ GIÁ: @Model.TENSP</h5>
         </div>
 
         <div class="card-body">
             @using (Html.BeginForm("SuaSanPham", "Staff", FormMethod.Post, new { enctype = "multipart/form-data", @id = "form-product" }))
             {
                 @Html.AntiForgeryToken()
-                @Html.HiddenFor(model => model.MASP) <div class="row">
-                    <div class="col-lg-8">
-                        <h5 class="text-info border-bottom pb-2">Thông tin chung</h5>
+                @Html.HiddenFor(model => model.MASP)
+
+                <div class="row">
+
+                    <div class="col-lg-7">
+                        <h5 class="text-info border-bottom pb-2">Thông tin được phép thay đổi</h5>
 
                         <div class="form-group">
                             <label class="font-weight-bold">Tên sản phẩm <span class="text-danger">(*)</span></label>
@@ -48,126 +47,25 @@
                             @Html.ValidationMessageFor(model => model.TENSP, "", new { @class = "text-danger" })
                         </div>
 
-                        <div class="form-group">
-                            <label class="font-weight-bold">Loại sản phẩm</label>
-                            @Html.DropDownList("MALOAISP", (IEnumerable<SelectListItem>)ViewBag.MaLoaiSP, new { @class = "form-control" })
-                            @Html.ValidationMessageFor(model => model.MALOAISP, "", new { @class = "text-danger" })
-                        </div>
-
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Đơn giá (VNĐ)</label>
-                                @Html.EditorFor(model => model.DONGIA, new { htmlAttributes = new { @class = "form-control", type = "number" } })
+                                <label class="font-weight-bold">Đơn giá (VNĐ) <span class="text-danger">(*)</span></label>
+                                @Html.EditorFor(model => model.DONGIA, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", required = "required" } })
+                                @Html.ValidationMessageFor(model => model.DONGIA, "", new { @class = "text-danger" })
                             </div>
                             <div class="form-group col-md-6">
                                 <label class="font-weight-bold">Giá khuyến mãi (VNĐ)</label>
-                                @Html.EditorFor(model => model.GIAKHUYENMAI, new { htmlAttributes = new { @class = "form-control", type = "number" } })
+                                @Html.EditorFor(model => model.GIAKHUYENMAI, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0" } })
+                                @Html.ValidationMessageFor(model => model.GIAKHUYENMAI, "", new { @class = "text-danger" })
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label>Hãng sản xuất</label>
-                                @Html.EditorFor(model => model.HANG, new { htmlAttributes = new { @class = "form-control" } })
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>Xuất xứ</label>
-                                @Html.EditorFor(model => model.XUATXU, new { htmlAttributes = new { @class = "form-control" } })
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label>Chế độ bảo hành</label>
-                                @Html.EditorFor(model => model.BAOHANH, new { htmlAttributes = new { @class = "form-control" } })
-                            </div>
-
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Số lượng tồn kho</label>
-                                @Html.EditorFor(model => model.SOLUONGTON, new
-                           {
-                               htmlAttributes = new
-                               {
-                                   @class = "form-control",
-                                   @readonly = "readonly",
-                                   @style = "background-color: #e9ecef; cursor: not-allowed;" // Làm xám ô input
-                               }
-                           })
-                                <small class="text-muted"><i>* Số lượng tồn chỉ được thay đổi thông qua chức năng Nhập Hàng/Bán Hàng.</i></small>
-                            </div>
-                        </div>
-
-                        <div class="form-group mt-3 p-3 bg-light border rounded">
-                            <label class="font-weight-bold text-primary">Thông số kỹ thuật (Mô tả chi tiết)</label>
-
-                            @Html.HiddenFor(model => model.MOTACHITIET, new { @id = "RealMotaChiTiet" })
-
-                            <div id="attribute-list"></div>
-
-                            <button type="button" class="btn btn-sm btn-info mt-2" onclick="addRow()">
-                                <i class="fa fa-plus-circle"></i> Thêm dòng thông số
-                            </button>
-                        </div>
-
+                        <h5 class="text-danger border-bottom pb-2 mt-4">Thông tin không được phép sửa</h5>
                         <div class="form-group">
-                            <label class="font-weight-bold">Mô tả chung</label>
-                            @Html.TextAreaFor(model => model.MOTACHUNG, new { @class = "form-control", rows = "3" })
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <h5 class="text-info border-bottom pb-2">Quản lý hình ảnh</h5>
-
-                        <div class="card mb-3 border-primary">
-                            <div class="card-header bg-primary text-white text-center">Ảnh Chính (Cover)</div>
-                            <div class="card-body text-center">
-                                <div class="mb-2">
-                                    <label>Hiện tại:</label>
-                                    @if (mainImg != null)
-                                    {
-                                        <div class="mb-2">
-                                            <img src="~/Content/Images/@mainImg.URL" class="img-thumbnail" style="max-height: 150px;" />
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <p class="text-muted small">(Chưa có ảnh chính)</p>
-                                    }
-                                </div>
-                                <hr />
-                                <div class="text-left">
-                                    <label class="text-danger font-weight-bold">Thay ảnh mới:</label>
-                                    <img id="previewMain" src="#" style="display:none; max-height:120px; margin-bottom:10px; border:1px dashed #ccc" />
-                                    <input type="file" name="MainImage" class="form-control-file" accept="image/*" onchange="previewImage(this, 'previewMain')" />
-                                </div>
-                            </div>
+                            <label class="font-weight-bold">Số lượng tồn kho</label>
+                            <p class="form-control-static">@Model.SOLUONGTON</p>
                         </div>
 
-                        <div class="card border-secondary">
-                            <div class="card-header bg-secondary text-white text-center">Ảnh Phụ</div>
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <label>Hiện tại (@subImgs.Count ảnh):</label>
-                                    <div class="d-flex flex-wrap justify-content-center">
-                                        @foreach (var item in subImgs)
-                                        {
-                                            <img src="~/Content/Images/@item.URL" style="width: 60px; height: 60px; object-fit: cover; margin: 2px; border: 1px solid #ddd;" />
-                                        }
-                                        @if (subImgs.Count == 0)
-                                        {<span class="text-muted small">Không có ảnh phụ</span>}
-                                    </div>
-                                </div>
-                                <hr />
-                                <div class="text-left">
-                                    <label class="text-danger font-weight-bold">Tải lên bộ ảnh phụ mới:</label>
-                                    <p class="small text-muted mb-1">(*Lưu ý: Nếu chọn ảnh ở đây, toàn bộ ảnh phụ cũ sẽ bị xóa và thay thế)</p>
-
-                                    <div class="mb-1"><input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" /></div>
-                                    <div class="mb-1"><input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" /></div>
-                                    <div class="mb-1"><input type="file" name="SubImages" class="form-control-file form-control-sm" accept="image/*" /></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -175,10 +73,10 @@
                     <div class="col-12 text-center">
                         <hr />
                         <button type="submit" class="btn btn-warning btn-lg px-5">
-                            <i class="fa fa-save"></i> Lưu Cập Nhật
+                            <i class="fa fa-save"></i> Lưu Thay Đổi
                         </button>
                         <a href="@Url.Action("SanPham", "Staff")" class="btn btn-secondary btn-lg px-4 ml-2">
-                            <i class="fa fa-arrow-left"></i> Quay lại
+                            <i class="fa fa-arrow-left"></i> Hủy
                         </a>
                     </div>
                 </div>
@@ -186,77 +84,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // 1. Hàm xem trước ảnh (Preview)
-    function previewImage(input, previewId) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                var img = document.getElementById(previewId);
-                img.src = e.target.result;
-                img.style.display = 'block';
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // 2. Hàm thêm dòng input mô tả
-    function addRow(value = "") {
-        // Nếu value có chứa dấu ngoặc kép sẽ gây lỗi HTML, nên cần escape (đơn giản nhất là dùng value trong attribute)
-        // Tuy nhiên cách an toàn nhất là tạo element bằng DOM
-
-        var container = document.getElementById('attribute-list');
-
-        var div = document.createElement('div');
-        div.className = 'input-group mb-2 attribute-row';
-        div.innerHTML = `
-            <input type="text" class="form-control attr-input" value="${value}" placeholder="VD: Màu sắc: Đỏ" />
-            <div class="input-group-append">
-                <button class="btn btn-outline-danger" type="button" onclick="removeRow(this)">
-                    <i class="fa fa-trash"></i>
-                </button>
-            </div>
-        `;
-        container.appendChild(div);
-    }
-
-    // 3. Hàm xóa dòng
-    function removeRow(btn) {
-        btn.closest('.attribute-row').remove();
-    }
-
-    // 4. KHI TRANG VỪA TẢI XONG: Đổ dữ liệu từ DB vào các dòng input
-    document.addEventListener("DOMContentLoaded", function () {
-        var existingData = document.getElementById('RealMotaChiTiet').value;
-
-        if (existingData && existingData.trim() !== "") {
-            // Tách chuỗi | thành mảng
-            var items = existingData.split('|');
-            items.forEach(function (item) {
-                if (item.trim() !== "") addRow(item);
-            });
-        } else {
-            // Nếu chưa có dữ liệu thì tạo 1 dòng trống cho đẹp
-            addRow();
-        }
-    });
-
-    // 5. TRƯỚC KHI SUBMIT: Nối các dòng lại thành chuỗi |
-    document.getElementById('form-product').addEventListener('submit', function (e) {
-        var inputs = document.querySelectorAll('.attr-input');
-        var values = [];
-
-        inputs.forEach(function (input) {
-            var val = input.value.trim();
-            if (val) {
-                // Thay thế ký tự | bằng - để tránh lỗi format
-                val = val.replace(/\|/g, "-");
-                values.push(val);
-            }
-        });
-
-        // Gán kết quả vào hidden input để gửi về Controller
-        document.getElementById('RealMotaChiTiet').value = values.join('|');
-    });
-</script>
