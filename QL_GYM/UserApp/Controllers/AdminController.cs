@@ -274,6 +274,42 @@ namespace UserApp.Controllers
                 model.Roles = new List<string>();
             }
         }
+        public ActionResult AuditTrail(string username)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
+            var model = new AuditFilterViewModel();
+
+            try
+            {
+                // 1. Lấy danh sách Users cho ComboBox
+                var allUsers = userService.GetAllUsers();
+
+                // Chuyển đổi List<UserInfo> sang List<SelectListItem>
+                model.Users = allUsers.Select(u => new SelectListItem
+                {
+                    Value = u.Username,
+                    Text = u.Username,
+                    Selected = u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)
+                }).ToList();
+
+                // Thêm mục "Tất cả Users" vào đầu danh sách
+                model.Users.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Users ---", Selected = string.IsNullOrEmpty(username) });
+
+                // 2. Thiết lập Username đã chọn (nếu có)
+                model.SelectedUsername = username;
+
+                // 3. Lấy dữ liệu Audit Logs (có lọc nếu username khác rỗng)
+                model.AuditLogs = userService.GetAuditLogs(username);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
+                // Trả về model rỗng nếu có lỗi
+                return View(model);
+            }
+        }
     }
 }

@@ -1,0 +1,65 @@
+﻿@model UserApp.ViewModel.AuditFilterViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Theo Dõi Hoạt Động (Audit Trail)";
+}
+
+<h2><span class="glyphicon glyphicon-eye-open"></span> Theo Dõi Hoạt Động (Audit Trail)</h2>
+<p class="text-info">Hiển thị các hành động Audit trong 1 giờ gần nhất của schema ADMINGYM.</p>
+<hr />
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Lỗi:</strong> @ViewBag.ErrorMessage
+    </div>
+}
+
+@using (Html.BeginForm("AuditTrail", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label for="username">Lọc theo User:</label>
+        @Html.DropDownList("username", Model.Users, new
+        {
+            @class = "form-control",
+            // Gửi form khi giá trị ComboBox thay đổi
+            onchange = "this.form.submit();"
+        })
+    </div>
+
+    @* Có thể thêm nút "Lọc" nếu không dùng onchange *@
+    @* <button type="submit" class="btn btn-primary">Lọc</button> *@
+
+    <button type="button" class="btn btn-default" onclick="window.location.href='/Admin/AuditTrail'">
+        <span class="glyphicon glyphicon-refresh"></span> Tải lại toàn bộ
+    </button>
+}
+
+<hr />
+
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.AuditLogs[0].ThoiGian)</th>
+            <th>@Html.DisplayNameFor(model => model.AuditLogs[0].DbUser)</th>
+            <th>@Html.DisplayNameFor(model => model.AuditLogs[0].TenDoiTuong)</th>
+            <th>@Html.DisplayNameFor(model => model.AuditLogs[0].HanhDong)</th>
+            <th>@Html.DisplayNameFor(model => model.AuditLogs[0].CauLenhSql)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.AuditLogs)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.ThoiGian)</td>
+                <td>@Html.DisplayFor(modelItem => item.DbUser)</td>
+                <td>@Html.DisplayFor(modelItem => item.TenDoiTuong)</td>
+                <td>@Html.DisplayFor(modelItem => item.HanhDong)</td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@item.CauLenhSql">
+                    @Html.DisplayFor(modelItem => item.CauLenhSql)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
