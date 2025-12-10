@@ -30,8 +30,9 @@
     </div>
 
     <div class="form-group mx-2">
-        <label for="SelectedTableName" class="mr-2">Lọc theo Bảng:</label>
-        @Html.DropDownListFor(m => m.SelectedTableName, Model.Tables, new
+        <label for="tableName" class="mr-2">Lọc theo Bảng:</label>
+        
+        @Html.DropDownList("tableName", Model.Tables, new
         {
             @class = "form-control",
             onchange = "this.form.submit();"
