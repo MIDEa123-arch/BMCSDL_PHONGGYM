@@ -254,7 +254,7 @@ namespace UserApp.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        public ActionResult AuditTrail(string username)
+        public ActionResult AuditTrail(string username, string tableName) 
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
@@ -262,32 +262,31 @@ namespace UserApp.Controllers
 
             try
             {
-                // 1. Lấy danh sách Users cho ComboBox
                 var allUsers = userService.GetAllUsers();
-
-                // Chuyển đổi List<UserInfo> sang List<SelectListItem>
                 model.Users = allUsers.Select(u => new SelectListItem
                 {
                     Value = u.Username,
                     Text = u.Username,
                     Selected = u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)
                 }).ToList();
-
-                // Thêm mục "Tất cả Users" vào đầu danh sách
                 model.Users.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Users ---", Selected = string.IsNullOrEmpty(username) });
-
-                // 2. Thiết lập Username đã chọn (nếu có)
+                var allTables = userService.GetAuditedTables();
+                model.Tables = allTables.Select(t => new SelectListItem
+                {
+                    Value = t,
+                    Text = t,
+                    Selected = t.Equals(tableName, StringComparison.OrdinalIgnoreCase)
+                }).ToList();
+                model.Tables.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Bảng ---", Selected = string.IsNullOrEmpty(tableName) });
                 model.SelectedUsername = username;
-
-                // 3. Lấy dữ liệu Audit Logs (có lọc nếu username khác rỗng)
-                model.AuditLogs = userService.GetAuditLogs(username);
+                model.SelectedTableName = tableName;
+                model.AuditLogs = userService.GetAuditLogs(username, tableName);
 
                 return View(model);
             }
             catch (Exception ex)
             {
                 ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
-                // Trả về model rỗng nếu có lỗi
                 return View(model);
             }
         }
@@ -295,7 +294,6 @@ namespace UserApp.Controllers
         [HttpGet]
         public JsonResult GetExistingPrivileges(string target, string tableName)
         {
-            // target là SelectedUser hoặc SelectedRole
             if (string.IsNullOrEmpty(target) || string.IsNullOrEmpty(tableName))
             {
                 return Json(new { success = false, message = "Thiếu User/Role hoặc Bảng." }, JsonRequestBehavior.AllowGet);
@@ -303,16 +301,61 @@ namespace UserApp.Controllers
 
             try
             {
-                // Gọi Repository để lấy danh sách quyền
                 var privileges = _phanQuyenRepository.GetExistingPrivileges(target, tableName);
 
                 return Json(new { success = true, data = privileges }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                // Trả về lỗi
                 return Json(new { success = false, message = "Lỗi server khi lấy quyền: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateRole(GrantViewModel model)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            if (string.IsNullOrWhiteSpace(model.NewRoleName))
+            {
+                TempData["Error"] = "Vui lòng nhập tên Role.";
+                return RedirectToAction("PhanQuyen");
+            }
+
+            try
+            {
+                _phanQuyenRepository.CreateNewRole(model.NewRoleName.Trim().ToUpper());
+                TempData["Success"] = $"Đã tạo Role '{model.NewRoleName}' thành công. Vui lòng reload trang để cập nhật danh sách Role.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi tạo Role: " + ex.Message;
+            }
+            return RedirectToAction("PhanQuyen");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AssignRole(GrantViewModel model)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            if (string.IsNullOrWhiteSpace(model.UserToAssign) || string.IsNullOrWhiteSpace(model.RoleToAssign))
+            {
+                TempData["Error"] = "Vui lòng chọn User và Role để gán.";
+                return RedirectToAction("PhanQuyen");
+            }
+
+            try
+            {
+                _phanQuyenRepository.AddUserToRole(model.UserToAssign, model.RoleToAssign);
+                TempData["Success"] = $"Đã gán Role '{model.RoleToAssign}' cho User '{model.UserToAssign}' thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi gán Role: " + ex.Message;
+            }
+            return RedirectToAction("PhanQuyen");
         }
     } 
 }
