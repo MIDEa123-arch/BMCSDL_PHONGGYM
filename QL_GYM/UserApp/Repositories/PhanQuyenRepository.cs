@@ -12,7 +12,45 @@ namespace UserApp.Repositories
     {
 
         private readonly string _adminRawConnection = ConfigurationManager.ConnectionStrings["ADMIN_DB"].ConnectionString;
-  
+
+        // Thêm vào class PhanQuyenRepository
+
+        public List<string> GetUsersByRole(string roleName)
+        {
+            var list = new List<string>();
+            try
+            {
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_USERS_IN_ROLE", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (!reader.IsDBNull(0))
+                                {
+                                    list.Add(reader.GetString(0));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch(OracleException ex) 
+            {
+                throw ex;
+            }
+            return list;
+        }
+
         public void LoadMetadata(GrantViewModel model)
         {
             model.Users = new List<string>();
@@ -81,12 +119,10 @@ namespace UserApp.Repositories
         }
         public void UpdatePermission(string actionType, string target, string tableName, string privileges, GrantViewModel model)
         {
-            // Xác định tên Procedure dựa trên hành động
             string procName = (actionType == "GRANT") ? "sp_grant_permission" : "sp_revoke_permission";
 
             try
             {
-                // Tạo kết nối MỚI HOÀN TOÀN để tránh lỗi ORA-50001
                 using (var conn = new OracleConnection(_adminRawConnection))
                 {
                     conn.Open();
@@ -94,20 +130,15 @@ namespace UserApp.Repositories
                     using (var cmd = new OracleCommand(procName, conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        // Map tham số theo vị trí (quan trọng nếu tên biến trong Proc khác tên tham số C#)
+
                         cmd.BindByName = false;
 
-                        // 1. User/Role
                         cmd.Parameters.Add("p_target", OracleDbType.Varchar2).Value = target;
-                        // 2. Table Name
                         cmd.Parameters.Add("p_table", OracleDbType.Varchar2).Value = tableName;
-                        // 3. Privileges string
                         cmd.Parameters.Add("p_privs", OracleDbType.Varchar2).Value = privileges;
 
-                        // Thực thi
                         cmd.ExecuteNonQuery();
 
-                        // Thông báo thành công
                         if (actionType == "GRANT")
                         {
                             model.Message = $"Thành công: Đã cấp quyền {privileges} trên bảng {tableName} cho {target}.";
@@ -130,42 +161,32 @@ namespace UserApp.Repositories
                 model.MessageType = "error";
             }
         }
-        // Trong PhanQuyenRepository.cs (Thay thế phương thức hiện tại)
 
         public List<string> GetExistingPrivileges(string target, string tableName)
         {
             var existingPrivs = new List<string>();
 
-            // Phân tích Table Name (chỉ cần lấy tên bảng)
             var parts = tableName.Split('.');
             if (parts.Length != 2) return existingPrivs;
-            string name = parts[1]; // Tên bảng (ví dụ: KHACHHANG)
+            string name = parts[1]; 
 
-            // Sử dụng _adminRawConnection
             using (var conn = new OracleConnection(_adminRawConnection))
             {
                 try
                 {
                     conn.Open();
 
-                    // ----------------------------------------------------
-                    // THAY THẾ: Gọi Stored Procedure SP_GET_EXISTING_PRIVS
-                    // ----------------------------------------------------
                     using (var cmd = new OracleCommand("ADMINGYM.SP_GET_EXISTING_PRIVS", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.BindByName = true; // Sử dụng tên tham số
+                        cmd.BindByName = true; 
 
-                        // 1. Tham số đầu vào: TARGET (User/Role)
                         cmd.Parameters.Add("p_target", OracleDbType.Varchar2).Value = target;
 
-                        // 2. Tham số đầu vào: TABLE_NAME
                         cmd.Parameters.Add("p_table_name", OracleDbType.Varchar2).Value = name;
 
-                        // 3. Tham số đầu ra: CURSOR (chứa kết quả SELECT)
                         cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
 
-                        // ExecuteReader sẽ đọc kết quả từ RefCursor
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -180,13 +201,74 @@ namespace UserApp.Repositories
                 }
                 catch (Exception ex)
                 {
-                    // Xử lý lỗi
-                    // Log lỗi vào Console (hoặc logger thực tế)
                     Console.WriteLine("Lỗi khi gọi Procedure SP_GET_EXISTING_PRIVS: " + ex.Message);
                 }
             }
 
             return existingPrivs;
+        }
+        public void RevokeRoleFromUser(string userName, string roleName, GrantViewModel model)
+        {
+            try
+            {
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_REVOKE_ROLE_FROM_USER", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_user_name", OracleDbType.Varchar2).Value = userName;
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+
+                        cmd.ExecuteNonQuery();
+
+                        model.Message = $"Thành công: Đã thu hồi nhóm quyền '{roleName}' khỏi User '{userName}'.";
+                        model.MessageType = "warning"; // Màu vàng cảnh báo
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | " + ex.InnerException.Message;
+                model.Message = "Lỗi thu hồi Role: " + msg;
+                model.MessageType = "error";
+            }
+        }
+
+        public void GrantRoleToUser(string userName, string roleName, GrantViewModel model)
+        {
+            try
+            {
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GRANT_ROLE_TO_USER", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_user_name", OracleDbType.Varchar2).Value = userName;
+                        cmd.Parameters.Add("p_role_name", OracleDbType.Varchar2).Value = roleName;
+
+                        cmd.ExecuteNonQuery();
+
+                        model.Message = $"Thành công: Đã thêm User '{userName}' vào nhóm quyền '{roleName}'.";
+                        model.MessageType = "success";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | " + ex.InnerException.Message;
+                model.Message = "Lỗi cấp Role: " + msg;
+                model.MessageType = "error";
+            }
         }
     }
 }

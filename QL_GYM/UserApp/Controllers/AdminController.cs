@@ -152,30 +152,22 @@ namespace UserApp.Controllers
             }
         }
 
-        public ActionResult Index() => View();
-        public ActionResult About() { ViewBag.Message = "Description page."; return View(); }
-        public ActionResult Contact() { ViewBag.Message = "Contact page."; return View(); }
 
-
-
-        // GET: Hiển thị form Phân quyền
         [HttpGet]
         public ActionResult PhanQuyen()
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
             var model = new GrantViewModel();
-            _phanQuyenRepository.LoadMetadata(model); // Tải danh sách User/Table/Role
+            _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
 
-        // POST: Xử lý nút Cấp quyền (Grant) hoặc Thu hồi (Revoke)
         [HttpPost]
         public ActionResult PhanQuyen(GrantViewModel model, string actionType)
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
-            // 1. Validate: Chọn Bảng
             if (string.IsNullOrEmpty(model.SelectedTable))
             {
                 model.Message = "Vui lòng chọn bảng dữ liệu!";
@@ -184,7 +176,6 @@ namespace UserApp.Controllers
                 return View(model);
             }
 
-            // 2. Validate: Chọn User hoặc Role
             string target = !string.IsNullOrEmpty(model.SelectedUser) ? model.SelectedUser : model.SelectedRole;
             if (string.IsNullOrEmpty(target))
             {
@@ -194,7 +185,6 @@ namespace UserApp.Controllers
                 return View(model);
             }
 
-            // 3. Validate: Chọn ít nhất 1 quyền
             List<string> permissions = new List<string>();
             if (model.Select) permissions.Add("SELECT");
             if (model.Insert) permissions.Add("INSERT");
@@ -211,46 +201,57 @@ namespace UserApp.Controllers
 
             string permString = string.Join(", ", permissions);
 
-            // 4. GỌI REPOSITORY ĐỂ THỰC THI (Đã sửa lỗi Connection tại đây)
-            // Thay vì viết OracleCommand dài dòng ở đây, ta gọi hàm đã viết trong Repository
             _phanQuyenRepository.UpdatePermission(actionType, target, model.SelectedTable, permString, model);
 
-            // 5. Load lại dữ liệu Dropdown
             _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
 
-        // Hàm hỗ trợ: Load dữ liệu từ DBA_USERS, DBA_TABLES, DBA_ROLES
-        private void LoadMetadata(GrantViewModel model)
+        [HttpPost]
+        public ActionResult GrantUserRole(string userToGrant, string roleToGrant, string actionType)
         {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            var model = new GrantViewModel();
+
+            if (string.IsNullOrEmpty(userToGrant) || string.IsNullOrEmpty(roleToGrant))
+            {
+                model.Message = "Vui lòng chọn cả User và Role!";
+                model.MessageType = "error";
+            }
+            else
+            {
+                if (actionType == "GRANT")
+                {
+                    _phanQuyenRepository.GrantRoleToUser(userToGrant, roleToGrant, model);
+                }
+                else if (actionType == "REVOKE")
+                {
+                    _phanQuyenRepository.RevokeRoleFromUser(userToGrant, roleToGrant, model);
+                }
+            }
+            _phanQuyenRepository.LoadMetadata(model);
+
+            return View("PhanQuyen", model);
+        }
+
+        [HttpGet]
+        public JsonResult GetUsersInRole(string roleName)
+        {
+            if (Session["Admin"] == null)
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." }, JsonRequestBehavior.AllowGet);
+
+            if (string.IsNullOrEmpty(roleName))
+                return Json(new { success = false, message = "Chưa chọn chức vụ." }, JsonRequestBehavior.AllowGet);
+
             try
             {
-                // Load TẤT CẢ Users (cần quyền SELECT ON dba_users)
-                model.Users = _context.Database.SqlQuery<string>(
-                    "SELECT username FROM SYS.dba_users ORDER BY username"
-                ).ToList();
-
-                // Load TẤT CẢ Tables (cần quyền SELECT ON dba_tables)
-                // Lọc bỏ các bảng hệ thống
-                model.Tables = _context.Database.SqlQuery<string>(
-                    "SELECT owner || '.' || table_name FROM SYS.dba_tables WHERE owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'CTXSYS', 'MDSYS') ORDER BY owner, table_name"
-                ).ToList();
-
-                // Load TẤT CẢ Roles (cần quyền SELECT ON dba_roles)
-                model.Roles = _context.Database.SqlQuery<string>(
-                    "SELECT role FROM SYS.dba_roles ORDER BY role"
-                ).ToList();
+                var users = _phanQuyenRepository.GetUsersByRole(roleName);
+                return Json(new { success = true, data = users }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                var msg = ex.Message;
-                model.Message = "Không tải được danh sách từ Oracle (Kiểm tra quyền DBA). Lỗi: " + msg;
-                model.MessageType = "error";
-
-                // Dữ liệu giả để tránh crash trang web
-                model.Users = new List<string>();
-                model.Tables = new List<string>();
-                model.Roles = new List<string>();
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
         public ActionResult AuditTrail(string username)
@@ -290,9 +291,7 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
-        // Trong AdminController.cs (Thêm phương thức này)
 
-        // GET: Lấy các quyền hiện có của User/Role trên Table đã chọn
         [HttpGet]
         public JsonResult GetExistingPrivileges(string target, string tableName)
         {

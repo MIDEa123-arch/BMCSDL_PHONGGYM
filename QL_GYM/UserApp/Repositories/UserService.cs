@@ -289,9 +289,6 @@ namespace UserApp.Repositories
             }
         }
 
-
-        // Check connection alive
-        // Trả về int để phân biệt lỗi: 1=OK, 0=Bị Kill, -1=Mất tích
         public int CheckSessionAlive(string username, string sid, string serial)
         {
             try
