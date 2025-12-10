@@ -192,6 +192,7 @@ namespace UserApp.Repositories
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
+                    // REF CURSOR output
                     var refCursor = cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor);
                     refCursor.Direction = ParameterDirection.Output;
 
@@ -350,6 +351,68 @@ namespace UserApp.Repositories
                 return false;
             }
         }
+
+        public List<AuditLogViewModel> GetAuditLogs(string username = null)
+        {
+            var list = new List<AuditLogViewModel>();
+
+            using (var conn = new OracleConnection(_adminRawConnection))
+            {
+                try
+                {
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_AUDIT_LOGS", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
+                        }
+                        else
+                        {
+                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = DBNull.Value;
+                        }
+
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                DateTime thoiGian;
+                                DateTime.TryParseExact(
+                                    reader["THOI_GIAN"]?.ToString(),
+                                    "dd/MM/yyyy HH:mm:ss",
+                                    null,
+                                    System.Globalization.DateTimeStyles.None,
+                                    out thoiGian
+                                );
+
+                                var log = new AuditLogViewModel
+                                {
+                                    ThoiGian = thoiGian,
+                                    DbUser = reader["DB_USER"]?.ToString(),
+                                    TenDoiTuong = reader["TEN_BANG"] != DBNull.Value ? reader["TEN_BANG"].ToString() : "N/A",
+                                    HanhDong = reader["HANH_DONG"]?.ToString(),
+                                    CauLenhSql = reader["CAU_LENH_SQL"] != DBNull.Value ? reader["CAU_LENH_SQL"].ToString() : "(Không có)"
+                                };
+                                list.Add(log);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Lỗi khi gọi Procedure Audit Trail: " + ex.Message);
+                }
+            }
+
+            return list;
+        }
+
         public List<string> GetAuditedTables()
         {
             var tables = new List<string>();

@@ -63,27 +63,33 @@ namespace UserApp.Repositories
                 {
                     conn.Open();
 
+                    // Gọi Procedure
                     using (var cmd = new OracleCommand("ADMINGYM.SP_GET_METADATA", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.BindByName = true; 
+                        cmd.BindByName = true; // Bắt buộc
 
+                        // Khai báo tham số Output
                         cmd.Parameters.Add("p_cursor_users", OracleDbType.RefCursor, ParameterDirection.Output);
                         cmd.Parameters.Add("p_cursor_tables", OracleDbType.RefCursor, ParameterDirection.Output);
                         cmd.Parameters.Add("p_cursor_roles", OracleDbType.RefCursor, ParameterDirection.Output);
 
                         using (var reader = cmd.ExecuteReader())
                         {
+                            // 1. Đọc Users
                             while (reader.Read())
                             {
                                 if (!reader.IsDBNull(0)) model.Users.Add(reader.GetString(0));
                             }
+
+                            // 2. Đọc Tables (Chỉ thuộc ADMINGYM)
                             if (reader.NextResult())
                             {
                                 while (reader.Read())
                                 {
                                     if (!reader.IsDBNull(0))
                                     {
+                                        // Lấy tên bảng (Ví dụ: KHACHHANG)
                                         string tableName = reader.GetString(0);
 
                                         model.Tables.Add("ADMINGYM." + tableName);

@@ -254,7 +254,7 @@ namespace UserApp.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        public ActionResult AuditTrail(string username, string tableName) 
+        public ActionResult AuditTrail(string username, string tableName)
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
@@ -289,73 +289,6 @@ namespace UserApp.Controllers
                 ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
                 return View(model);
             }
-        }
-
-        [HttpGet]
-        public JsonResult GetExistingPrivileges(string target, string tableName)
-        {
-            if (string.IsNullOrEmpty(target) || string.IsNullOrEmpty(tableName))
-            {
-                return Json(new { success = false, message = "Thiếu User/Role hoặc Bảng." }, JsonRequestBehavior.AllowGet);
-            }
-
-            try
-            {
-                var privileges = _phanQuyenRepository.GetExistingPrivileges(target, tableName);
-
-                return Json(new { success = true, data = privileges }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi server khi lấy quyền: " + ex.Message }, JsonRequestBehavior.AllowGet);
-            }
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateRole(GrantViewModel model)
-        {
-            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
-
-            if (string.IsNullOrWhiteSpace(model.NewRoleName))
-            {
-                TempData["Error"] = "Vui lòng nhập tên Role.";
-                return RedirectToAction("PhanQuyen");
-            }
-
-            try
-            {
-                _phanQuyenRepository.CreateNewRole(model.NewRoleName.Trim().ToUpper());
-                TempData["Success"] = $"Đã tạo Role '{model.NewRoleName}' thành công. Vui lòng reload trang để cập nhật danh sách Role.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Lỗi khi tạo Role: " + ex.Message;
-            }
-            return RedirectToAction("PhanQuyen");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult AssignRole(GrantViewModel model)
-        {
-            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
-
-            if (string.IsNullOrWhiteSpace(model.UserToAssign) || string.IsNullOrWhiteSpace(model.RoleToAssign))
-            {
-                TempData["Error"] = "Vui lòng chọn User và Role để gán.";
-                return RedirectToAction("PhanQuyen");
-            }
-
-            try
-            {
-                _phanQuyenRepository.AddUserToRole(model.UserToAssign, model.RoleToAssign);
-                TempData["Success"] = $"Đã gán Role '{model.RoleToAssign}' cho User '{model.UserToAssign}' thành công.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Lỗi khi gán Role: " + ex.Message;
-            }
-            return RedirectToAction("PhanQuyen");
-        }
+        }       
     } 
 }
