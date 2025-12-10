@@ -20,6 +20,84 @@ namespace UserApp.Repositories
         // Connection string EF/USER sau khi login
         public string ConnectionStringUser => !string.IsNullOrEmpty(_connectionStringUser) ? _connectionStringUser : _adminEfConnection;
 
+        // --- 1. LẤY DANH SÁCH SESSION CỦA USER ---
+        public List<SessionInfo> GetUserSessions(string username)
+        {
+            var list = new List<SessionInfo>();
+
+            try
+            {                
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("GET_USER_SESSIONS", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;                        
+                        cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
+                        
+                        var refCursor = cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor);
+                        refCursor.Direction = ParameterDirection.Output;
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var session = new SessionInfo
+                                {
+                                    Sid = Convert.ToInt32(reader["SID"]),
+                                    Serial = Convert.ToInt32(reader["SERIAL#"]),
+                                    Machine = reader["MACHINE"]?.ToString(),
+                                    Program = reader["PROGRAM"]?.ToString(),
+                                    OsUser = reader["OSUSER"]?.ToString(),
+                                    Status = reader["STATUS"]?.ToString(),
+                                    Type = reader["TYPE"]?.ToString()
+                                };
+                                
+                                if (reader["LOGON_TIME"] != DBNull.Value)
+                                {
+                                    session.LogonTime = Convert.ToDateTime(reader["LOGON_TIME"]);
+                                }
+
+                                list.Add(session);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi lấy session: " + ex.Message);
+            }
+
+            return list;
+        }
+        
+        public bool KillSession(int sid, int serial)
+        {
+            try
+            {                
+                using (var conn = new OracleConnection(_adminRawConnection))
+                {
+                    conn.Open();
+
+                    using (var cmd = new OracleCommand("KILL_USER_SESSION", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;                        
+                        cmd.Parameters.Add("p_sid", OracleDbType.Int32).Value = sid;
+                        cmd.Parameters.Add("p_serial", OracleDbType.Int32).Value = serial;
+
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {                
+                throw new Exception("Không thể hủy phiên: " + ex.Message);
+            }
+        }
+
         public bool DeleteUser(string username)
         {
             try

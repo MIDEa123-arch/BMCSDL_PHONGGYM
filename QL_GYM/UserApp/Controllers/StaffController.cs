@@ -138,6 +138,7 @@ namespace UserApp.Controllers
                 }
                 else if (ex.Number == 28000)
                 {
+                    userService.Logout(username);
                     TempData["Error"] = "Tài khoản bạn đã bị khóa!";
                 }
                 else

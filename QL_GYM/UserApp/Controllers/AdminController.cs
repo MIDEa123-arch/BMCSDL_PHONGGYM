@@ -20,7 +20,49 @@ namespace UserApp.Controllers
             userService = new UserService();
         }
 
- 
+        [HttpGet]
+        public JsonResult GetUserSessions(string username)
+        {
+            try
+            {
+                // Gọi Service lấy list session
+                var sessions = userService.GetUserSessions(username);
+
+                // Trả về JSON cho Frontend vẽ bảng
+                return Json(new { success = true, data = sessions }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi server: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        
+        [HttpPost]
+        public JsonResult KillSession(int sid, int serial)
+        {
+            if (Session["Admin"] == null)
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập Admin đã hết hạn." });
+            }
+
+            try
+            {                
+                bool result = userService.KillSession(sid, serial);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Đã hủy phiên làm việc thành công!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể hủy phiên này." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi hủy session: " + ex.Message });
+            }
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]

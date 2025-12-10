@@ -24,332 +24,355 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-else
+
+@if (TempData["Success"] != null)
 {
-    <!-- Filters & Search -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm người dùng...">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" id="statusFilter">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="OPEN">Đang hoạt động</option>
-                        <option value="LOCKED">Đã khóa</option>
-                        <option value="EXPIRED">Hết hạn</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" id="lockFilter">
-                        <option value="">Tất cả</option>
-                        <option value="false">Không khóa</option>
-                        <option value="true">Đã khóa</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                        <i class="fas fa-redo me-2"></i>Đặt lại
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row mb-3">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-primary bg-opacity-10 text-primary rounded p-3">
-                                <i class="fas fa-users fa-2x"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1">Tổng người dùng</h6>
-                            <h3 class="mb-0">@Model.Count</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 text-success rounded p-3">
-                                <i class="fas fa-check-circle fa-2x"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1">Đang hoạt động</h6>
-                            <h3 class="mb-0">@Model.Count(u => u.AccountStatus == "OPEN")</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-danger bg-opacity-10 text-danger rounded p-3">
-                                <i class="fas fa-lock fa-2x"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1">Đã khóa</h6>
-                            <h3 class="mb-0">@Model.Count(u => u.IsLocked == true)</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-info bg-opacity-10 text-info rounded p-3">
-                                <i class="fas fa-desktop fa-2x"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1">Phiên hoạt động</h6>
-                            <h3 class="mb-0">@Model.Sum(u => u.ActiveSessionCount)</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    <!-- Users Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-table me-2"></i>Bảng người dùng
-                </h5>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" title="Export Excel">
-                        <i class="fas fa-file-excel"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary" title="Export PDF">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary" title="Print">
-                        <i class="fas fa-print"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="userTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="px-4">
-                                <input type="checkbox" class="form-check-input" id="selectAll">
-                            </th>
-                            <th>Username</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Đăng nhập cuối</th>
-                            <th class="text-center">Khóa</th>
-                            <th class="text-center">Phiên</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model)
-                        {
-                            <tr>
-                                <td class="px-4">
-                                    <input type="checkbox" class="form-check-input row-checkbox">
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                                             style="width: 36px; height: 36px;">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <strong>@user.Username</strong>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if (user.AccountStatus == "OPEN")
-                                    {
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check-circle me-1"></i>Đang hoạt động
-                                        </span>
-                                    }
-                                    else if (user.AccountStatus == "LOCKED")
-                                    {
-                                        <span class="badge bg-danger">
-                                            <i class="fas fa-lock me-1"></i>Đã khóa
-                                        </span>
-                                    }
-                                    else if (user.AccountStatus == "EXPIRED")
-                                    {
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="fas fa-clock me-1"></i>Hết hạn
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">@user.AccountStatus</span>
-                                    }
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        @(user.CreatedDate?.ToString("dd/MM/yyyy") ?? "N/A")
-                                    </small>
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        @(user.LastLogin?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa đăng nhập")
-                                    </small>
-                                </td>
-                                <td class="text-center">
-                                    @if (user.IsLocked == true)
-                                    {
-                                        <span class="text-danger">
-                                            <i class="fas fa-lock"></i>
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-success">
-                                            <i class="fas fa-unlock"></i>
-                                        </span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    @if (user.ActiveSessionCount > 0)
-                                    {
-                                        <span class="badge bg-info">@user.ActiveSessionCount</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">0</span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <form method="post" action="@Url.Action("TrangThai", "Admin")" onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="username" value="@user.Username" />
-                                            <input type="hidden" name="isLocked" value="@(user.IsLocked ? "true" : "false")" />
-
-                                            @if (user.IsLocked)
-                                            {
-                                                <button class="btn btn-outline-success" title="Mở khóa">
-                                                    <i class="fas fa-lock-open"></i>
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-outline-danger" title="Khóa">
-                                                    <i class="fas fa-lock"></i>
-                                                </button>
-                                            }
-                                        </form>
-                                        <button class="btn btn-outline-warning" title="Chỉnh sửa">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form method="post" action="@Url.Action("XoaNguoiDung", "Admin")" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="username" value="@user.Username" />
-                                            <button class="btn btn-outline-danger" title="Xóa">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card-footer bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-muted">
-                    Hiển thị <strong>@Model.Count</strong> người dùng
-                </div>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#">Trước</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">3</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Sau</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm tài khoản...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="OPEN">Đang hoạt động</option>
+                    <option value="LOCKED">Đã khóa</option>
+                    <option value="EXPIRED">Hết hạn</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="lockFilter">
+                    <option value="">-- Trạng thái khóa --</option>
+                    <option value="false">Không khóa</option>
+                    <option value="true">Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                    <i class="fas fa-redo me-2"></i>Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded p-3">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Tổng User</h6>
+                        <h3 class="mb-0">@Model.Count</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 text-success rounded p-3">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Hoạt động</h6>
+                        <h3 class="mb-0">@Model.Count(u => u.AccountStatus == "OPEN")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded p-3">
+                            <i class="fas fa-lock fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Đã khóa</h6>
+                        <h3 class="mb-0">@Model.Count(u => u.IsLocked == true)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 text-info rounded p-3">
+                            <i class="fas fa-desktop fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Phiên Online</h6>
+                        <h3 class="mb-0">@Model.Sum(u => u.ActiveSessionCount)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-table me-2 text-primary"></i>Danh sách tài khoản
+            </h5>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" title="Xuất Excel"><i class="fas fa-file-excel"></i></button>
+                <button class="btn btn-outline-secondary" title="Xuất PDF"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-outline-secondary" title="In"><i class="fas fa-print"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="userTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="px-4" style="width: 50px;">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </th>
+                        <th>Tài khoản</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Đăng nhập cuối</th>
+                        <th class="text-center">Khóa</th>
+                        <th class="text-center">Phiên</th>
+                        <th class="text-center" style="width: 150px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="px-4">
+                                <input type="checkbox" class="form-check-input row-checkbox">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@user.Username</div>
+                                        <small class="text-muted">Manager</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (user.AccountStatus == "OPEN")
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                                        Hoạt động
+                                    </span>
+                                }
+                                else if (user.AccountStatus == "LOCKED")
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">
+                                        Đã khóa
+                                    </span>
+                                }
+                                else if (user.AccountStatus == "EXPIRED")
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">
+                                        Hết hạn
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@user.AccountStatus</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="text-muted">@(user.CreatedDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    @(user.LastLogin?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa từng đăng nhập")
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                @if (user.IsLocked)
+                                {
+                                    <i class="fas fa-lock text-danger" title="Bị khóa"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-unlock text-success" title="Bình thường"></i>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (user.ActiveSessionCount > 0)
+                                {
+                                    <button class="btn badge rounded-pill bg-info text-dark border-0 shadow-sm"
+                                            onclick="showSessions('@user.Username')"
+                                            style="cursor: pointer;"
+                                            title="Click để xem chi tiết">
+                                        @user.ActiveSessionCount <i class="fas fa-eye ms-1"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted opacity-50">0</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <form method="post" action="@Url.Action("TrangThai", "Admin")" style="display:inline;"
+                                          onsubmit="return confirm('Xác nhận thay đổi trạng thái của @user.Username?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="username" value="@user.Username" />
+                                        <input type="hidden" name="isLocked" value="@(user.IsLocked ? "true" : "false")" />
+
+                                        @if (user.IsLocked)
+                                        {
+                                            <button class="btn btn-outline-success" title="Mở khóa">
+                                                <i class="fas fa-lock-open"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-outline-danger" title="Khóa tài khoản">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        }
+                                    </form>
+
+                                    <button class="btn btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+
+                                    <form method="post" action="@Url.Action("XoaNguoiDung", "Admin")" style="display:inline;"
+                                          onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn user @user.Username không?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="username" value="@user.Username" />
+                                        <button class="btn btn-outline-danger" title="Xóa người dùng">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Hiển thị <strong>@Model.Count</strong> người dùng
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">Trước</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">Sau</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sessionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title text-primary">
+                    <i class="fas fa-network-wired me-2"></i>Chi tiết phiên làm việc
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    User đang xem: <strong id="modalUsername" class="text-danger fs-5">---</strong>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-primary">
+                            <tr>
+                                <th class="text-center">SID / Serial#</th>
+                                <th>Máy (Machine)</th>
+                                <th>Chương trình</th>
+                                <th>Đăng nhập lúc</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center">Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="loadingSession" class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Đang tải dữ liệu từ Oracle...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section scripts {
     <script>
-        // Initialize popovers
+        // --- 1. SCRIPT LỌC & TÌM KIẾM (GIỮ NGUYÊN) ---
         document.addEventListener('DOMContentLoaded', function () {
+            // Init bootstrap popovers if any
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
                 return new bootstrap.Popover(popoverTriggerEl);
             });
         });
 
-        // Search functionality
-        document.getElementById('searchInput')?.addEventListener('keyup', function () {
-            filterTable();
-        });
-
-        document.getElementById('statusFilter')?.addEventListener('change', function () {
-            filterTable();
-        });
-
-        document.getElementById('lockFilter')?.addEventListener('change', function () {
-            filterTable();
-        });
+        document.getElementById('searchInput')?.addEventListener('keyup', filterTable);
+        document.getElementById('statusFilter')?.addEventListener('change', filterTable);
+        document.getElementById('lockFilter')?.addEventListener('change', filterTable);
 
         function filterTable() {
             const searchValue = document.getElementById('searchInput').value.toLowerCase();
@@ -359,24 +382,30 @@ else
             const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
             for (let row of rows) {
+                // Cell index: 1 = Username, 2 = Status text, 5 = Lock icon
                 const username = row.cells[1].textContent.toLowerCase();
-                const status = row.cells[2].textContent;
+                // Lấy text trong badge status (loại bỏ khoảng trắng thừa)
+                const status = row.cells[2].textContent.trim();
+
+                // Check lock icon class
                 const lockIcon = row.cells[5].querySelector('i');
                 const isLocked = lockIcon?.classList.contains('fa-lock') ? 'true' : 'false';
 
                 let showRow = true;
 
-                if (searchValue && !username.includes(searchValue)) {
-                    showRow = false;
+                if (searchValue && !username.includes(searchValue)) showRow = false;
+
+                // Logic map value select box với text hiển thị
+                if (statusValue) {
+                    let mapStatus = "";
+                    if (statusValue === "OPEN") mapStatus = "Hoạt động";
+                    else if (statusValue === "LOCKED") mapStatus = "Đã khóa";
+                    else if (statusValue === "EXPIRED") mapStatus = "Hết hạn";
+
+                    if (!status.includes(mapStatus)) showRow = false;
                 }
 
-                if (statusValue && !status.includes(statusValue)) {
-                    showRow = false;
-                }
-
-                if (lockValue && lockValue !== isLocked) {
-                    showRow = false;
-                }
+                if (lockValue && lockValue !== isLocked) showRow = false;
 
                 row.style.display = showRow ? '' : 'none';
             }
@@ -389,30 +418,162 @@ else
             filterTable();
         }
 
-        // Select all checkboxes
         document.getElementById('selectAll')?.addEventListener('change', function () {
             const checkboxes = document.querySelectorAll('.row-checkbox');
             checkboxes.forEach(cb => cb.checked = this.checked);
         });
+
+        // --- 2. SCRIPT QUẢN LÝ SESSION (MỚI) ---
+
+        var sessionModal = new bootstrap.Modal(document.getElementById('sessionModal'));
+
+        function showSessions(username) {
+            // Gán tên user vào modal
+            document.getElementById('modalUsername').textContent = username;
+
+            // Reset bảng và hiện loading
+            const tbody = document.getElementById('sessionTableBody');
+            tbody.innerHTML = '';
+            document.getElementById('loadingSession').classList.remove('d-none');
+
+            // Hiển thị modal
+            sessionModal.show();
+
+            // Gọi AJAX về Controller
+            fetch(`@Url.Action("GetUserSessions", "Admin")?username=${username}`)
+                .then(response => response.json())
+                .then(res => {
+                    // Ẩn loading
+                    document.getElementById('loadingSession').classList.add('d-none');
+
+                    if (res.success) {
+                        renderSessionTable(res.data, tbody);
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger fw-bold">${res.message}</td></tr>`;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loadingSession').classList.add('d-none');
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi kết nối đến máy chủ!</td></tr>`;
+                    console.error(err);
+                });
+        }
+
+        function renderSessionTable(data, tbody) {
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Không có phiên làm việc nào đang hoạt động.</td></tr>`;
+                return;
+            }
+
+            data.forEach(s => {
+                // Xử lý ngày tháng (JSON trả về format /Date(...)/)
+                let dateStr = "N/A";
+                if (s.LogonTime) {
+                    const timestamp = parseInt(s.LogonTime.replace(/\D/g, ''));
+                    dateStr = new Date(timestamp).toLocaleString('vi-VN');
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center font-monospace">
+                        <span class="fw-bold">${s.Sid}</span> <span class="text-muted">|</span> ${s.Serial}
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 150px;" title="${s.Machine || 'N/A'}">
+                            ${s.Machine || '<span class="text-muted fst-italic">Unknown</span>'}
+                        </div>
+                        <small class="text-muted">${s.OsUser || ''}</small>
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 150px;" title="${s.Program || ''}">
+                            ${s.Program || '-'}
+                        </div>
+                    </td>
+                    <td>${dateStr}</td>
+                    <td class="text-center">
+                        <span class="badge ${s.Status === 'ACTIVE' ? 'bg-success' : 'bg-secondary'}">
+                            ${s.Status}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="killSession(${s.Sid}, ${s.Serial}, this)"
+                                title="Ngắt kết nối phiên này">
+                            <i class="fas fa-power-off"></i> Hủy
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function killSession(sid, serial, btn) {
+            if (!confirm(`CẢNH BÁO: Bạn có chắc muốn buộc ngắt kết nối phiên (SID: ${sid}) này không? User có thể mất dữ liệu chưa lưu.`)) return;
+
+            // Loading state cho nút bấm
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
+            fetch('@Url.Action("KillSession", "Admin")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sid: sid, serial: serial })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Hiệu ứng xóa dòng thành công
+                    const row = btn.closest('tr');
+                    row.className = "table-danger"; // Tô đỏ dòng
+                    setTimeout(() => {
+                        row.remove(); // Xóa khỏi bảng
+                        // Kiểm tra nếu hết dòng thì báo trống
+                        const tbody = document.getElementById('sessionTableBody');
+                        if (tbody.children.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Đã hủy hết phiên.</td></tr>`;
+                        }
+                    }, 500);
+
+                    // (Optional) Reload trang nếu muốn cập nhật số badge ở ngoài
+                    // location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            })
+            .catch(err => {
+                alert('Lỗi hệ thống khi gọi Kill Session.');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            });
+        }
     </script>
 }
 
 <style>
+    /* Custom Styles cho bảng đẹp hơn */
     .table > :not(caption) > * > * {
-        padding: 1rem 0.75rem;
-    }
-
-    .btn-group-sm .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+        padding: 0.8rem 1rem;
     }
 
     .badge {
         font-weight: 500;
-        padding: 0.35em 0.65em;
+        letter-spacing: 0.5px;
     }
 
-    .popover {
-        max-width: 400px;
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Hiệu ứng hover cho dòng bảng */
+    #userTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Style cho modal */
+    .modal-header {
+        border-bottom: 2px solid #0d6efd;
     }
 </style>

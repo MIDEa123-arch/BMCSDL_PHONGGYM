@@ -290,6 +290,7 @@
     <Compile Include="ViewModel\KhachHangLoginViewModel.cs" />
     <Compile Include="ViewModel\KhachHangRegisterViewModel.cs" />
     <Compile Include="ViewModel\SanPhamViewModel.cs" />
+    <Compile Include="ViewModel\SessionInfo.cs" />
     <Compile Include="ViewModel\StaffAccountModel.cs" />
     <Compile Include="ViewModel\UserInfo.cs" />
     <Compile Include="ViewModel\UserViewModel.cs" />
