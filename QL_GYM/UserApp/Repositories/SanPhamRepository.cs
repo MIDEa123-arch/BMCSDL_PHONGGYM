@@ -1,7 +1,7 @@
 ﻿using UserApp.Models;
 using System.Collections.Generic;
 using System.Linq;
-
+using System;
 namespace UserApp.Repositories
 {
     public class SanPhamRepository
@@ -45,6 +45,33 @@ namespace UserApp.Repositories
             {
                 _context.SANPHAMs.Remove(sp);
                 _context.SaveChanges();
+            }
+        }
+        public void AddWithImages(SANPHAM sp, List<HINHANH> danhSachHinh)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.SANPHAMs.Add(sp);
+                    _context.SaveChanges();
+                    if (danhSachHinh != null && danhSachHinh.Count > 0)
+                    {
+                        foreach (var hinh in danhSachHinh)
+                        {
+                            hinh.MASP = sp.MASP;
+                            _context.HINHANHs.Add(hinh);
+                        }
+                        _context.SaveChanges();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
     }

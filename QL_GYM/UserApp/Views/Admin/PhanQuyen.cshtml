@@ -1,0 +1,232 @@
+﻿@model UserApp.Models.GrantViewModel
+
+@{
+    ViewBag.Title = "Phân Quyền User";
+    // Đảm bảo đường dẫn Layout này đúng với project của bạn.
+    // Nếu project của bạn tên khác, hãy sửa lại đường dẫn này.
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- Thêm FontAwesome nếu Layout chưa có -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="container-fluid fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            @using (Html.BeginForm("PhanQuyen", "Admin", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="card shadow-lg border-0 rounded-lg mt-4">
+
+                    <!-- HEADER -->
+                    <div class="card-header bg-gradient-primary text-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0 font-weight-bold">
+                                <i class="fas fa-shield-alt mr-2"></i>Hệ Thống Phân Quyền Oracle
+                            </h4>
+                            <span class="badge badge-light text-primary px-3 py-2 shadow-sm">
+                                <i class="fas fa-link mr-1"></i> Connected
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-5">
+
+                        <!-- PHẦN 1: CHỌN ĐỐI TƯỢNG VÀ BẢNG -->
+                        <div class="row mb-4">
+
+                            <!-- Cột Trái: Chọn User/Role -->
+                            <div class="col-md-6 border-right">
+                                <h5 class="text-primary mb-3"><i class="fas fa-users-cog mr-2"></i>1. Chọn Đối Tượng Nhận Quyền</h5>
+
+                                <div class="form-group bg-light p-3 rounded border">
+                                    <label class="font-weight-bold text-dark">User hệ thống (DBA_USERS)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        </div>
+                                        @Html.DropDownListFor(m => m.SelectedUser, new SelectList(Model.Users), "-- Chọn User --", new
+                                        {
+                                            @class = "form-control select-hover",
+                                            id = "ddlUser",
+                                            onchange = "resetRole()"
+                                        })
+                                    </div>
+                                    <small class="form-text text-muted">Chọn User cụ thể để cấp quyền.</small>
+                                </div>
+
+                                <div class="text-center my-2 text-muted font-weight-bold">- HOẶC -</div>
+
+                                <div class="form-group bg-light p-3 rounded border">
+                                    <label class="font-weight-bold text-dark">Nhóm quyền (DBA_ROLES)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                        </div>
+                                        @Html.DropDownListFor(m => m.SelectedRole, new SelectList(Model.Roles), "-- Chọn Role --", new
+                                        {
+                                            @class = "form-control select-hover",
+                                            id = "ddlRole",
+                                            onchange = "resetUser()"
+                                        })
+                                    </div>
+                                    <small class="form-text text-muted">Chọn Role để áp dụng cho nhiều user.</small>
+                                </div>
+                            </div>
+
+                            <!-- Cột Phải: Chọn Bảng -->
+                            <div class="col-md-6">
+                                <h5 class="text-success mb-3"><i class="fas fa-database mr-2"></i>2. Chọn Bảng Dữ Liệu</h5>
+
+                                <div class="form-group p-4 bg-light rounded border h-75 d-flex flex-column justify-content-center">
+                                    <label class="font-weight-bold text-dark">Danh sách bảng (DBA_TABLES)</label>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-table"></i></span>
+                                        </div>
+                                        @Html.DropDownListFor(m => m.SelectedTable, new SelectList(Model.Tables), "-- Chọn Bảng --", new
+                                        {
+                                            @class = "form-control form-control-lg border-success",
+                                            style = "height: 50px;"
+                                        })
+                                    </div>
+                                    <div class="alert alert-info py-2 small shadow-sm">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Hệ thống đã tự động lọc bỏ các bảng hệ thống (SYS, SYSTEM...) để hiển thị danh sách gọn hơn.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- PHẦN 2: CHECKBOX QUYỀN -->
+                        <div class="row justify-content-center">
+                            <div class="col-12 text-center">
+                                <h5 class="text-secondary text-uppercase font-weight-bold mb-4">
+                                    <i class="fas fa-tasks mr-2"></i>3. Chọn quyền hạn thao tác
+                                </h5>
+
+                                <div class="d-flex justify-content-center flex-wrap gap-custom">
+                                    <div class="custom-control custom-checkbox custom-control-lg scale-checkbox mx-3">
+                                        @Html.CheckBoxFor(m => m.Select, new { @class = "custom-control-input", id = "chkSelect" })
+                                        <label class="custom-control-label font-weight-bold text-primary" for="chkSelect">SELECT</label>
+                                    </div>
+
+                                    <div class="custom-control custom-checkbox custom-control-lg scale-checkbox mx-3">
+                                        @Html.CheckBoxFor(m => m.Insert, new { @class = "custom-control-input", id = "chkInsert" })
+                                        <label class="custom-control-label font-weight-bold text-success" for="chkInsert">INSERT</label>
+                                    </div>
+
+                                    <div class="custom-control custom-checkbox custom-control-lg scale-checkbox mx-3">
+                                        @Html.CheckBoxFor(m => m.Update, new { @class = "custom-control-input", id = "chkUpdate" })
+                                        <label class="custom-control-label font-weight-bold text-warning" for="chkUpdate">UPDATE</label>
+                                    </div>
+
+                                    <div class="custom-control custom-checkbox custom-control-lg scale-checkbox mx-3">
+                                        @Html.CheckBoxFor(m => m.Delete, new { @class = "custom-control-input", id = "chkDelete" })
+                                        <label class="custom-control-label font-weight-bold text-danger" for="chkDelete">DELETE</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- THÔNG BÁO LỖI/THÀNH CÔNG -->
+                        @if (!string.IsNullOrEmpty(Model.Message))
+                        {
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="alert @(Model.MessageType == "success" ? "alert-success" : (Model.MessageType == "warning" ? "alert-warning" : "alert-danger")) shadow text-center" role="alert">
+                                        @if (Model.MessageType == "success")
+                                        {<i class="fas fa-check-circle fa-2x d-block mb-2"></i> }
+                                        else if (Model.MessageType == "warning")
+                                        { <i class="fas fa-exclamation-circle fa-2x d-block mb-2"></i> }
+                                        else
+                                        { <i class="fas fa-times-circle fa-2x d-block mb-2"></i>}
+
+                                        <strong>@Model.Message</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- BUTTONS -->
+                        <div class="row mt-3">
+                            <div class="col-md-6 mb-2">
+                                <button type="submit" name="actionType" value="GRANT" class="btn btn-primary btn-block btn-lg shadow hover-lift">
+                                    <i class="fas fa-lock mr-2"></i> CẤP QUYỀN (GRANT)
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" name="actionType" value="REVOKE" class="btn btn-outline-danger btn-block btn-lg shadow-sm hover-lift">
+                                    <i class="fas fa-unlock-alt mr-2"></i> THU HỒI (REVOKE)
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT XỬ LÝ LOGIC DROP DOWN -->
+<script type="text/javascript">
+    // Khi chọn User thì reset Role về mặc định
+    function resetRole() {
+        var userVal = document.getElementById("ddlUser").value;
+        if (userVal !== "") {
+            document.getElementById("ddlRole").selectedIndex = 0;
+        }
+    }
+
+    // Khi chọn Role thì reset User về mặc định
+    function resetUser() {
+        var roleVal = document.getElementById("ddlRole").value;
+        if (roleVal !== "") {
+            document.getElementById("ddlUser").selectedIndex = 0;
+        }
+    }
+</script>
+
+<!-- CSS TÙY CHỈNH CHO VIEW NÀY -->
+<style>
+    /* Hiệu ứng load trang */
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+
+
+    /* Tăng kích thước checkbox */
+    .scale-checkbox {
+        transform: scale(1.2);
+        cursor: pointer;
+    }
+
+    /* Hiệu ứng nút bấm */
+    .hover-lift {
+        transition: transform 0.2s;
+    }
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Màu nền gradient cho header */
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #4e73df 0%, #224abe 100%);
+    }
+
+    .gap-custom {
+        gap: 20px;
+    }
+</style>
