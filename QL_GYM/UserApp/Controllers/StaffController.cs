@@ -314,202 +314,109 @@ namespace UserApp.Controllers
                 return View(model);
             }
         }
-        // GET: Hiển thị form sửa sản phẩm
+        
+
         [HttpGet]
         public ActionResult SuaSanPham(int id)
         {
-            // Kiểm tra đăng nhập
-            if (Session["user"] == null) return RedirectToAction("Login", "Staff");
+            if (Session["connectionString"] == null) return RedirectToAction("Login", "Staff");
 
-            try
-            {
-                // 1. Tìm sản phẩm theo ID
-                var sp = _context.SANPHAMs.Find(id);
-                if (sp == null)
-                {
-                    TempData["Error"] = "Không tìm thấy sản phẩm có ID = " + id;
-                    return RedirectToAction("SanPham");
-                }
+            var repo = new SanPhamRepository(Session["connectionString"] as string);
+            var sp = repo.GetSanPhamById(id);
 
-                // 2. Load danh sách hình ảnh (FIX lỗi NullReferenceException ở View)
-                // Lưu ý: Kiểm tra kỹ tên bảng trong _context là HINHANH hay HINHANHs
-                sp.HINHANHs = _context.HINHANHs.Where(x => x.MASP == id).ToList();
+            if (sp == null) return HttpNotFound();
 
-                // 3. Tạo Dropdown loại sản phẩm
-                // Lưu ý: Value là MALOAISP, Text hiển thị là TENLOAISP (Sửa lỗi DataBinding)
-                ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", sp.MALOAISP);
-
-                return View(sp);
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Lỗi khi tải dữ liệu: " + ex.Message;
-                return RedirectToAction("SanPham");
-            }
+            ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", sp.MALOAISP);
+            return View(sp);
         }
 
-        // POST: Xử lý cập nhật
+
         [HttpPost]
-        [ValidateInput(false)] // Cho phép nhập HTML trong mô tả
+        [ValidateInput(false)]
         [ValidateAntiForgeryToken]
-        public ActionResult SuaSanPham(SANPHAM model, HttpPostedFileBase MainImage, HttpPostedFileBase[] SubImages)
+        public ActionResult SuaSanPham(SANPHAM model, HttpPostedFileBase[] images, string strDonGia, string strGiaKhuyenMai)
         {
-            // 1. Kiểm tra session
-         
-            _spRepo = new SanPhamRepository(Session["connectionString"] as string);
-            // Khai báo đường dẫn ảnh
-            string uploadFolder = Server.MapPath("~/Content/Images/");
-
-            try
+            // 1. Manual Validation & Data Cleaning
+            if (string.IsNullOrEmpty(strDonGia))
+                ModelState.AddModelError("DONGIA", "Vui lòng nhập giá bán!");
+            else
             {
-                // 2. Kiểm tra dữ liệu đầu vào (Server validation)
-                if (!ModelState.IsValid)
-                {
-                    // Lấy danh sách lỗi chi tiết từ ModelState để hiện ra (nếu cần)
-                    string err = string.Join("; ", ModelState.Values
-                                               .SelectMany(v => v.Errors)
-                                               .Select(e => e.ErrorMessage));
-                    throw new Exception("Dữ liệu nhập chưa đúng: " + err);
-                }
-
-                // 3. LẤY DỮ LIỆU CŨ TỪ DB (Thay vì dùng Repo Update chung chung)
-                // Cách này giúp ta kiểm soát được cột nào được sửa, cột nào không.
-                var dbItem = _context.SANPHAMs.Find(model.MASP);
-                if (dbItem == null) throw new Exception("Sản phẩm không tồn tại trong hệ thống.");
-
-                // --- CẬP NHẬT THÔNG TIN (TRỪ SỐ LƯỢNG TỒN) ---
-                dbItem.TENSP = model.TENSP;
-                dbItem.MALOAISP = model.MALOAISP;
-                dbItem.DONGIA = model.DONGIA;
-                dbItem.GIAKHUYENMAI = model.GIAKHUYENMAI;
-                dbItem.HANG = model.HANG;
-                dbItem.XUATXU = model.XUATXU;
-                dbItem.BAOHANH = model.BAOHANH;
-                dbItem.MOTACHUNG = model.MOTACHUNG;
-                dbItem.MOTACHITIET = model.MOTACHITIET; // Chuỗi đã nối dấu |
-
-                // QUAN TRỌNG: KHÔNG cập nhật dbItem.SOLUONGTON
-                // dbItem.SOLUONGTON = model.SOLUONGTON; // <-- Bỏ dòng này đi
-
-                // 4. XỬ LÝ ẢNH CHÍNH (Nếu có upload mới)
-                if (MainImage != null && MainImage.ContentLength > 0)
-                {
-                    // Tìm ảnh chính cũ
-                    var oldMain = _context.HINHANHs.FirstOrDefault(x => x.MASP == model.MASP && x.ISMAIN == true);
-
-                    // Xóa ảnh cũ (DB + File vật lý)
-                    if (oldMain != null)
-                    {
-                        string oldPath = Path.Combine(uploadFolder, oldMain.URL);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                        _context.HINHANHs.Remove(oldMain);
-                    }
-
-                    // Lưu ảnh mới
-                    string uniqueName = $"{DateTime.Now.Ticks}_Main_{MainImage.FileName}";
-                    MainImage.SaveAs(Path.Combine(uploadFolder, uniqueName));
-
-                    // Thêm record vào DB
-                    _context.HINHANHs.Add(new HINHANH { MASP = model.MASP, URL = uniqueName, ISMAIN = true });
-                }
-
-                // 5. XỬ LÝ ẢNH PHỤ (Nếu có upload mới)
-                if (SubImages != null && SubImages[0] != null)
-                {
-                    // Tìm và xóa toàn bộ ảnh phụ cũ
-                    var oldSubs = _context.HINHANHs.Where(x => x.MASP == model.MASP && x.ISMAIN == false).ToList();
-                    foreach (var img in oldSubs)
-                    {
-                        string oldPath = Path.Combine(uploadFolder, img.URL);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                        _context.HINHANHs.Remove(img);
-                    }
-
-                    // Thêm loạt ảnh phụ mới
-                    int count = 0;
-                    foreach (var file in SubImages)
-                    {
-                        if (file != null && file.ContentLength > 0 && count < 3)
-                        {
-                            string uniqueName = $"{DateTime.Now.Ticks}_Sub_{count}_{file.FileName}";
-                            file.SaveAs(Path.Combine(uploadFolder, uniqueName));
-                            _context.HINHANHs.Add(new HINHANH { MASP = model.MASP, URL = uniqueName, ISMAIN = false });
-                            count++;
-                        }
-                    }
-                }
-
-                // 6. LƯU TẤT CẢ VÀO DATABASE
-                _context.SaveChanges();
-
-                TempData["Success"] = "Cập nhật sản phẩm thành công!";
-                return RedirectToAction("SanPham","Staff"); // Quay về danh sách
+                string cleanGia = strDonGia.Replace(".", "").Replace(",", "").Trim();
+                if (decimal.TryParse(cleanGia, out decimal donGia)) model.DONGIA = donGia;
+                else ModelState.AddModelError("DONGIA", "Giá bán không hợp lệ!");
             }
-            catch (Exception ex)
-            {
-                // 1. Logic tìm lỗi gốc (Deep dive)
-                // Biến để xác định xem có phải lỗi 1031 không
-                bool isPrivilegeError = false;
 
-                // Tạo biến tạm để duyệt qua các lớp Exception con
-                Exception tempEx = ex;
-                while (tempEx != null)
+            if (!string.IsNullOrEmpty(strGiaKhuyenMai))
+            {
+                string cleanGiaKM = strGiaKhuyenMai.Replace(".", "").Replace(",", "").Trim();
+                if (decimal.TryParse(cleanGiaKM, out decimal giaKM)) model.GIAKHUYENMAI = giaKM;
+            }
+
+            if (model.GIAKHUYENMAI.HasValue && model.GIAKHUYENMAI.Value > 0)
+            {
+                if (model.GIAKHUYENMAI.Value >= model.DONGIA)
+                    ModelState.AddModelError("GiaKhuyenMai", "Giá khuyến mãi phải nhỏ hơn giá bán gốc!");
+            }
+
+            if (string.IsNullOrEmpty(model.TENSP)) ModelState.AddModelError("TENSP", "Vui lòng nhập tên sản phẩm!");
+            if (model.MALOAISP == 0) ModelState.AddModelError("MALOAISP", "Vui lòng chọn danh mục!");
+            if (string.IsNullOrEmpty(model.MOTACHUNG)) ModelState.AddModelError("MOTACHUNG", "Vui lòng nhập mô tả ngắn!");
+            if (model.SOLUONGTON == 0) ModelState.AddModelError("SOLUONGTON", "Vui lòng nhập số lượng!");
+
+            // 2. Duplicate Check using Repository
+            string connStr = Session["connectionString"] as string;
+            var repo = new SanPhamRepository(connStr);
+
+            if (!string.IsNullOrEmpty(model.TENSP))
+            {
+                if (repo.IsDuplicateName(model.TENSP, (int)model.MASP))
                 {
-                    // Kiểm tra nếu exception hiện tại là OracleException
-                    if (tempEx is Oracle.ManagedDataAccess.Client.OracleException oracleEx)
+                    ModelState.AddModelError("TENSP", "Tên sản phẩm này đã được sử dụng bởi sản phẩm khác!");
+                }
+            }
+
+            // 3. Process Logic if Valid
+            if (ModelState.IsValid)
+            {
+                // Process File Uploads
+                List<string> newImageNames = new List<string>();
+                string uploadFolder = Server.MapPath("~/Content/Images/");
+
+                // Ensure folder exists
+                if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
+
+                if (images != null && images.Length > 0 && images[0] != null)
+                {
+                    foreach (var file in images)
                     {
-                        if (oracleEx.Number == 1031) // Bắt đúng mã 1031
+                        if (file.ContentLength > 0)
                         {
-                            isPrivilegeError = true;
-                            break; // Tìm thấy rồi thì thoát vòng lặp
+                            string extension = Path.GetExtension(file.FileName);
+                            // Use Guid for unique names
+                            string uniqueName = Guid.NewGuid().ToString() + extension;
+                            string path = Path.Combine(uploadFolder, uniqueName);
+
+                            file.SaveAs(path);
+                            newImageNames.Add(uniqueName); // Add filename to list
                         }
                     }
-                    // Nếu không phải, đi tiếp vào bên trong
-                    tempEx = tempEx.InnerException;
                 }
 
-                // 2. Xử lý thông báo lỗi ra màn hình
-                if (isPrivilegeError)
+                // Call Repository to Update DB
+                if (repo.UpdateProduct(model, newImageNames, out string err))
                 {
-                    TempData["Error"] = "Tài khoản của bạn không đủ quyền để thực hiện thao tác này.";
+                    TempData["Success"] = "Cập nhật sản phẩm thành công!";
+                    return RedirectToAction("SanPham"); // Or wherever you list products
                 }
                 else
                 {
-                    // Nếu không phải lỗi 1031 thì hiện lỗi chi tiết như bình thường
-                    string message = ex.Message;
-                    if (ex.InnerException != null)
-                    {
-                        message += " | Chi tiết: " + ex.InnerException.Message;
-                        // Đào thêm 1 cấp nữa nếu có
-                        if (ex.InnerException.InnerException != null)
-                        {
-                            message += " | Gốc: " + ex.InnerException.InnerException.Message;
-                        }
-                    }
-                    TempData["Error"] = "CÓ LỖI XẢY RA: " + message;
+                    TempData["Error"] = err;
                 }
-
-                // 3. Load lại Dropdown và trả về View
-                ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
-                return View(model);
             }
-        }
-        public ActionResult Index()
-        {
-            return View();
-        }
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
 
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
+            // Reload Dropdown if validation fails
+            ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
+            return View(model);
         }
     }
 }
