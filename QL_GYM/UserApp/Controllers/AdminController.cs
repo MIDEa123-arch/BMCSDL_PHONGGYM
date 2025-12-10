@@ -156,26 +156,21 @@ namespace UserApp.Controllers
         public ActionResult About() { ViewBag.Message = "Description page."; return View(); }
         public ActionResult Contact() { ViewBag.Message = "Contact page."; return View(); }
 
-
-
-        // GET: Hiển thị form Phân quyền
         [HttpGet]
         public ActionResult PhanQuyen()
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
             var model = new GrantViewModel();
-            _phanQuyenRepository.LoadMetadata(model); // Tải danh sách User/Table/Role
+            _phanQuyenRepository.LoadMetadata(model); 
             return View(model);
         }
 
-        // POST: Xử lý nút Cấp quyền (Grant) hoặc Thu hồi (Revoke)
         [HttpPost]
         public ActionResult PhanQuyen(GrantViewModel model, string actionType)
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
-            // 1. Validate: Chọn Bảng
             if (string.IsNullOrEmpty(model.SelectedTable))
             {
                 model.Message = "Vui lòng chọn bảng dữ liệu!";
@@ -184,7 +179,6 @@ namespace UserApp.Controllers
                 return View(model);
             }
 
-            // 2. Validate: Chọn User hoặc Role
             string target = !string.IsNullOrEmpty(model.SelectedUser) ? model.SelectedUser : model.SelectedRole;
             if (string.IsNullOrEmpty(target))
             {
@@ -194,7 +188,6 @@ namespace UserApp.Controllers
                 return View(model);
             }
 
-            // 3. Validate: Chọn ít nhất 1 quyền
             List<string> permissions = new List<string>();
             if (model.Select) permissions.Add("SELECT");
             if (model.Insert) permissions.Add("INSERT");
@@ -211,32 +204,24 @@ namespace UserApp.Controllers
 
             string permString = string.Join(", ", permissions);
 
-            // 4. GỌI REPOSITORY ĐỂ THỰC THI (Đã sửa lỗi Connection tại đây)
-            // Thay vì viết OracleCommand dài dòng ở đây, ta gọi hàm đã viết trong Repository
             _phanQuyenRepository.UpdatePermission(actionType, target, model.SelectedTable, permString, model);
 
-            // 5. Load lại dữ liệu Dropdown
             _phanQuyenRepository.LoadMetadata(model);
             return View(model);
         }
 
-        // Hàm hỗ trợ: Load dữ liệu từ DBA_USERS, DBA_TABLES, DBA_ROLES
         private void LoadMetadata(GrantViewModel model)
         {
             try
             {
-                // Load TẤT CẢ Users (cần quyền SELECT ON dba_users)
                 model.Users = _context.Database.SqlQuery<string>(
                     "SELECT username FROM SYS.dba_users ORDER BY username"
                 ).ToList();
 
-                // Load TẤT CẢ Tables (cần quyền SELECT ON dba_tables)
-                // Lọc bỏ các bảng hệ thống
                 model.Tables = _context.Database.SqlQuery<string>(
                     "SELECT owner || '.' || table_name FROM SYS.dba_tables WHERE owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'CTXSYS', 'MDSYS') ORDER BY owner, table_name"
                 ).ToList();
 
-                // Load TẤT CẢ Roles (cần quyền SELECT ON dba_roles)
                 model.Roles = _context.Database.SqlQuery<string>(
                     "SELECT role FROM SYS.dba_roles ORDER BY role"
                 ).ToList();
@@ -247,13 +232,12 @@ namespace UserApp.Controllers
                 model.Message = "Không tải được danh sách từ Oracle (Kiểm tra quyền DBA). Lỗi: " + msg;
                 model.MessageType = "error";
 
-                // Dữ liệu giả để tránh crash trang web
                 model.Users = new List<string>();
                 model.Tables = new List<string>();
                 model.Roles = new List<string>();
             }
         }
-        public ActionResult AuditTrail(string username)
+        public ActionResult AuditTrail(string username, string tableName) 
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
 
@@ -261,42 +245,37 @@ namespace UserApp.Controllers
 
             try
             {
-                // 1. Lấy danh sách Users cho ComboBox
                 var allUsers = userService.GetAllUsers();
-
-                // Chuyển đổi List<UserInfo> sang List<SelectListItem>
                 model.Users = allUsers.Select(u => new SelectListItem
                 {
                     Value = u.Username,
                     Text = u.Username,
                     Selected = u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)
                 }).ToList();
-
-                // Thêm mục "Tất cả Users" vào đầu danh sách
                 model.Users.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Users ---", Selected = string.IsNullOrEmpty(username) });
-
-                // 2. Thiết lập Username đã chọn (nếu có)
+                var allTables = userService.GetAuditedTables();
+                model.Tables = allTables.Select(t => new SelectListItem
+                {
+                    Value = t,
+                    Text = t,
+                    Selected = t.Equals(tableName, StringComparison.OrdinalIgnoreCase)
+                }).ToList();
+                model.Tables.Insert(0, new SelectListItem { Value = "", Text = "--- Tất cả Bảng ---", Selected = string.IsNullOrEmpty(tableName) });
                 model.SelectedUsername = username;
-
-                // 3. Lấy dữ liệu Audit Logs (có lọc nếu username khác rỗng)
-                model.AuditLogs = userService.GetAuditLogs(username);
+                model.SelectedTableName = tableName;
+                model.AuditLogs = userService.GetAuditLogs(username, tableName);
 
                 return View(model);
             }
             catch (Exception ex)
             {
                 ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
-                // Trả về model rỗng nếu có lỗi
                 return View(model);
             }
         }
-        // Trong AdminController.cs (Thêm phương thức này)
-
-        // GET: Lấy các quyền hiện có của User/Role trên Table đã chọn
         [HttpGet]
         public JsonResult GetExistingPrivileges(string target, string tableName)
         {
-            // target là SelectedUser hoặc SelectedRole
             if (string.IsNullOrEmpty(target) || string.IsNullOrEmpty(tableName))
             {
                 return Json(new { success = false, message = "Thiếu User/Role hoặc Bảng." }, JsonRequestBehavior.AllowGet);
@@ -304,16 +283,61 @@ namespace UserApp.Controllers
 
             try
             {
-                // Gọi Repository để lấy danh sách quyền
                 var privileges = _phanQuyenRepository.GetExistingPrivileges(target, tableName);
 
                 return Json(new { success = true, data = privileges }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                // Trả về lỗi
                 return Json(new { success = false, message = "Lỗi server khi lấy quyền: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateRole(GrantViewModel model)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            if (string.IsNullOrWhiteSpace(model.NewRoleName))
+            {
+                TempData["Error"] = "Vui lòng nhập tên Role.";
+                return RedirectToAction("PhanQuyen");
+            }
+
+            try
+            {
+                _phanQuyenRepository.CreateNewRole(model.NewRoleName.Trim().ToUpper());
+                TempData["Success"] = $"Đã tạo Role '{model.NewRoleName}' thành công. Vui lòng reload trang để cập nhật danh sách Role.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi tạo Role: " + ex.Message;
+            }
+            return RedirectToAction("PhanQuyen");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AssignRole(GrantViewModel model)
+        {
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+
+            if (string.IsNullOrWhiteSpace(model.UserToAssign) || string.IsNullOrWhiteSpace(model.RoleToAssign))
+            {
+                TempData["Error"] = "Vui lòng chọn User và Role để gán.";
+                return RedirectToAction("PhanQuyen");
+            }
+
+            try
+            {
+                _phanQuyenRepository.AddUserToRole(model.UserToAssign, model.RoleToAssign);
+                TempData["Success"] = $"Đã gán Role '{model.RoleToAssign}' cho User '{model.UserToAssign}' thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi gán Role: " + ex.Message;
+            }
+            return RedirectToAction("PhanQuyen");
         }
     } 
 }

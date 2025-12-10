@@ -192,7 +192,6 @@ namespace UserApp.Repositories
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // REF CURSOR output
                     var refCursor = cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor);
                     refCursor.Direction = ParameterDirection.Output;
 
@@ -289,9 +288,6 @@ namespace UserApp.Repositories
             }
         }
 
-
-        // Check connection alive
-        // Trả về int để phân biệt lỗi: 1=OK, 0=Bị Kill, -1=Mất tích
         public int CheckSessionAlive(string username, string sid, string serial)
         {
             try
@@ -354,8 +350,41 @@ namespace UserApp.Repositories
                 return false;
             }
         }
+        public List<string> GetAuditedTables()
+        {
+            var tables = new List<string>();
 
-        public List<AuditLogViewModel> GetAuditLogs(string username = null)
+            using (var conn = new OracleConnection(_adminRawConnection))
+            {
+                try
+                {
+                    conn.Open();
+                    using (var cmd = new OracleCommand("ADMINGYM.SP_GET_AUDITED_TABLES", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+                        cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (!reader.IsDBNull(0))
+                                {
+                                    tables.Add(reader.GetString(0));
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Lỗi khi gọi Procedure lấy danh sách bảng Audit: " + ex.Message);
+                }
+            }
+            return tables;
+        }
+        public List<AuditLogViewModel> GetAuditLogs(string username = null, string tableName = null)
         {
             var list = new List<AuditLogViewModel>();
 
@@ -364,21 +393,14 @@ namespace UserApp.Repositories
                 try
                 {
                     conn.Open();
-
                     using (var cmd = new OracleCommand("ADMINGYM.SP_GET_AUDIT_LOGS", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.BindByName = true;
-
-                        if (!string.IsNullOrEmpty(username))
-                        {
-                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
-                        }
-                        else
-                        {
-                            cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = DBNull.Value;
-                        }
-
+                        cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value =
+                            string.IsNullOrEmpty(username) ? DBNull.Value : (object)username.ToUpper();
+                        cmd.Parameters.Add("p_table_name", OracleDbType.Varchar2).Value =
+                            string.IsNullOrEmpty(tableName) ? DBNull.Value : (object)tableName.ToUpper();
                         cmd.Parameters.Add("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output);
 
                         using (var reader = cmd.ExecuteReader())

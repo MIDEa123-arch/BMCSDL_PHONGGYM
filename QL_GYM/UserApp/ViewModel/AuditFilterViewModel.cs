@@ -10,10 +10,10 @@ namespace UserApp.ViewModel
 
         // Danh sách các User để hiển thị trong ComboBox
         public List<SelectListItem> Users { get; set; }
-
+        public List<SelectListItem> Tables { get; set; }
         // User đang được chọn để lọc
         public string SelectedUsername { get; set; }
-
+        public string SelectedTableName { get; set; }
         public AuditFilterViewModel()
         {
             AuditLogs = new List<AuditLogViewModel>();

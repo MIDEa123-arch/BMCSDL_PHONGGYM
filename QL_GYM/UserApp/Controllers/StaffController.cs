@@ -154,8 +154,6 @@ namespace UserApp.Controllers
         public ActionResult VerifySignatureById(int id)
         {
             hoaDonRepository = new HoaDonRepository(Session["connectionString"] as string);
-            // 1. Tìm hóa đơn trong Database
-            // Dùng GetInvoice() và tìm kiếm trong danh sách (vì bạn chưa có GetById)
             var invoiceHeader = hoaDonRepository.GetInvoice().FirstOrDefault(i => i.Header.MAHD == id);
 
             if (invoiceHeader == null)
@@ -167,7 +165,7 @@ namespace UserApp.Controllers
 
             try
             {
-                // 2. Lấy đường dẫn từ Database
+         
                 string dbPdfPath = hoaDonRepository.GetHOADON(id).FILE_PATH;
                 string dbSigPath = hoaDonRepository.GetHOADON(id).SIGNATURE_PATH;
 
@@ -178,11 +176,9 @@ namespace UserApp.Controllers
                     return View("VerifySignatureResult");
                 }
 
-                // 3. Chuyển đường dẫn ảo (Web) thành đường dẫn Vật lý (Server)
                 string physicalPdfPath = Server.MapPath("~" + dbPdfPath);
                 string physicalSigPath = Server.MapPath("~" + dbSigPath);
 
-                // 4. Kiểm tra file có tồn tại trên server không
                 if (!System.IO.File.Exists(physicalPdfPath) || !System.IO.File.Exists(physicalSigPath))
                 {
                     ViewBag.Status = "Error";
@@ -190,7 +186,6 @@ namespace UserApp.Controllers
                     return View("VerifySignatureResult");
                 }
 
-                // 5. Cấu hình PFX Admin và gọi Service kiểm tra
                 string pfxPath = Server.MapPath("~/App_Data/GymAdmin.pfx");
                 string pfxPass = "123456";
 
@@ -198,8 +193,6 @@ namespace UserApp.Controllers
                 string msgResult = "";
 
                 bool isValid = signService.VerifyFile(physicalPdfPath, physicalSigPath, pfxPath, pfxPass, out msgResult);
-
-                // 6. Trả kết quả ra View
                 ViewBag.InvoiceID = id;
                 ViewBag.FileName = Path.GetFileName(physicalPdfPath);
 
@@ -336,7 +329,6 @@ namespace UserApp.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult SuaSanPham(SANPHAM model, HttpPostedFileBase[] images, string strDonGia, string strGiaKhuyenMai)
         {
-            // 1. Manual Validation & Data Cleaning
             if (string.IsNullOrEmpty(strDonGia))
                 ModelState.AddModelError("DONGIA", "Vui lòng nhập giá bán!");
             else
@@ -363,7 +355,6 @@ namespace UserApp.Controllers
             if (string.IsNullOrEmpty(model.MOTACHUNG)) ModelState.AddModelError("MOTACHUNG", "Vui lòng nhập mô tả ngắn!");
             if (model.SOLUONGTON == 0) ModelState.AddModelError("SOLUONGTON", "Vui lòng nhập số lượng!");
 
-            // 2. Duplicate Check using Repository
             string connStr = Session["connectionString"] as string;
             var repo = new SanPhamRepository(connStr);
 
@@ -375,14 +366,11 @@ namespace UserApp.Controllers
                 }
             }
 
-            // 3. Process Logic if Valid
             if (ModelState.IsValid)
             {
-                // Process File Uploads
                 List<string> newImageNames = new List<string>();
                 string uploadFolder = Server.MapPath("~/Content/Images/");
 
-                // Ensure folder exists
                 if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
 
                 if (images != null && images.Length > 0 && images[0] != null)
@@ -392,21 +380,19 @@ namespace UserApp.Controllers
                         if (file.ContentLength > 0)
                         {
                             string extension = Path.GetExtension(file.FileName);
-                            // Use Guid for unique names
                             string uniqueName = Guid.NewGuid().ToString() + extension;
                             string path = Path.Combine(uploadFolder, uniqueName);
 
                             file.SaveAs(path);
-                            newImageNames.Add(uniqueName); // Add filename to list
+                            newImageNames.Add(uniqueName);
                         }
                     }
                 }
 
-                // Call Repository to Update DB
                 if (repo.UpdateProduct(model, newImageNames, out string err))
                 {
                     TempData["Success"] = "Cập nhật sản phẩm thành công!";
-                    return RedirectToAction("SanPham"); // Or wherever you list products
+                    return RedirectToAction("SanPham"); 
                 }
                 else
                 {
@@ -414,7 +400,6 @@ namespace UserApp.Controllers
                 }
             }
 
-            // Reload Dropdown if validation fails
             ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
             return View(model);
         }

@@ -30,5 +30,10 @@ namespace UserApp.Models
             Tables = new List<string>();
             Roles = new List<string>();
         }
+        public string NewRoleName { get; set; }
+
+        // Dữ liệu cho chức năng 2: Gán User vào Role
+        public string UserToAssign { get; set; }
+        public string RoleToAssign { get; set; }
     }
 }

@@ -6,7 +6,6 @@
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<!-- Thêm FontAwesome nếu Layout chưa có -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
 <div class="container-fluid fade-in-up">
@@ -19,7 +18,6 @@
 
                 <div class="card shadow-lg border-0 rounded-lg mt-4">
 
-                  
                     <div class="card-header bg-gradient-primary text-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="mb-0 font-weight-bold">
@@ -28,15 +26,13 @@
                             <span class="badge badge-light text-primary px-3 py-2 shadow-sm">
                                 <i class="fas fa-link mr-1"></i> Connected
                             </span>
-                        </div>  
+                        </div>
                     </div>
 
                     <div class="card-body p-5">
 
-                        <!-- PHẦN 1: CHỌN ĐỐI TƯỢNG VÀ BẢNG -->
                         <div class="row mb-4">
 
-                            <!-- Cột Trái: Chọn User/Role -->
                             <div class="col-md-6 border-right">
                                 <h5 class="text-primary mb-3"><i class="fas fa-users-cog mr-2"></i>1. Chọn Đối Tượng Nhận Quyền</h5>
 
@@ -75,7 +71,6 @@
                                 </div>
                             </div>
 
-                            <!-- Cột Phải: Chọn Bảng -->
                             <div class="col-md-6">
                                 <h5 class="text-success mb-3"><i class="fas fa-database mr-2"></i>2. Chọn Bảng Dữ Liệu</h5>
 
@@ -88,6 +83,7 @@
                                         @Html.DropDownListFor(m => m.SelectedTable, new SelectList(Model.Tables), "-- Chọn Bảng --", new
                                         {
                                             @class = "form-control form-control-lg border-success",
+                                            id = "SelectedTable",
                                             style = "height: 50px;"
                                         })
                                     </div>
@@ -101,7 +97,6 @@
 
                         <hr class="my-4">
 
-                        <!-- PHẦN 2: CHECKBOX QUYỀN -->
                         <div class="row justify-content-center">
                             <div class="col-12 text-center">
                                 <h5 class="text-secondary text-uppercase font-weight-bold mb-4">
@@ -145,7 +140,6 @@
                         </div>
                         <hr class="my-4">
 
-                        <!-- THÔNG BÁO LỖI/THÀNH CÔNG -->
                         @if (!string.IsNullOrEmpty(Model.Message))
                         {
                             <div class="row justify-content-center">
@@ -164,7 +158,6 @@
                             </div>
                         }
 
-                        <!-- BUTTONS -->
                         <div class="row mt-3">
                             <div class="col-md-6 mb-2">
                                 <button type="submit" name="actionType" value="GRANT" class="btn btn-primary btn-block btn-lg shadow hover-lift">
@@ -180,64 +173,95 @@
 
                     </div>
                 </div>
-            }
+            } <hr class="my-5">
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-lg border-info h-100">
+                        <div class="card-header bg-info text-white font-weight-bold">
+                            <i class="fas fa-plus-circle mr-2"></i>Chức Năng: Tạo Role Mới
+                        </div>
+                        <div class="card-body">
+                            @using (Html.BeginForm("CreateRole", "Admin", FormMethod.Post, new { role = "form", @class = "needs-validation" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <p class="text-muted small">Tạo một nhóm quyền mới trong hệ thống Oracle (ví dụ: KETOAN_ROLE).</p>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.NewRoleName, "Tên Role:", new { @class = "control-label font-weight-bold" })
+                                    @Html.TextBoxFor(m => m.NewRoleName, new { @class = "form-control", placeholder = "Nhập tên Role (Ví dụ: KETOAN_ROLE)", required = "required" })
+                                </div>
+                                <button type="submit" class="btn btn-info btn-block mt-3 shadow-sm hover-lift">
+                                    <i class="fas fa-hammer mr-2"></i>Tạo Role
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-lg border-success h-100">
+                        <div class="card-header bg-success text-white font-weight-bold">
+                            <i class="fas fa-user-plus mr-2"></i>Chức Năng: Gán Role cho User
+                        </div>
+                        <div class="card-body">
+                            @using (Html.BeginForm("AssignRole", "Admin", FormMethod.Post, new { role = "form", @class = "needs-validation" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <p class="text-muted small">Cấp Role hiện có cho một User cụ thể.</p>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.UserToAssign, "Chọn User:", new { @class = "control-label font-weight-bold" })
+                                    @Html.DropDownListFor(m => m.UserToAssign, new SelectList(Model.Users), "-- Chọn User --", new { @class = "form-control select-hover", required = "required" })
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.RoleToAssign, "Chọn Role:", new { @class = "control-label font-weight-bold" })
+                                    @Html.DropDownListFor(m => m.RoleToAssign, new SelectList(Model.Roles), "-- Chọn Role --", new { @class = "form-control select-hover", required = "required" })
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-block mt-3 shadow-sm hover-lift">
+                                    <i class="fas fa-link mr-2"></i>Gán Role
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- JAVASCRIPT XỬ LÝ LOGIC DROP DOWN -->
 <script type="text/javascript">
-    // Khi chọn User thì reset Role về mặc định
+    // Khi chọn User thì reset Role về mặc định VÀ kiểm tra quyền
     function resetRole() {
         var userVal = document.getElementById("ddlUser").value;
         if (userVal !== "") {
             document.getElementById("ddlRole").selectedIndex = 0;
         }
+        checkExistingPrivileges();
     }
 
-    // Khi chọn Role thì reset User về mặc định
+    // Khi chọn Role thì reset User về mặc định VÀ kiểm tra quyền
     function resetUser() {
         var roleVal = document.getElementById("ddlRole").value;
         if (roleVal !== "") {
             document.getElementById("ddlUser").selectedIndex = 0;
         }
-    }
-    // Khi chọn User thì reset Role về mặc định
-    function resetRole() {
-        var userVal = document.getElementById("ddlUser").value;
-        if (userVal !== "") {
-            document.getElementById("ddlRole").selectedIndex = 0;
-        }
-        // Gọi hàm kiểm tra quyền khi User thay đổi
         checkExistingPrivileges();
     }
 
-    // Khi chọn Role thì reset User về mặc định
-    function resetUser() {
-        var roleVal = document.getElementById("ddlRole").value;
-        if (roleVal !== "") {
-            document.getElementById("ddlUser").selectedIndex = 0;
-        }
-        // Gọi hàm kiểm tra quyền khi Role thay đổi
-        checkExistingPrivileges();
-    }
-
-    // Thêm hàm này
+ 
     function checkExistingPrivileges() {
         var user = $("#ddlUser").val();
         var role = $("#ddlRole").val();
-        var table = $("#SelectedTable").val(); // ddlTable được đổi tên trong dropdownlistfor thành SelectedTable
+        var table = $("#SelectedTable").val(); 
 
-        var target = user || role; // User có ưu tiên cao hơn (vì chỉ chọn 1 trong 2)
+        var target = user || role;
         var displayDiv = $("#existingPrivilegesDisplay");
-      
-        // 1. Kiểm tra đủ điều kiện gọi AJAX
         if (!target || !table) {
             displayDiv.html('<p class="text-muted mb-0">Vui lòng chọn **Đối Tượng Nhận Quyền** và **Bảng Dữ Liệu** để xem.</p>');
             return;
         }
-
-        // 2. Gọi AJAX
         $.ajax({
             url: '@Url.Action("GetExistingPrivileges", "Admin")',
             type: "GET",
@@ -250,19 +274,11 @@
                     var privs = response.data;
                     var htmlContent = '';
 
-                    if (privs.length === 0) {
+                    if (!privs || privs.length === 0) {   
                         htmlContent = '<span class="badge badge-secondary p-2 shadow-sm text-dark">Chưa có quyền nào</span>';
                     } else {
-                        // Tạo các badge màu cho từng quyền
                         $.each(privs, function(index, value) {
-                            var badgeClass = '';
-                            switch (value) {
-                                case 'SELECT': badgeClass = 'badge-light text-dark'; break;
-                                case 'INSERT': badgeClass = 'badge-light text-dark'; break;
-                                case 'UPDATE': badgeClass = 'badge-light text-dark'; break;
-                                case 'DELETE': badgeClass = 'badge-light text-dark'; break;
-                                default: badgeClass = 'badge-light text-dark';
-                            }
+                            var badgeClass = 'badge-light text-dark border'; 
                             htmlContent += '<span class="badge ' + badgeClass + ' p-2 mx-1 shadow-sm font-weight-bold scale-checkbox">' + value + '</span>';
                         });
                     }
@@ -286,17 +302,23 @@
     });
 </script>
 
-<!-- CSS TÙY CHỈNH CHO VIEW NÀY -->
 <style>
     /* Hiệu ứng load trang */
     .fade-in-up {
         animation: fadeInUp 0.5s ease-out;
     }
-    @@keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
 
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
 
     /* Tăng kích thước checkbox */
@@ -309,9 +331,10 @@
     .hover-lift {
         transition: transform 0.2s;
     }
-    .hover-lift:hover {
-        transform: translateY(-2px);
-    }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
 
     /* Màu nền gradient cho header */
     .bg-gradient-primary {
