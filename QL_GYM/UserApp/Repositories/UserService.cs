@@ -20,7 +20,7 @@ namespace UserApp.Repositories
         // Connection string EF/USER sau khi login
         public string ConnectionStringUser => !string.IsNullOrEmpty(_connectionStringUser) ? _connectionStringUser : _adminEfConnection;
 
-        // --- 1. LẤY DANH SÁCH SESSION CỦA USER ---
+      
         public List<SessionInfo> GetUserSessions(string username)
         {
             var list = new List<SessionInfo>();
