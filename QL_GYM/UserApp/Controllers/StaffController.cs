@@ -154,8 +154,6 @@ namespace UserApp.Controllers
         public ActionResult VerifySignatureById(int id)
         {
             hoaDonRepository = new HoaDonRepository(Session["connectionString"] as string);
-            // 1. Tìm hóa đơn trong Database
-            // Dùng GetInvoice() và tìm kiếm trong danh sách (vì bạn chưa có GetById)
             var invoiceHeader = hoaDonRepository.GetInvoice().FirstOrDefault(i => i.Header.MAHD == id);
 
             if (invoiceHeader == null)
@@ -309,7 +307,7 @@ namespace UserApp.Controllers
                     }
                 }
 
-                TempData["Error"] = "Có lỗi xảy ra: " + message;
+                TempData["Error"] = "Bạn không có quyền này";
               ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
                 return View(model);
             }

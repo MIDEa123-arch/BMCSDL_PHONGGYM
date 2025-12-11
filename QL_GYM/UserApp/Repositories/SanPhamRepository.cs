@@ -109,7 +109,7 @@ namespace UserApp.Repositories
                 }
                 catch (Exception)
                 {
-                    transaction.Rollback();
+                    transaction.Rollback();                    
                     throw;
                 }
             }
