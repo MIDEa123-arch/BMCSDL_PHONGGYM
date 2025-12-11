@@ -222,7 +222,7 @@ namespace UserApp.Repositories
             return list;
         }
         public (int status, int sid, int serial) Login(string username, string password)
-        {
+        {            
             var adminBuilder = new OracleConnectionStringBuilder(_adminRawConnection);
             string adminUser = adminBuilder.UserID;
             string adminPassword = adminBuilder.Password;
@@ -230,15 +230,13 @@ namespace UserApp.Repositories
             if (username.Equals(adminUser, StringComparison.OrdinalIgnoreCase)
                 && password == adminPassword)
             {
-                return (2, 0, 0); // admin không cần SID, SERIAL
+                return (2, 0, 0);
             }
-
-            // Encrypt
+            
             password = MaHoa.MaHoaNhan(MaHoa.MaHoaNhan(password, 7), 7);
 
             try
             {
-                // Resolve login limit
                 using (var connAdmin = new OracleConnection(_adminRawConnection))
                 using (var cmd = new OracleCommand("SP_RESOLVE_LOGIN_LIMIT", connAdmin))
                 {
@@ -247,18 +245,24 @@ namespace UserApp.Repositories
                     connAdmin.Open();
                     cmd.ExecuteNonQuery();
                 }
-
-                // Build EF connection for staff
+                
                 var entityBuilder = new EntityConnectionStringBuilder(_adminEfConnection);
                 var oracleBuilder = new OracleConnectionStringBuilder(entityBuilder.ProviderConnectionString);
 
                 oracleBuilder.UserID = username.ToUpper();
                 oracleBuilder.Password = password;
+                oracleBuilder.Pooling = false;
+                
+                using (var connCheck = new OracleConnection(oracleBuilder.ToString()))
+                {
+                    connCheck.Open();
+                    connCheck.Close();
+                }
+                oracleBuilder.Pooling = true;
 
                 entityBuilder.ProviderConnectionString = oracleBuilder.ToString();
                 _connectionStringUser = entityBuilder.ToString();
-
-                // Open user connection to get SID & SERIAL#
+                
                 int sid = 0, serial = 0;
 
                 using (var connUser = new OracleConnection(oracleBuilder.ToString()))
@@ -276,16 +280,25 @@ namespace UserApp.Repositories
                         serialParam.Direction = ParameterDirection.Output;
 
                         cmd2.ExecuteNonQuery();
+                        
+                        if (sidParam.Value != DBNull.Value)
+                            sid = ((OracleDecimal)sidParam.Value).ToInt32();
 
-                        sid = ((OracleDecimal)cmd2.Parameters["p_sid"].Value).ToInt32();
-                        serial = ((OracleDecimal)cmd2.Parameters["p_serial"].Value).ToInt32();
+                        if (serialParam.Value != DBNull.Value)
+                            serial = ((OracleDecimal)serialParam.Value).ToInt32();
                     }
                 }
+
+                // Trả về kết quả thành công cho Controller
                 return (1, sid, serial);
             }
-            catch
+            catch (OracleException ex)
             {
-                throw;
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
