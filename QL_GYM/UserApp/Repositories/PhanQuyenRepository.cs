@@ -166,9 +166,12 @@ namespace UserApp.Repositories
         {
             var existingPrivs = new List<string>();
 
-            var parts = tableName.Split('.');
-            if (parts.Length != 2) return existingPrivs;
-            string name = parts[1]; 
+            string name = tableName;
+            if (tableName.Contains("."))
+            {
+                var parts = tableName.Split('.');
+                name = parts[1];
+            }
 
             using (var conn = new OracleConnection(_adminRawConnection))
             {

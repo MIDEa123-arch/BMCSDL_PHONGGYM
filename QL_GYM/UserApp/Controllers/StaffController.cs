@@ -416,5 +416,29 @@ namespace UserApp.Controllers
             ViewBag.MaLoaiSP = new SelectList(_context.LOAISANPHAMs, "MALOAISP", "TENLOAISP", model.MALOAISP);
             return View(model);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id)
+        {
+            if (Session["user"] == null || Session["connectionString"] == null)
+            {
+                return RedirectToAction("Login", "Staff");
+            }
+
+            try
+            {
+                var repo = new SanPhamRepository(Session["connectionString"] as string);
+                repo.XoaSanPham(id);
+
+                TempData["Success"] = "Đã xóa sản phẩm thành công!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction("SanPham");
+        }
     }
 }

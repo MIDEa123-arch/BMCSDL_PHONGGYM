@@ -289,6 +289,23 @@ namespace UserApp.Controllers
                 ViewBag.ErrorMessage = "Lỗi khi tải Audit Trail: " + ex.Message;
                 return View(model);
             }
-        }       
+        }
+
+        [HttpGet]
+        public JsonResult GetExistingPrivileges(string target, string tableName)
+        {
+            try
+            {
+                var privs = _phanQuyenRepository.GetExistingPrivileges(target, tableName);
+
+                return Json(new { success = true, data = privs }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
     } 
+
+
 }

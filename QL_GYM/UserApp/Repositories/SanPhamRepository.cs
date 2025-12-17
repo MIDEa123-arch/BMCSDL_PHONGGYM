@@ -5,14 +5,15 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Web;
 using System.IO;
-
 using UserApp.Models;
 using UserApp.ViewModel;
+
 namespace UserApp.Repositories
 {
     public class SanPhamRepository
     {
         private readonly QL_PHONGGYMEntities _context;
+
         public SanPhamRepository(string connStr)
         {
             _context = new QL_PHONGGYMEntities(connStr);
@@ -27,8 +28,6 @@ namespace UserApp.Repositories
         {
             return _context.SANPHAMs.Find(id);
         }
-
-
 
         public List<SANPHAM> GetAll()
         {
@@ -66,35 +65,68 @@ namespace UserApp.Repositories
             return list;
         }
 
-        public void Add(SANPHAM sp)
+        public List<HINHANH> GetImagesByProductId(int maSP)
         {
-            _context.SANPHAMs.Add(sp);
-            _context.SaveChanges();
+            return _context.HINHANHs.Where(x => x.MASP == maSP).ToList();
         }
 
-        public void Update(SANPHAM sp)
+        public bool IsDuplicateName(string tenSp, int maSp)
         {
-            _context.Entry(sp).State = System.Data.Entity.EntityState.Modified;
-            _context.SaveChanges();
+            return _context.SANPHAMs.Any(x =>
+                x.TENSP.ToLower() == tenSp.Trim().ToLower() &&
+                x.MASP != maSp
+            );
         }
 
-        public void Delete(int id)
-        {
-            var sp = _context.SANPHAMs.Find(id);
-            if (sp != null)
+        public void XoaSanPham(int id)
+        {            
+            _context.Database.ExecuteSqlCommand("SET ROLE ALL");
+
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                _context.SANPHAMs.Remove(sp);
-                _context.SaveChanges();
+                try
+                {
+                    var sp = _context.SANPHAMs.FirstOrDefault(x => x.MASP == id);
+                    if (sp == null)
+                    {
+                        throw new Exception("Sản phẩm không tồn tại hoặc đã bị xóa.");
+                    }
+
+                    var dsHinh = _context.HINHANHs.Where(h => h.MASP == id).ToList();
+                    if (dsHinh.Count > 0)
+                    {
+                        _context.HINHANHs.RemoveRange(dsHinh);
+                    }
+
+                    _context.SANPHAMs.Remove(sp);
+
+                    _context.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    transaction.Rollback();
+                    HandleOracleException(dbEx);
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
+
         public void AddWithImages(SANPHAM sp, List<HINHANH> danhSachHinh)
-        {
+        {            
+            _context.Database.ExecuteSqlCommand("SET ROLE ALL");
+
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
                     _context.SANPHAMs.Add(sp);
                     _context.SaveChanges();
+
                     if (danhSachHinh != null && danhSachHinh.Count > 0)
                     {
                         foreach (var hinh in danhSachHinh)
@@ -107,41 +139,16 @@ namespace UserApp.Repositories
 
                     transaction.Commit();
                 }
+                catch (DbUpdateException dbEx)
+                {
+                    transaction.Rollback();
+                    HandleOracleException(dbEx);
+                }
                 catch (Exception)
                 {
-                    transaction.Rollback();                    
+                    transaction.Rollback();
                     throw;
                 }
-            }
-        }
-
-        public List<HINHANH> GetImagesByProductId(int maSP)
-        {
-            return _context.HINHANHs.Where(x => x.MASP == maSP).ToList();
-        }
-
-        // Hàm xóa hình ảnh (Dùng khi người dùng thay thế ảnh mới)
-        public void DeleteImage(int maHinh)
-        {
-            var img = _context.HINHANHs.Find(maHinh);
-            if (img != null)
-            {
-                _context.HINHANHs.Remove(img);
-                _context.SaveChanges();
-            }
-        }
-
-        // Hàm thêm hình (Dùng lại logic cũ)
-        public void AddImage(HINHANH img)
-        {
-            try
-            {
-                _context.HINHANHs.Add(img);
-                _context.SaveChanges();
-            }
-            catch (OracleException ex)
-            {
-                throw ex;
             }
         }
 
@@ -150,13 +157,15 @@ namespace UserApp.Repositories
             errorMessage = "";
             try
             {
+                _context.Database.ExecuteSqlCommand("SET ROLE ALL");
+
                 var dbItem = _context.SANPHAMs.Find(model.MASP);
                 if (dbItem == null)
                 {
                     errorMessage = "Sản phẩm không tồn tại.";
                     return false;
                 }
-                
+
                 dbItem.TENSP = model.TENSP;
                 dbItem.MALOAISP = model.MALOAISP;
                 dbItem.DONGIA = model.DONGIA;
@@ -167,7 +176,7 @@ namespace UserApp.Repositories
                 dbItem.BAOHANH = model.BAOHANH;
                 dbItem.MOTACHUNG = model.MOTACHUNG;
                 dbItem.MOTACHITIET = model.MOTACHITIET;
-                
+
                 if (newImageNames != null && newImageNames.Count > 0)
                 {
                     foreach (var imageName in newImageNames)
@@ -185,26 +194,16 @@ namespace UserApp.Repositories
                 _context.SaveChanges();
                 return true;
             }
-            catch (DbUpdateException ex)
-            {                
-                var inner = ex.InnerException;
-                while (inner != null)
+            catch (DbUpdateException dbEx)
+            {
+                try
                 {
-                    if (inner is OracleException oracleEx)
-                    {                        
-                        if (oracleEx.Number == 1031 || oracleEx.Number == 6550)
-                        {
-                            errorMessage = "Bạn không có quyền thực hiện thao tác này.";
-                            return false;
-                        }
-                        
-                        errorMessage = "Lỗi Database: " + oracleEx.Message;
-                        return false;
-                    }
-                    inner = inner.InnerException;
+                    HandleOracleException(dbEx);
                 }
-                
-                errorMessage = "Lỗi cập nhật dữ liệu: " + ex.Message;
+                catch (Exception ex)
+                {
+                    errorMessage = ex.Message;
+                }
                 return false;
             }
             catch (Exception ex)
@@ -214,13 +213,70 @@ namespace UserApp.Repositories
             }
         }
 
-        // Helper to check for duplicate names (excluding current ID)
-        public bool IsDuplicateName(string tenSp, int maSp)
+        public void DeleteImage(int maHinh)
         {
-            return _context.SANPHAMs.Any(x =>
-                x.TENSP.ToLower() == tenSp.Trim().ToLower() &&
-                x.MASP != maSp
-            );
+            try
+            {
+                _context.Database.ExecuteSqlCommand("SET ROLE ALL"); // Refresh quyền
+
+                var img = _context.HINHANHs.Find(maHinh);
+                if (img != null)
+                {
+                    _context.HINHANHs.Remove(img);
+                    _context.SaveChanges();
+                }
+            }
+            catch (DbUpdateException dbEx) { HandleOracleException(dbEx); }
+            catch (Exception) { throw; }
+        }
+
+        public void AddImage(HINHANH img)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlCommand("SET ROLE ALL"); // Refresh quyền
+
+                _context.HINHANHs.Add(img);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException dbEx) { HandleOracleException(dbEx); }
+            catch (Exception) { throw; }
+        }
+
+        private void HandleOracleException(DbUpdateException dbEx)
+        {
+            var inner = dbEx.InnerException;
+            while (inner != null)
+            {
+                if (inner is OracleException oracleEx)
+                {
+                    switch (oracleEx.Number)
+                    {
+                        case 1031:
+                            throw new Exception("Bạn không có quyền thực hiện thao tác này.");
+
+                        case 2292:
+                            throw new Exception("Không thể xóa: Dữ liệu này đang được sử dụng ở nơi khác (Hóa đơn/Phiếu nhập...).");
+
+                        case 00001:
+                            throw new Exception("Dữ liệu bị trùng lặp (Mã hoặc Tên đã tồn tại).");
+
+                        case 6550:
+                            throw new Exception("Lỗi Database PL/SQL: Có thể do thiếu quyền trên Trigger/Sequence.");
+
+                        default:
+                            throw new Exception($"Lỗi Oracle (Code: {oracleEx.Number}): {oracleEx.Message}");
+                    }
+                }
+                inner = inner.InnerException;
+            }
+
+            if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("ORA-01031"))
+            {
+                throw new Exception("Bạn không có quyền thực hiện thao tác này.");
+            }
+
+            throw new Exception("Lỗi cập nhật dữ liệu: " + dbEx.Message);
         }
     }
 }

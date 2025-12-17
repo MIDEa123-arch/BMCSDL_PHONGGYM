@@ -12,6 +12,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -127,12 +135,14 @@
                                            title="Sửa">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="@Url.Action("Delete", new { id = item.MASP })"
-                                           class="btn btn-outline-danger"
-                                           title="Xóa"
-                                           onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        @using (Html.BeginForm("Delete", "Staff", new { id = item.MASP }, FormMethod.Post, new { style = "display:inline;" }))
+                                        {
+                                            @Html.AntiForgeryToken() <button type="submit" class="btn btn-outline-danger"
+                                                                             title="Xóa"
+                                                                             onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
                                     </div>
                                 </td>
                             </tr>
