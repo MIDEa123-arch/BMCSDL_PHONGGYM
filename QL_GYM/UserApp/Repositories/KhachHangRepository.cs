@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Web;
+using System.Web.Helpers;
 using System.Web.Mvc;
 using UserApp.Helpers;
 using UserApp.Models;
@@ -27,7 +30,137 @@ namespace UserApp.Repositories
         {
             _context = new QL_PHONGGYMEntities(true);
         }
+        public List<NHANVIEN> GetDanhSachHLV()
+        {            
+            return _context.NHANVIENs.Where(nv => nv.MACHUCVU == 2).ToList();
+        }
 
+        public bool PhanCongPT(int maKH, int maNV, int soBuoi, decimal giaMoiBuoi)
+        {
+            try
+            {
+                var kh = _context.KHACHHANGs.Find(maKH);
+                var nv = _context.NHANVIENs.Find(maNV);
+
+                if (kh == null || nv == null)
+                {
+                    return false;
+                }
+
+                var dangKy = new DANGKYPT
+                {
+                    MAKH = maKH,
+                    MANV = maNV,
+                    SOBUOI = soBuoi,
+                    GIAMOIBUOI = giaMoiBuoi,
+                    NGAYDANGKY = DateTime.Now,
+                    TRANGTHAI = "Còn hiệu lực"
+                };
+
+                _context.DANGKYPTs.Add(dangKy);
+                _context.SaveChanges();
+
+                return true;
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+            {
+                var errorMessages = ex.EntityValidationErrors
+                        .SelectMany(x => x.ValidationErrors)
+                        .Select(x => x.ErrorMessage);
+
+                var fullErrorMessage = string.Join("; ", errorMessages);
+                var exceptionMessage = string.Concat(ex.Message, " The validation errors are: ", fullErrorMessage);
+                throw new Exception(exceptionMessage);
+            }
+            catch (Exception ex)
+            {                
+                throw ex;
+            }
+        }
+        public bool SendOTP(string userEmail, out string otpCode)
+        {
+            string emailDaMaHoa = MaHoa.MaHoaCong(userEmail, 6);
+            
+            var khach = _context.KHACHHANGs.FirstOrDefault(x => x.EMAIL == emailDaMaHoa);
+            if (khach == null)
+                throw new Exception("Tài khoản không tồn tại");
+
+            otpCode = new Random().Next(1000, 9999).ToString(); // Tạo mã OTP 6 số
+            try
+            {
+                var fromAddress = new MailAddress("thangdien0169@gmail.com", "QL_GYM");
+                var toAddress = new MailAddress(userEmail);
+
+                const string appPassword = "rtrxvdpyiynbxyzn"; // Gmail App Password
+
+                var smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromAddress.Address, appPassword)
+                };
+
+                string bodyContent = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; background:#f6f6f6'>
+                    <div style='max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);'>
+                        <h2 style='color:#d92027; text-align:center; margin-bottom: 20px;'>THE GYM</h2>
+
+                        <h3 style='color:#333;'>Khôi phục tài khoản</h3>
+                        <p style='font-size: 15px; color:#555;'>
+                            Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản The Gym.
+                            Vui lòng sử dụng mã OTP bên dưới để xác thực:
+                        </p>
+
+                        <div style='text-align:center; margin: 30px 0;'>
+                            <div style='
+                                display:inline-block;
+                                font-size:32px;
+                                font-weight:bold;
+                                color:white;
+                                background:#d92027;
+                                padding:15px 35px;
+                                border-radius:8px;
+                                letter-spacing:5px;
+                            '>
+                                {otpCode}
+                            </div>
+                        </div>
+
+                        <p style='color:#777;'>
+                            Mã OTP có hiệu lực trong <b>3 phút</b>.
+                        </p>
+
+                        <p style='color:#444;'>
+                            Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email.
+                        </p>
+
+                        <hr style='margin-top:25px; opacity:0.3;' />
+                        <p style='text-align:center; font-size:13px; color:#999;'>
+                            © {DateTime.Now.Year} The Gym. All rights reserved.
+                        </p>
+                    </div>
+                </div>";
+
+                using (var message = new MailMessage(fromAddress, toAddress)
+                {
+                    Subject = "THE GYM - Mã xác thực OTP khôi phục tài khoản",
+                    Body = bodyContent,
+                    IsBodyHtml = true
+                })
+                {
+                    smtp.Send(message);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public List<HocVienViewModel> GetHocVien()
         {
             var list = (from kh in _context.KHACHHANGs

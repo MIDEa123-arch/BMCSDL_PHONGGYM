@@ -18,7 +18,7 @@ namespace UserApp.Models
     public partial class QL_PHONGGYMEntities : DbContext
     {
         public QL_PHONGGYMEntities()
-    : base("name=QL_PHONGGYMEntities")
+ : base("name=QL_PHONGGYMEntities")
         {
         }
 
@@ -37,7 +37,6 @@ namespace UserApp.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<ACTIVE_WEB_LOGINS> ACTIVE_WEB_LOGINS { get; set; }
         public virtual DbSet<CHECKIN> CHECKINs { get; set; }
         public virtual DbSet<CHITIETGIOHANG> CHITIETGIOHANGs { get; set; }
         public virtual DbSet<CHITIETHOADON> CHITIETHOADONs { get; set; }
@@ -59,11 +58,45 @@ namespace UserApp.Models
         public virtual DbSet<LOPHOC> LOPHOCs { get; set; }
         public virtual DbSet<NHANVIEN> NHANVIENs { get; set; }
         public virtual DbSet<SANPHAM> SANPHAMs { get; set; }
-        public virtual DbSet<USER_SESSIONS> USER_SESSIONS { get; set; }
     
         public virtual int GET_ORACLE_USERS()
         {
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("GET_ORACLE_USERS");
+        }
+    
+        public virtual int GET_RECENT_AUDIT_LOGS(string p_OWNER, Nullable<decimal> p_HOURS)
+        {
+            var p_OWNERParameter = p_OWNER != null ?
+                new ObjectParameter("P_OWNER", p_OWNER) :
+                new ObjectParameter("P_OWNER", typeof(string));
+    
+            var p_HOURSParameter = p_HOURS.HasValue ?
+                new ObjectParameter("P_HOURS", p_HOURS) :
+                new ObjectParameter("P_HOURS", typeof(decimal));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("GET_RECENT_AUDIT_LOGS", p_OWNERParameter, p_HOURSParameter);
+        }
+    
+        public virtual int GET_USER_SESSIONS(string p_USERNAME)
+        {
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("GET_USER_SESSIONS", p_USERNAMEParameter);
+        }
+    
+        public virtual int KILL_USER_SESSION(Nullable<decimal> p_SID, Nullable<decimal> p_SERIAL)
+        {
+            var p_SIDParameter = p_SID.HasValue ?
+                new ObjectParameter("P_SID", p_SID) :
+                new ObjectParameter("P_SID", typeof(decimal));
+    
+            var p_SERIALParameter = p_SERIAL.HasValue ?
+                new ObjectParameter("P_SERIAL", p_SERIAL) :
+                new ObjectParameter("P_SERIAL", typeof(decimal));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("KILL_USER_SESSION", p_SIDParameter, p_SERIALParameter);
         }
     
         public virtual int P_DECRYPTADDCIPHER(string sTR, Nullable<decimal> k, ObjectParameter rESULT)
@@ -132,6 +165,70 @@ namespace UserApp.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_OTHER_MACHINE", p_RESULT);
         }
     
+        public virtual int SP_CHECK_OWN_SESSION(ObjectParameter p_SID, ObjectParameter p_SERIAL)
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_OWN_SESSION", p_SID, p_SERIAL);
+        }
+    
+        public virtual int SP_CHECK_SESSION_FULL(string p_USERNAME, Nullable<decimal> p_SID, Nullable<decimal> p_SERIAL, Nullable<decimal> p_MAX_IDLE_SEC, ObjectParameter p_STATUS_CODE, ObjectParameter p_MESSAGE)
+        {
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
+    
+            var p_SIDParameter = p_SID.HasValue ?
+                new ObjectParameter("P_SID", p_SID) :
+                new ObjectParameter("P_SID", typeof(decimal));
+    
+            var p_SERIALParameter = p_SERIAL.HasValue ?
+                new ObjectParameter("P_SERIAL", p_SERIAL) :
+                new ObjectParameter("P_SERIAL", typeof(decimal));
+    
+            var p_MAX_IDLE_SECParameter = p_MAX_IDLE_SEC.HasValue ?
+                new ObjectParameter("P_MAX_IDLE_SEC", p_MAX_IDLE_SEC) :
+                new ObjectParameter("P_MAX_IDLE_SEC", typeof(decimal));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_SESSION_FULL", p_USERNAMEParameter, p_SIDParameter, p_SERIALParameter, p_MAX_IDLE_SECParameter, p_STATUS_CODE, p_MESSAGE);
+        }
+    
+        public virtual int SP_CHECK_SESSION_STATUS(string p_USERNAME, Nullable<decimal> p_SID, Nullable<decimal> p_SERIAL, Nullable<decimal> p_MAX_IDLE_SEC, ObjectParameter p_STATUS_MSG)
+        {
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
+    
+            var p_SIDParameter = p_SID.HasValue ?
+                new ObjectParameter("P_SID", p_SID) :
+                new ObjectParameter("P_SID", typeof(decimal));
+    
+            var p_SERIALParameter = p_SERIAL.HasValue ?
+                new ObjectParameter("P_SERIAL", p_SERIAL) :
+                new ObjectParameter("P_SERIAL", typeof(decimal));
+    
+            var p_MAX_IDLE_SECParameter = p_MAX_IDLE_SEC.HasValue ?
+                new ObjectParameter("P_MAX_IDLE_SEC", p_MAX_IDLE_SEC) :
+                new ObjectParameter("P_MAX_IDLE_SEC", typeof(decimal));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_SESSION_STATUS", p_USERNAMEParameter, p_SIDParameter, p_SERIALParameter, p_MAX_IDLE_SECParameter, p_STATUS_MSG);
+        }
+    
+        public virtual int SP_CHECK_USER_SESSION(string p_USERNAME, Nullable<decimal> p_SID, Nullable<decimal> p_SERIAL, ObjectParameter p_STATUS)
+        {
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
+    
+            var p_SIDParameter = p_SID.HasValue ?
+                new ObjectParameter("P_SID", p_SID) :
+                new ObjectParameter("P_SID", typeof(decimal));
+    
+            var p_SERIALParameter = p_SERIAL.HasValue ?
+                new ObjectParameter("P_SERIAL", p_SERIAL) :
+                new ObjectParameter("P_SERIAL", typeof(decimal));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CHECK_USER_SESSION", p_USERNAMEParameter, p_SIDParameter, p_SERIALParameter, p_STATUS);
+        }
+    
         public virtual int SP_CREATE_MANAGER_USER(string p_USERNAME, string p_PASSWORD)
         {
             var p_USERNAMEParameter = p_USERNAME != null ?
@@ -143,6 +240,15 @@ namespace UserApp.Models
                 new ObjectParameter("P_PASSWORD", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CREATE_MANAGER_USER", p_USERNAMEParameter, p_PASSWORDParameter);
+        }
+    
+        public virtual int SP_CREATE_ROLE(string p_ROLE_NAME)
+        {
+            var p_ROLE_NAMEParameter = p_ROLE_NAME != null ?
+                new ObjectParameter("P_ROLE_NAME", p_ROLE_NAME) :
+                new ObjectParameter("P_ROLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_CREATE_ROLE", p_ROLE_NAMEParameter);
         }
     
         public virtual int SP_DANGKYTAPTHU(string p_TENKH, string p_SDT, string p_EMAIL)
@@ -169,6 +275,81 @@ namespace UserApp.Models
                 new ObjectParameter("P_USERNAME", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_DROP_USER", p_USERNAMEParameter);
+        }
+    
+        public virtual int SP_GET_AUDITED_TABLES()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GET_AUDITED_TABLES");
+        }
+    
+        public virtual int SP_GET_AUDIT_LOGS(string p_USERNAME, string p_TABLE_NAME)
+        {
+            var p_USERNAMEParameter = p_USERNAME != null ?
+                new ObjectParameter("P_USERNAME", p_USERNAME) :
+                new ObjectParameter("P_USERNAME", typeof(string));
+    
+            var p_TABLE_NAMEParameter = p_TABLE_NAME != null ?
+                new ObjectParameter("P_TABLE_NAME", p_TABLE_NAME) :
+                new ObjectParameter("P_TABLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GET_AUDIT_LOGS", p_USERNAMEParameter, p_TABLE_NAMEParameter);
+        }
+    
+        public virtual int SP_GET_EXISTING_PRIVS(string p_TARGET, string p_TABLE_NAME)
+        {
+            var p_TARGETParameter = p_TARGET != null ?
+                new ObjectParameter("P_TARGET", p_TARGET) :
+                new ObjectParameter("P_TARGET", typeof(string));
+    
+            var p_TABLE_NAMEParameter = p_TABLE_NAME != null ?
+                new ObjectParameter("P_TABLE_NAME", p_TABLE_NAME) :
+                new ObjectParameter("P_TABLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GET_EXISTING_PRIVS", p_TARGETParameter, p_TABLE_NAMEParameter);
+        }
+    
+        public virtual int SP_GET_METADATA()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GET_METADATA");
+        }
+    
+        public virtual int SP_GET_USERS_IN_ROLE(string p_ROLE_NAME)
+        {
+            var p_ROLE_NAMEParameter = p_ROLE_NAME != null ?
+                new ObjectParameter("P_ROLE_NAME", p_ROLE_NAME) :
+                new ObjectParameter("P_ROLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GET_USERS_IN_ROLE", p_ROLE_NAMEParameter);
+        }
+    
+        public virtual int SP_GRANT_PERMISSION(string p_USER_OR_ROLE, string p_TABLE_NAME, string p_PRIVILEGE)
+        {
+            var p_USER_OR_ROLEParameter = p_USER_OR_ROLE != null ?
+                new ObjectParameter("P_USER_OR_ROLE", p_USER_OR_ROLE) :
+                new ObjectParameter("P_USER_OR_ROLE", typeof(string));
+    
+            var p_TABLE_NAMEParameter = p_TABLE_NAME != null ?
+                new ObjectParameter("P_TABLE_NAME", p_TABLE_NAME) :
+                new ObjectParameter("P_TABLE_NAME", typeof(string));
+    
+            var p_PRIVILEGEParameter = p_PRIVILEGE != null ?
+                new ObjectParameter("P_PRIVILEGE", p_PRIVILEGE) :
+                new ObjectParameter("P_PRIVILEGE", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GRANT_PERMISSION", p_USER_OR_ROLEParameter, p_TABLE_NAMEParameter, p_PRIVILEGEParameter);
+        }
+    
+        public virtual int SP_GRANT_ROLE_TO_USER(string p_USER_NAME, string p_ROLE_NAME)
+        {
+            var p_USER_NAMEParameter = p_USER_NAME != null ?
+                new ObjectParameter("P_USER_NAME", p_USER_NAME) :
+                new ObjectParameter("P_USER_NAME", typeof(string));
+    
+            var p_ROLE_NAMEParameter = p_ROLE_NAME != null ?
+                new ObjectParameter("P_ROLE_NAME", p_ROLE_NAME) :
+                new ObjectParameter("P_ROLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_GRANT_ROLE_TO_USER", p_USER_NAMEParameter, p_ROLE_NAMEParameter);
         }
     
         public virtual int SP_KHACHHANGDANGKY(string p_TENKH, string p_GIOITINH, Nullable<System.DateTime> p_NGAYSINH, string p_SDT, string p_EMAIL, string p_TENDANGNHAP, string p_MATKHAU)
@@ -215,6 +396,19 @@ namespace UserApp.Models
                 new ObjectParameter("P_MATKHAU", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_KHACHHANGLOGIN", p_TENDANGNHAPParameter, p_MATKHAUParameter);
+        }
+    
+        public virtual int SP_KHOIPHUCMATKHAU(string p_EMAIL, string p_MATKHAUMOI)
+        {
+            var p_EMAILParameter = p_EMAIL != null ?
+                new ObjectParameter("P_EMAIL", p_EMAIL) :
+                new ObjectParameter("P_EMAIL", typeof(string));
+    
+            var p_MATKHAUMOIParameter = p_MATKHAUMOI != null ?
+                new ObjectParameter("P_MATKHAUMOI", p_MATKHAUMOI) :
+                new ObjectParameter("P_MATKHAUMOI", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_KHOIPHUCMATKHAU", p_EMAILParameter, p_MATKHAUMOIParameter);
         }
     
         public virtual int SP_LAYCHITIETHOADON(Nullable<decimal> p_MAHD)
@@ -264,6 +458,36 @@ namespace UserApp.Models
                 new ObjectParameter("P_USERNAME", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_RESOLVE_LOGIN_LIMIT", p_USERNAMEParameter);
+        }
+    
+        public virtual int SP_REVOKE_PERMISSION(string p_USER_OR_ROLE, string p_TABLE_NAME, string p_PRIVILEGE)
+        {
+            var p_USER_OR_ROLEParameter = p_USER_OR_ROLE != null ?
+                new ObjectParameter("P_USER_OR_ROLE", p_USER_OR_ROLE) :
+                new ObjectParameter("P_USER_OR_ROLE", typeof(string));
+    
+            var p_TABLE_NAMEParameter = p_TABLE_NAME != null ?
+                new ObjectParameter("P_TABLE_NAME", p_TABLE_NAME) :
+                new ObjectParameter("P_TABLE_NAME", typeof(string));
+    
+            var p_PRIVILEGEParameter = p_PRIVILEGE != null ?
+                new ObjectParameter("P_PRIVILEGE", p_PRIVILEGE) :
+                new ObjectParameter("P_PRIVILEGE", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_REVOKE_PERMISSION", p_USER_OR_ROLEParameter, p_TABLE_NAMEParameter, p_PRIVILEGEParameter);
+        }
+    
+        public virtual int SP_REVOKE_ROLE_FROM_USER(string p_USER_NAME, string p_ROLE_NAME)
+        {
+            var p_USER_NAMEParameter = p_USER_NAME != null ?
+                new ObjectParameter("P_USER_NAME", p_USER_NAME) :
+                new ObjectParameter("P_USER_NAME", typeof(string));
+    
+            var p_ROLE_NAMEParameter = p_ROLE_NAME != null ?
+                new ObjectParameter("P_ROLE_NAME", p_ROLE_NAME) :
+                new ObjectParameter("P_ROLE_NAME", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SP_REVOKE_ROLE_FROM_USER", p_USER_NAMEParameter, p_ROLE_NAMEParameter);
         }
     
         public virtual int SP_TEST_CONNECTION(ObjectParameter p_ALIVE)

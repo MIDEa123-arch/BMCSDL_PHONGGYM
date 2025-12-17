@@ -117,23 +117,35 @@ namespace UserApp.Repositories
                 return false;
             }
         }
-        public bool AddUser(string username, string password)
+        public bool AddUser(NhanVienViewModel model)
         {
-            password = MaHoa.MaHoaNhan(password, 7);
             try
             {
-                using (var conn = new OracleConnection(_adminRawConnection))
+                using (var conn = new OracleConnection(_adminRawConnection)) // Kết nối bằng Admin
                 using (var cmd = new OracleCommand("SP_CREATE_MANAGER_USER", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = username.ToUpper();
-                    cmd.Parameters.Add("p_password", OracleDbType.Varchar2).Value = password;
+                    
+                    cmd.Parameters.Add("p_username", OracleDbType.Varchar2).Value = model.TenDangNhap.ToUpper();
+                    cmd.Parameters.Add("p_password", OracleDbType.Varchar2).Value = model.MatKhau;
+
+                    cmd.Parameters.Add("p_TenNV", OracleDbType.NVarchar2).Value = model.TenNV;
+                    cmd.Parameters.Add("p_MaChucVu", OracleDbType.Decimal).Value = model.MaChucVu;
+                    cmd.Parameters.Add("p_SDT", OracleDbType.Varchar2).Value = model.SDT;
+
+                    if (model.NgaySinh.HasValue)
+                        cmd.Parameters.Add("p_NgaySinh", OracleDbType.Date).Value = model.NgaySinh.Value;
+                    else
+                        cmd.Parameters.Add("p_NgaySinh", OracleDbType.Date).Value = DBNull.Value;
+
+                    cmd.Parameters.Add("p_GioiTinh", OracleDbType.NVarchar2).Value = model.GioiTinh;
+
                     conn.Open();
                     cmd.ExecuteNonQuery();
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 return false;
             }
@@ -232,9 +244,7 @@ namespace UserApp.Repositories
             {
                 return (2, 0, 0);
             }
-            
-            password = MaHoa.MaHoaNhan(MaHoa.MaHoaNhan(password, 7), 7);
-
+            password = MaHoa.MahoaDes(password, "7");            
             try
             {
                 using (var connAdmin = new OracleConnection(_adminRawConnection))

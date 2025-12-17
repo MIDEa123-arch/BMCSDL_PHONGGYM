@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "Phân công Huấn Luyện Viên";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Phân công Huấn Luyện Viên (PT)</h3>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-@TempData["Type"] alert-dismissible fade show" role="alert">
+                    @TempData["Message"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            @using (Html.BeginForm("Create", "PhanCongPT", FormMethod.Post, new { @class = "form-horizontal" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <!-- Chọn Khách Hàng -->
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-bold">Khách hàng <span class="text-danger">*</span></label>
+                        @Html.DropDownList("MaKH", (SelectList)ViewBag.MaKH, "-- Chọn khách hàng --", new { @class = "form-control", required = "required" })
+                    </div>
+
+                    <!-- Chọn PT -->
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-bold">Huấn luyện viên (PT) <span class="text-danger">*</span></label>
+                        @Html.DropDownList("MaNV", (SelectList)ViewBag.MaNV, "-- Chọn PT --", new { @class = "form-control", required = "required" })
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <!-- Nhập số buổi -->
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-bold">Số buổi tập <span class="text-danger">*</span></label>
+                        <input type="number" name="SoBuoi" class="form-control" min="1" placeholder="Nhập tổng số buổi..." required />
+                    </div>
+
+                    <!-- Nhập giá tiền -->
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-bold">Giá mỗi buổi (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" name="GiaMoiBuoi" class="form-control" min="0" step="1000" placeholder="Ví dụ: 200000" required />
+                    </div>
+                </div>
+
+                <div class="form-group mt-4 text-center">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="fa fa-save"></i> Xác nhận Phân công
+                    </button>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary btn-lg px-4 ml-2">
+                        Hủy bỏ
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

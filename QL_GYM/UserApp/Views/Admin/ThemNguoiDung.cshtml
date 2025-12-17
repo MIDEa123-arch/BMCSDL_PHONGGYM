@@ -1,27 +1,28 @@
-﻿@model UserApp.ViewModel.StaffAccountModel
+﻿@model UserApp.ViewModel.NhanVienViewModel
+
 @{
     ViewBag.Title = "Thêm người dùng mới";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 <div class="row">
-    <div class="col-lg-8 col-xl-6 mx-auto">
+    <div class="col-lg-8 col-xl-7 mx-auto">
         <!-- Header -->
         <div class="d-flex align-items-center mb-4">
-            <a href="@Url.Action("NguoiDung", "Admin")" class="btn btn-outline-secondary me-3">
+            <a href="@Url.Action("NguoiDung", "Admin")" class="btn btn-outline-secondary me-3 shadow-sm">
                 <i class="fas fa-arrow-left"></i>
             </a>
             <div>
-                <h2 class="mb-1">Thêm người dùng mới</h2>
-                <p class="text-muted mb-0">Tạo tài khoản người dùng cho hệ thống</p>
+                <h2 class="mb-1 fw-bold text-primary">Thêm nhân viên mới</h2>
+                <p class="text-muted mb-0">Tạo tài khoản và thông tin nhân viên vào hệ thống</p>
             </div>
         </div>
 
         <!-- Form Card -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white py-3">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-primary text-white py-3 rounded-top-3">
                 <h5 class="mb-0">
-                    <i class="fas fa-user-plus me-2"></i>Thông tin tài khoản
+                    <i class="fas fa-user-plus me-2"></i>Thông tin đăng ký
                 </h5>
             </div>
             <div class="card-body p-4">
@@ -29,219 +30,170 @@
                 {
                     @Html.AntiForgeryToken()
 
-                    <!-- Validation Summary -->
-                    if (!ViewData.ModelState.IsValid)
+                    <!-- Hiển thị lỗi tổng thể từ Controller -->
+                    if (TempData["Error"] != null)
                     {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Có lỗi xảy ra!</strong>
+                            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"]
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            @Html.ValidationSummary(true, "", new { @class = "mb-0 mt-2" })
                         </div>
                     }
-
-                    <!-- Success Message -->
-                    if (TempData["SuccessMessage"] != null)
+                    if (ViewBag.Error != null)
                     {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     }
 
-                    <!-- Username Field -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">
-                            <i class="fas fa-user text-primary me-2"></i>@Html.DisplayNameFor(m => m.TenDangNhap)
-                            <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-at"></i>
-                            </span>
-                            @Html.TextBoxFor(m => m.TenDangNhap, new
-                            {
-                                @class = "form-control form-control-lg",
-                                placeholder = "Nhập tên đăng nhập",
-                                autocomplete = "off"
-                            })
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-warning mb-4" })
+
+                    <div class="row g-3">
+                        <!-- 1. THÔNG TIN CÁ NHÂN -->
+                        <div class="col-12"><h6 class="text-uppercase text-muted small fw-bold border-bottom pb-2">Thông tin cá nhân</h6></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.TenNV, new { @class = "form-control", placeholder = "VD: Nguyễn Văn A", required = "required" })
+                            @Html.ValidationMessageFor(m => m.TenNV, "", new { @class = "text-danger small" })
                         </div>
-                        @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger small mt-1 d-block" })
-                    </div>
 
-                    <!-- Password Field -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">
-                            <i class="fas fa-lock text-primary me-2"></i>@Html.DisplayNameFor(m => m.MatKhau)
-                            <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-key"></i>
-                            </span>
-                            @Html.PasswordFor(m => m.MatKhau, new
-                            {
-                                @class = "form-control form-control-lg",
-                                placeholder = "Nhập mật khẩu",
-                                id = "password"
-                            })
-                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.SDT, new { @class = "form-control", placeholder = "09xxxxxxxxx", maxlength = "10", oninput = "this.value = this.value.replace(/[^0-9]/g, '')" })
+                            @Html.ValidationMessageFor(m => m.SDT, "", new { @class = "text-danger small" })
                         </div>
-                        @Html.ValidationMessageFor(m => m.MatKhau, "", new { @class = "text-danger small mt-1 d-block" })
-                    </div>
 
-                    <!-- Confirm Password Field -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">
-                            <i class="fas fa-lock text-primary me-2"></i>@Html.DisplayNameFor(m => m.XacNhanMatKhau)
-                            <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-check-double"></i>
-                            </span>
-                            @Html.PasswordFor(m => m.XacNhanMatKhau, new
-                            {
-                                @class = "form-control form-control-lg",
-                                placeholder = "Nhập lại mật khẩu",
-                                id = "confirmPassword"
-                            })
-                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword', this)">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày sinh</label>
+                            <input type="date" name="NgaySinh" class="form-control" max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   value="@(Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("yyyy-MM-dd") : "")" />
+                            @Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "text-danger small" })
                         </div>
-                        @Html.ValidationMessageFor(m => m.XacNhanMatKhau, "", new { @class = "text-danger small mt-1 d-block" })
-                        <div id="passwordMatch" class="mt-1"></div>
-                    </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Giới tính</label>
+                            <select name="GioiTinh" class="form-select">
+                                <option value="Nam" @(Model.GioiTinh == "Nam" ? "selected" : "")>Nam</option>
+                                <option value="Nữ" @(Model.GioiTinh == "Nữ" ? "selected" : "")>Nữ</option>
+                            </select>
+                        </div>
 
-                    <!-- Password Requirements -->
-                    <div class="card bg-info bg-opacity-10 border-info mb-4">
-                        <div class="card-body">
-                            <h6 class="fw-semibold text-info mb-3">
-                                <i class="fas fa-shield-alt me-2"></i>Yêu cầu mật khẩu
-                            </h6>
-                            <ul class="list-unstyled mb-0 small">
-                                <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    Tối thiểu 8 ký tự
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    Ít nhất 1 chữ hoa và 1 chữ thường
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    Ít nhất 1 chữ số
-                                </li>
-                                <li>
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    Ít nhất 1 ký tự đặc biệt (!@@#$%^&*)
-                                </li>
-                            </ul>
+                        <!-- 2. THÔNG TIN CÔNG VIỆC -->
+                        <div class="col-12 mt-4"><h6 class="text-uppercase text-muted small fw-bold border-bottom pb-2">Thông tin công việc</h6></div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Chức vụ <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.MaChucVu, Model.ChucVuList, "-- Chọn chức vụ --", new { @class = "form-select", id = "MaChucVu" })
+                            @Html.ValidationMessageFor(m => m.MaChucVu, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <!-- KHỐI CHUYÊN MÔN (Ẩn/Hiện bằng JS) -->
+                        <div class="col-12" id="ChuyenMonGroup" style="display: none;">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <label class="form-label fw-bold text-primary">Chọn chuyên môn (Dành cho HLV/PT) <span class="text-danger">*</span></label>
+                                    <div class="row g-2">
+                                        @if (Model.ChuyenMonList != null)
+                                        {
+                                            foreach (var cm in Model.ChuyenMonList)
+                                            {
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        @{
+                                                            bool isChecked = Model.SelectedChuyenMonIds != null && Model.SelectedChuyenMonIds.Contains((int)cm.MACM);
+                                                        }
+                                                        <input type="checkbox" name="SelectedChuyenMonIds" value="@cm.MACM" class="form-check-input" id="cm_@cm.MACM" @(isChecked ? "checked" : "") />
+                                                        <label class="form-check-label" for="cm_@cm.MACM">@cm.TENCHUYENMON</label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                    @Html.ValidationMessage("SelectedChuyenMonIds", "", new { @class = "text-danger small mt-2" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. TÀI KHOẢN ORACLE -->
+                        <div class="col-12 mt-4"><h6 class="text-uppercase text-muted small fw-bold border-bottom pb-2">Tài khoản đăng nhập (Oracle User)</h6></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-user-circle"></i></span>
+                                @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Username", autocomplete = "off" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+                                @Html.PasswordFor(m => m.MatKhau, new { @class = "form-control", placeholder = "Password", id = "txtMatKhau" })
+                                <button class="btn btn-outline-secondary" type="button" id="btnTogglePass">
+                                    <i class="fas fa-eye" id="iconEye"></i>
+                                </button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.MatKhau, "", new { @class = "text-danger small" })
                         </div>
                     </div>
-
-                    @Html.HiddenFor(m => m.ReturnUrl)
 
                     <!-- Action Buttons -->
-                    <div class="d-flex gap-2 justify-content-end">
-                        <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary btn-lg">
-                            <i class="fas fa-times me-2"></i>Hủy bỏ
+                    <div class="d-flex gap-2 justify-content-end mt-5 pt-3 border-top">
+                        <a href="@Url.Action("NguoiDung", "Admin")" class="btn btn-light btn-lg border px-4">
+                            <i class="fas fa-times me-2"></i>Hủy
                         </a>
-                        <button type="reset" class="btn btn-outline-warning btn-lg">
-                            <i class="fas fa-redo me-2"></i>Đặt lại
-                        </button>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-2"></i>Tạo tài khoản
+                        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+                            <i class="fas fa-save me-2"></i>Lưu & Tạo User
                         </button>
                     </div>
                 }
-            </div>
-        </div>
-        @if (TempData["Error"] != null)
-        {
-            <div class="small bg-danger">TempData["Error"]</div>
-        }
-        <!-- Help Card -->
-        <div class="card border-0 bg-light mt-3">
-            <div class="card-body">
-                <h6 class="fw-semibold mb-2">
-                    <i class="fas fa-question-circle text-primary me-2"></i>Cần trợ giúp?
-                </h6>
-                <p class="text-muted small mb-0">
-                    Nếu bạn gặp vấn đề khi tạo tài khoản, vui lòng liên hệ với quản trị viên hệ thống
-                    hoặc xem <a href="#" class="text-decoration-none">tài liệu hướng dẫn</a>.
-                </p>
             </div>
         </div>
     </div>
 </div>
 
 @section scripts {
-    <script>
-        // Toggle password visibility
-        function togglePassword(inputId, button) {
-            const input = document.getElementById(inputId);
-            const icon = button.querySelector('i');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-    </script>
-
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            // --- LOGIC 1: ẨN HIỆN CHUYÊN MÔN ---
+            // Quy định mã chức vụ: 1=HLV Lớp, 2=PT (Cần kiểm tra lại ID trong DB của bạn)
+            var ptHlvCodes = ["1", "2"];
+
+            function toggleChuyenMon() {
+                var selectedMaChucVu = $('#MaChucVu').val();
+                if (ptHlvCodes.includes(selectedMaChucVu)) {
+                    $('#ChuyenMonGroup').slideDown();
+                } else {
+                    $('#ChuyenMonGroup').slideUp();
+                    // Bỏ chọn nếu ẩn đi để tránh gửi dữ liệu thừa
+                    $('#ChuyenMonGroup input[type=checkbox]').prop('checked', false);
+                }
+            }
+
+            $('#MaChucVu').change(function () {
+                toggleChuyenMon();
+            });
+
+            // Chạy khi load trang (để giữ trạng thái nếu Validation fail)
+            toggleChuyenMon();
+
+            // --- LOGIC 2: ẨN HIỆN MẬT KHẨU ---
+            $('#btnTogglePass').click(function () {
+                var input = $('#txtMatKhau');
+                var icon = $('#iconEye');
+                if (input.attr('type') === 'password') {
+                    input.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    input.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+        });
+    </script>
 }
-
-<style>
-    .form-control-lg {
-        font-size: 1rem;
-        padding: 0.75rem 1rem;
-    }
-
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-right: 0;
-    }
-
-    .input-group .form-control {
-        border-left: 0;
-    }
-
-    .input-group:focus-within .input-group-text {
-        border-color: #86b7fe;
-    }
-
-    .progress {
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .card-header.bg-primary {
-        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-    }
-
-    .btn-lg {
-        padding: 0.65rem 1.5rem;
-        font-size: 1rem;
-    }
-
-    .form-label {
-        margin-bottom: 0.5rem;
-    }
-
-    .form-check-input:checked {
-        background-color: #4f46e5;
-        border-color: #4f46e5;
-    }
-</style>
+```

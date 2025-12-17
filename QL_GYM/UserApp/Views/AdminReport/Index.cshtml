@@ -1,0 +1,321 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+
+    var firstDay = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToString("yyyy-MM-dd");
+    var today = DateTime.Now.ToString("yyyy-MM-dd");
+    var currentYear = DateTime.Now.Year;
+}
+<div class="container-fluid px-0">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-3">
+            <form id="filterForm" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted">Xem theo</label>
+                    <select id="filterType" class="form-select form-select-sm">
+                        <option value="month">Theo Tháng</option>
+                        <option value="quarter">Theo Quý</option>
+                        <option value="year">Theo Năm</option>
+                        <option value="custom">Tùy chọn ngày</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 filter-group" id="groupMonth">
+                    <label class="form-label fw-bold small text-muted">Chọn Tháng</label>
+                    <select id="ddlMonth" class="form-select form-select-sm">
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" @(i == DateTime.Now.Month ? "selected" : "")>Tháng @i</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 filter-group d-none" id="groupQuarter">
+                    <label class="form-label fw-bold small text-muted">Chọn Quý</label>
+                    <select id="ddlQuarter" class="form-select form-select-sm">
+                        <option value="1">Quý 1</option>
+                        <option value="2">Quý 2</option>
+                        <option value="3">Quý 3</option>
+                        <option value="4">Quý 4</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 filter-group" id="groupYear">
+                    <label class="form-label fw-bold small text-muted">Năm</label>
+                    <select id="ddlYear" class="form-select form-select-sm">
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-none" id="dateRangeArea">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted">Từ ngày</label>
+                            <input type="date" id="fromDate" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted">Đến ngày</label>
+                            <input type="date" id="toDate" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary ms-1" title="Tải lại">
+                        <i class="fas fa-sync-alt"></i>
+                    </a>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-warning w-100 fw-bold" onclick="exportExcel()">
+                        <i class="fas fa-file-excel me-1"></i> Xuất Excel
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-3 mb-3 mb-lg-0">
+            <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center text-center">
+                    <h6 class="opacity-7 text-uppercase small ls-1">Tổng doanh thu</h6>
+                    <h2 class="fw-bold display-6  fs-4 mb-0" id="totalRevenue">0đ</h2>
+                    <div class="small opacity-5 mt-2"><i class="fas fa-check-circle me-1 text-warning"></i>Đã thanh toán</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-2 border-0">
+                    <h6 class="mb-0 fw-bold text-primary small text-uppercase">
+                        <i class="fas fa-chart-bar me-2"></i> Biểu đồ từng tháng (Năm <span id="lblYear">@currentYear</span>)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 250px;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-2 border-0">
+                    <h6 class="mb-0 fw-bold text-primary small text-uppercase">
+                        <i class="fas fa-chart-pie me-2"></i> Tỷ trọng nguồn thu
+                    </h6>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div style="height: 280px; width: 100%;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-2 border-0">
+                    <h6 class="mb-0 fw-bold text-primary small text-uppercase">
+                        <i class="fas fa-list me-2"></i> Chi tiết số liệu
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0 text-nowrap">
+                            <thead class="table-light sticky-top small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Nguồn thu</th>
+                                    <th class="text-end">Tỷ lệ</th>
+                                    <th class="text-end pe-4">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody" class="small">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let chartSource = null;
+    let chartMonthly = null;
+
+    $(document).ready(function() {
+        initYears();
+        bindEvents();
+        updateDates();
+        refreshAllReports();
+    });
+
+    function initYears() {
+        const currentYear = new Date().getFullYear();
+        const ddlYear = $('#ddlYear');
+        ddlYear.empty();
+        for (let i = 0; i < 3; i++) {
+            let y = currentYear - i;
+            ddlYear.append(`<option value="${y}">Năm ${y}</option>`);
+        }
+    }
+
+    function bindEvents() {
+        $('#filterType').change(function() {
+            const type = $(this).val();
+            $('#groupMonth, #groupQuarter, #groupYear, #dateRangeArea').addClass('d-none');
+            if (type === 'custom') {
+                $('#dateRangeArea').removeClass('d-none');
+                $('#fromDate, #toDate').prop('readonly', false).removeClass('bg-light');
+            } else {
+                $('#groupYear').removeClass('d-none');
+                if (type === 'month') $('#groupMonth').removeClass('d-none');
+                if (type === 'quarter') $('#groupQuarter').removeClass('d-none');
+            }
+
+            updateDates();
+            if(type !== 'custom') refreshAllReports();
+        });
+        $('#ddlMonth, #ddlQuarter, #ddlYear').change(function() {
+            updateDates();
+            refreshAllReports();
+        });
+
+        $('#fromDate, #toDate').change(function() {
+            if ($('#filterType').val() === 'custom') refreshAllReports();
+        });
+    }
+
+    function updateDates() {
+        const type = $('#filterType').val();
+        if (type === 'custom') return; // Bỏ qua nếu tùy chọn
+
+        const year = parseInt($('#ddlYear').val());
+        let start, end;
+
+        if (type === 'month') {
+            const month = parseInt($('#ddlMonth').val());
+            start = new Date(year, month - 1, 1);
+            end = new Date(year, month, 0);
+        }
+        else if (type === 'quarter') {
+            const quarter = parseInt($('#ddlQuarter').val());
+            const startMonth = (quarter - 1) * 3;
+            start = new Date(year, startMonth, 1);
+            end = new Date(year, startMonth + 3, 0);
+        }
+        else if (type === 'year') {
+            start = new Date(year, 0, 1);
+            end = new Date(year, 11, 31);
+        }
+
+        if (start && end) {
+            $('#fromDate').val(formatDate(start));
+            $('#toDate').val(formatDate(end));
+        }
+    }
+
+    function formatDate(d) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function refreshAllReports() {
+        var from = $('#fromDate').val();
+        var to = $('#toDate').val();
+
+        var year = $('#groupYear').hasClass('d-none') ? new Date(to).getFullYear() : $('#ddlYear').val();
+        $('#lblYear').text(year);
+
+        $.ajax({
+            url: '@Url.Action("GetRevenueData", "AdminReport")',
+            type: 'POST',
+            data: { fromDate: from, toDate: to },
+            success: function(res) {
+                if (res.success) {
+                    $('#totalRevenue').text(res.total + 'đ');
+                    renderSourceChart(res.data);
+                    renderTable(res.data);
+                }
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("GetMonthlyRevenue", "AdminReport")',
+            type: 'POST',
+            data: { year: year },
+            success: function(res) {
+                if (res.success) renderMonthlyChart(res.data);
+            }
+        });
+    }
+
+    function renderTable(data) {
+        var html = '';
+        var total = data.reduce((s, i) => s + i.Value, 0);
+        if (data.length > 0) {
+            $.each(data, function(i, item) {
+                var p = total > 0 ? ((item.Value/total)*100).toFixed(1) : 0;
+                html += `<tr><td class="ps-4"><span class="badge rounded-pill me-2" style="background-color: ${getColor(i)}">&nbsp;</span>${item.Label}</td><td class="text-end text-muted">${p}%</td><td class="text-end pe-4 fw-bold">${new Intl.NumberFormat('vi-VN').format(item.Value)}đ</td></tr>`;
+            });
+        } else { html = '<tr><td colspan="3" class="text-center text-muted py-3">Không có dữ liệu</td></tr>'; }
+        $('#reportTableBody').html(html);
+    }
+
+    function renderSourceChart(data) {
+        var ctx = document.getElementById('sourceChart').getContext('2d');
+        if (chartSource) chartSource.destroy();
+        chartSource = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.map(x => x.Label),
+                datasets: [{ data: data.map(x => x.Value), backgroundColor: data.map((_, i) => getColor(i)), borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 10 } } } }
+        });
+    }
+
+    function renderMonthlyChart(data) {
+        var ctx = document.getElementById('monthlyChart').getContext('2d');
+        if (chartMonthly) chartMonthly.destroy();
+        var grad = ctx.createLinearGradient(0,0,0,300); grad.addColorStop(0,'rgba(13,110,253,0.8)'); grad.addColorStop(1,'rgba(13,110,253,0.1)');
+        chartMonthly = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
+                datasets: [{ label: 'Doanh thu', data: data, backgroundColor: grad, borderRadius: 4 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => v >= 1000000 ? v/1000000 + 'M' : v/1000 + 'k' } } }
+            }
+        });
+    }
+
+    function getColor(i) { return ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0'][i % 5]; }
+    function exportExcel() {
+    var from = $('#fromDate').val();
+    var to = $('#toDate').val();
+
+    if (!from || !to) {
+        alert("Vui lòng chọn khoảng thời gian hợp lệ.");
+        return;
+    }
+    var url = '@Url.Action("ExportToExcel", "AdminReport")' + '?fromDate=' + from + '&toDate=' + to;
+    window.location.href = url;
+}
+</script>

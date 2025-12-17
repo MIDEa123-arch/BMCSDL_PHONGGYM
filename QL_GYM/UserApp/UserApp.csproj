@@ -168,20 +168,20 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminBaseController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\AdminReportController.cs" />
     <Compile Include="Controllers\CartCheckoutController.cs" />
     <Compile Include="Controllers\InvoiceController.cs" />
+    <Compile Include="Controllers\PhanCongPTController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\StaffController.cs" />
     <Compile Include="Helpers\CustomListAlphabet.cs" />
     <Compile Include="Helpers\DesCrypto.cs" />
+    <Compile Include="Helpers\DesRsaCrypto.cs" />
     <Compile Include="Helpers\DigitalSignService.cs" />
     <Compile Include="Helpers\Euclid.cs" />
     <Compile Include="Helpers\GiaiMa.cs" />
     <Compile Include="Helpers\GmailService.cs" />
     <Compile Include="Helpers\MaHoa.cs" />
-    <Compile Include="Models\ACTIVE_WEB_LOGINS.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\CHECKIN.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -260,9 +260,6 @@
     <Compile Include="Models\SANPHAM.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\USER_SESSIONS.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\CartRepository.cs" />
     <Compile Include="Repositories\PhanQuyenRepository.cs" />
@@ -291,6 +288,8 @@
     <Compile Include="ViewModel\KhachHangLoginResult.cs" />
     <Compile Include="ViewModel\KhachHangLoginViewModel.cs" />
     <Compile Include="ViewModel\KhachHangRegisterViewModel.cs" />
+    <Compile Include="ViewModel\NhanVienViewModel.cs" />
+    <Compile Include="ViewModel\ResetPasswordViewModel.cs" />
     <Compile Include="ViewModel\SanPhamViewModel.cs" />
     <Compile Include="ViewModel\SessionInfo.cs" />
     <Compile Include="ViewModel\StaffAccountModel.cs" />
@@ -677,6 +676,13 @@
     <Content Include="Views\Staff\SuaSanPham.cshtml" />
     <Content Include="Views\Admin\KhachHang.cshtml" />
     <Content Include="Views\Staff\KhachHang.cshtml" />
+    <Content Include="Views\Account\ForgotPassword.cshtml" />
+    <Content Include="Views\Account\XacThuc.cshtml" />
+    <Content Include="Views\Account\DatMatKhauMoi.cshtml" />
+    <Content Include="Views\PhanCongPT\Index.cshtml" />
+    <Content Include="Views\AdminReport\Index.cshtml" />
+    <Content Include="Views\AdminReport\GenerateRSAKey.cshtml" />
+    <Content Include="Views\Admin\DecryptReport.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

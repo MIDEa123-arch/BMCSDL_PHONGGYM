@@ -8,6 +8,7 @@ using UserApp.Helpers;
 using UserApp.Models;
 using UserApp.Repositories;
 using UserApp.ViewModel;
+using static System.Net.WebRequestMethods;
 
 namespace UserApp.Controllers
 {
@@ -23,6 +24,133 @@ namespace UserApp.Controllers
             _accountRepo = new AccountRepository(new QL_PHONGGYMEntities());
             _verifyRepo = new XacThucRepository(true);
             _customerRepo = new KhachHangRepository(new QL_PHONGGYMEntities());
+        }
+
+        public ActionResult ForgotPassword()
+        {
+            return View();
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ForgotPassword(FormCollection form)
+        {
+            if (String.IsNullOrEmpty(form["email"]))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập email";
+                return View();
+            }
+
+            try
+            {
+                string otp;
+                var result = _customerRepo.SendOTP(form["email"], out otp);
+
+                if (result)
+                {
+                    Session["OTP"] = MaHoa.MahoaDes(otp, "123");
+                    Session["OTP_Expire"] = DateTime.Now.AddMinutes(3);
+                    Session["AllowOTPPage"] = true;
+
+                    return RedirectToAction("XacThuc", new { email = form["email"] });
+                }
+                else
+                {
+                    return View();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View();
+            }
+        }
+
+        public ActionResult XacThuc(string email)
+        {
+            if (Session["AllowOTPPage"] == null)
+                return RedirectToAction("ForgotPassword");
+
+            Session.Remove("AllowOTPPage");
+
+            if (Session["OTP"] == null || Session["OTP_Expire"] == null)
+                return RedirectToAction("ForgotPassword");
+
+            if (String.IsNullOrEmpty(email))
+                return RedirectToAction("ForgotPassword");            
+
+            return View((object)email);
+        }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult KhoiPhucMatKhau(string otp1, string otp2, string otp3, string otp4, string emailXacthuc)
+        {
+            string userOtp = otp1 + otp2 + otp3 + otp4;
+
+            string savedOtp = Session["OTP"] as string;
+            DateTime? expire = Session["OTP_Expire"] as DateTime?;
+
+            if (savedOtp == null || expire == null)
+                return RedirectToAction("ForgotPassword");
+
+            if (DateTime.Now > expire)
+            {
+                TempData["OtpError"] = "Mã OTP đã hết hạn!";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            if (MaHoa.MahoaDes(userOtp, "123") != savedOtp)
+            {
+                TempData["OtpError"] = "OTP không chính xác!";
+                Session["AllowOTPPage"] = true;
+                return RedirectToAction("XacThuc", new { email = emailXacthuc });
+            }
+
+            return RedirectToAction("DatMatKhauMoi", new { email = emailXacthuc });
+        }
+
+        public ActionResult DatMatKhauMoi(string email)
+        {
+            if (Session["OTP"] == null || Session["OTP_Expire"] == null)
+                return RedirectToAction("ForgotPassword");
+
+            ViewBag.Email = email;
+
+            Session.Remove("OTP");
+            Session.Remove("OTP_Expire");
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DatMatKhauMoi(ResetPasswordViewModel model, string email)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Email = email;
+                return View(model);
+            }
+            try
+            {
+                var result = _accountRepo.KhoiPhucMK(email, model.MatKhau);
+                if (result)
+                {
+                    TempData["ThongBao"] = "Đổi mật khẩu thành công vui lòng đăng nhập lại";
+                    return RedirectToAction("Login");
+                }
+                else
+                    return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("ForgotPassword");
+            }
         }
 
         // GET: /Account/Register
@@ -72,56 +200,23 @@ namespace UserApp.Controllers
 
                 if (user != null)
                 {
-                    string currentIp = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-
-                    if (string.IsNullOrEmpty(currentIp))
-                    {
-                        currentIp = System.Web.HttpContext.Current.Request.Headers["X-Forwarded-For"];
-                    }
-
-                    if (string.IsNullOrEmpty(currentIp))
-                    {
-                        currentIp = System.Web.HttpContext.Current.Request.UserHostAddress;
-                    }
-
-   
-                    if (!string.IsNullOrEmpty(currentIp) && currentIp.Contains(","))
-                    {
-                        currentIp = currentIp.Split(',')[0].Trim();
-                    }
-
-                    // 5. Chuẩn hóa Localhost
-                    if (currentIp == "::1") currentIp = "127.0.0.1";                    
-
-                    int historyId; 
-
-                    string otpCode = _verifyRepo.CheckIpSecurity(user.MaKH, currentIp, out historyId);
-
-                    if (otpCode != null)
-                    {
-                        bool isSent = GmailService.SendOTP(user.Email, otpCode);
-
-                        if (isSent)
-                        {         
-                            Session["PendingLogId"] = historyId; 
-                            Session["PendingUserId"] = user.MaKH; 
-
-                            return RedirectToAction("VerifyOTP", "Account");
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("", "Hệ thống không gửi được Email xác thực. Vui lòng thử lại.");
-                            return View(model);
-                        }
-                    }
-
                     Session["MaKH"] = user.MaKH;
+
                     string fullName = user.TenKH;
-                    string firstName = fullName.Split(' ').Last();
-                    Session["TenKH"] = firstName;
+                    if (!string.IsNullOrEmpty(fullName))
+                    {
+                        string firstName = fullName.Trim().Split(' ').Last();
+                        Session["TenKH"] = firstName;
+                    }
+                    else
+                    {
+                        Session["TenKH"] = "Khách";
+                    }
 
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
                         return Redirect(returnUrl);
+                    }
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -130,6 +225,7 @@ namespace UserApp.Controllers
                     ViewBag.Err = "Tên đăng nhập hoặc mật khẩu không chính xác.";
                 }
             }
+            
             return View(model);
         }
 

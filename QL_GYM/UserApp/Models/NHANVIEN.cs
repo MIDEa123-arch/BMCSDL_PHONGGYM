@@ -30,6 +30,8 @@ namespace UserApp.Models
         public string TENNV { get; set; }
         public string SDT { get; set; }
         public Nullable<System.DateTime> NGAYSINH { get; set; }
+        public string LUONG_ENC { get; set; }
+        public string LUONG_KEY { get; set; }
     
         public virtual CHUCVU CHUCVU { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

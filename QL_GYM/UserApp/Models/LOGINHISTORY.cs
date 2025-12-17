@@ -18,7 +18,7 @@ namespace UserApp.Models
         public decimal USERID { get; set; }
         public string IPADDRESS { get; set; }
         public Nullable<System.DateTime> LOGINTIME { get; set; }
-        public Nullable<byte> STATUS { get; set; }
+        public Nullable<bool> STATUS { get; set; }
         public string OTPCODE { get; set; }
         public Nullable<System.DateTime> OTPEXPIRE { get; set; }
     

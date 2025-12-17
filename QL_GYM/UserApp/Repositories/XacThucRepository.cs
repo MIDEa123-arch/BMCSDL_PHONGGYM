@@ -24,7 +24,7 @@ namespace UserApp.Repositories
             var logRecord = _context.LOGINHISTORies.FirstOrDefault(x => x.ID == logId);
             if (logRecord != null && logRecord.OTPCODE == encryptedInput && logRecord.OTPEXPIRE > DateTime.Now)
             {
-                logRecord.STATUS = 1;
+                logRecord.STATUS = true;
                 _context.SaveChanges();
 
                 return true;
@@ -36,7 +36,7 @@ namespace UserApp.Repositories
         {
             logId = 0;
             var lastLogin = _context.LOGINHISTORies
-                               .Where(x => x.USERID == userId && x.STATUS == 1)
+                               .Where(x => x.USERID == userId && x.STATUS == true)
                                .OrderByDescending(x => x.LOGINTIME)
                                .FirstOrDefault();
 
@@ -47,7 +47,7 @@ namespace UserApp.Repositories
                     USERID = userId,
                     IPADDRESS = currentIp,
                     LOGINTIME = DateTime.Now,
-                    STATUS = 1
+                    STATUS = true
                 };
                 _context.LOGINHISTORies.Add(safeLog);
                 _context.SaveChanges();
@@ -64,7 +64,7 @@ namespace UserApp.Repositories
                 USERID = userId,
                 IPADDRESS = currentIp,
                 LOGINTIME = DateTime.Now,
-                STATUS = 0,
+                STATUS = false,
                 OTPCODE = encryptedOtp,
                 OTPEXPIRE = DateTime.Now.AddMinutes(5)
             };

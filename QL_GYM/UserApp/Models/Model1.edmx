@@ -5,14 +5,6 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
       <Schema Namespace="Model.Store" Provider="Oracle.ManagedDataAccess.Client" ProviderManifestToken="18.0" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityType Name="ACTIVE_WEB_LOGINS">
-          <Key>
-            <PropertyRef Name="LOGIN_ID" />
-          </Key>
-          <Property Name="LOGIN_ID" Type="varchar2" MaxLength="50" Nullable="false" />
-          <Property Name="USERNAME" Type="varchar2" MaxLength="100" Nullable="false" />
-          <Property Name="LOGIN_TIME" Type="date" />
-        </EntityType>
         <EntityType Name="CHECKIN">
           <Key>
             <PropertyRef Name="MACHECKIN" />
@@ -208,8 +200,8 @@
           <Property Name="USERID" Type="number" Precision="38" Scale="0" Nullable="false" />
           <Property Name="IPADDRESS" Type="varchar2" MaxLength="50" />
           <Property Name="LOGINTIME" Type="date" />
-          <Property Name="STATUS" Type="number" Precision="2" Scale="0" />
-          <Property Name="OTPCODE" Type="varchar2" MaxLength="1000" />
+          <Property Name="STATUS" Type="number" Precision="1" Scale="0" />
+          <Property Name="OTPCODE" Type="varchar2" MaxLength="20" />
           <Property Name="OTPEXPIRE" Type="date" />
         </EntityType>
         <EntityType Name="LOPHOC">
@@ -237,6 +229,8 @@
           <Property Name="TENNV" Type="nvarchar2" MaxLength="100" Nullable="false" />
           <Property Name="SDT" Type="nvarchar2" MaxLength="15" />
           <Property Name="NGAYSINH" Type="date" />
+          <Property Name="LUONG_ENC" Type="nvarchar2" MaxLength="200" />
+          <Property Name="LUONG_KEY" Type="nvarchar2" MaxLength="2000" />
         </EntityType>
         <EntityType Name="NHANVIENCHUYENMON">
           <Key>
@@ -262,15 +256,24 @@
           <Property Name="MOTACHUNG" Type="nvarchar2" MaxLength="1000" />
           <Property Name="MOTACHITIET" Type="nclob" />
         </EntityType>
-        <EntityType Name="USER_SESSIONS">
-          <Key>
-            <PropertyRef Name="SESSION_ID" />
-          </Key>
-          <Property Name="SESSION_ID" Type="varchar2" MaxLength="50" Nullable="false" />
-          <Property Name="USERNAME" Type="varchar2" MaxLength="50" Nullable="false" />
-          <Property Name="CREATED_AT" Type="timestamp" Precision="6" />
-          <Property Name="IS_ACTIVE" Type="number" Precision="1" Scale="0" />
-        </EntityType>
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'ADMINGYM.V_LOG_HOATDONG' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="V_LOG_HOATDONG">
+          <Property Name="THOIGIAN" Type="date" />
+          <Property Name="NGUOIDUNGMAY" Type="varchar2" MaxLength="255" />
+          <Property Name="USERDB" Type="varchar2" MaxLength="128" />
+          <Property Name="TENBANG" Type="varchar2" MaxLength="128" />
+          <Property Name="HANHDONG" Type="varchar2" MaxLength="28" />
+          <Property Name="CAULENHSQL" Type="varchar2" MaxLength="4000" />
+        </EntityType>-->
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'ADMINGYM.VW_OWN_SESSION' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="VW_OWN_SESSION">
+          <Property Name="SID" Type="number" Precision="38" Scale="0" />
+          <Property Name="SERIAL#" Type="number" Precision="38" Scale="0" />
+          <Property Name="AUDSID" Type="number" Precision="38" Scale="0" />
+          <Property Name="USERNAME" Type="varchar2" MaxLength="128" />
+        </EntityType>-->
         <Association Name="FK_CT_HD">
           <End Role="HOADON" Type="Self.HOADON" Multiplicity="1" />
           <End Role="CHITIETHOADON" Type="Self.CHITIETHOADON" Multiplicity="*" />
@@ -545,10 +548,8 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_LOGINHISTORY_KHACHHANG">
-          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
+        <Association Name="FK_LOGIN_KHACHHANG">
+          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1" />
           <End Role="LOGINHISTORY" Type="Self.LOGINHISTORY" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="KHACHHANG">
@@ -619,6 +620,10 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Function Name="F_CHINH_SACH_XEM_KHACH" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" ReturnType="varchar2">
+          <Parameter Name="P_SCHEMA" Type="varchar2" Mode="In" />
+          <Parameter Name="P_OBJECT" Type="varchar2" Mode="In" />
+        </Function>
         <Function Name="F_DECRYPTADDCIPHER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" ReturnType="varchar2">
           <Parameter Name="STR" Type="varchar2" Mode="In" />
           <Parameter Name="K" Type="number" Mode="In" />
@@ -643,11 +648,26 @@
           <Parameter Name="STR" Type="varchar2" Mode="In" />
           <Parameter Name="K" Type="number" Mode="In" />
         </Function>
+        <Function Name="F_MAHOADES" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" ReturnType="varchar2">
+          <Parameter Name="P_INPUT" Type="varchar2" Mode="In" />
+          <Parameter Name="P_KEY" Type="varchar2" Mode="In" />
+        </Function>
         <Function Name="F_MODINVERSE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" ReturnType="number">
           <Parameter Name="K" Type="number" Mode="In" />
           <Parameter Name="N" Type="number" Mode="In" />
         </Function>
         <Function Name="GET_ORACLE_USERS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" />
+        <Function Name="GET_RECENT_AUDIT_LOGS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_OWNER" Type="varchar2" Mode="In" />
+          <Parameter Name="P_HOURS" Type="number" Mode="In" />
+        </Function>
+        <Function Name="GET_USER_SESSIONS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="KILL_USER_SESSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_SID" Type="number" Mode="In" />
+          <Parameter Name="P_SERIAL" Type="number" Mode="In" />
+        </Function>
         <Function Name="P_DECRYPTADDCIPHER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="STR" Type="varchar2" Mode="In" />
           <Parameter Name="K" Type="number" Mode="In" />
@@ -675,9 +695,37 @@
         <Function Name="SP_CHECK_OTHER_MACHINE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_RESULT" Type="number" Mode="Out" />
         </Function>
+        <Function Name="SP_CHECK_OWN_SESSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_SID" Type="number" Mode="Out" />
+          <Parameter Name="P_SERIAL" Type="number" Mode="Out" />
+        </Function>
+        <Function Name="SP_CHECK_SESSION_FULL" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_SID" Type="number" Mode="In" />
+          <Parameter Name="P_SERIAL" Type="number" Mode="In" />
+          <Parameter Name="P_MAX_IDLE_SEC" Type="number" Mode="In" />
+          <Parameter Name="P_STATUS_CODE" Type="number" Mode="Out" />
+          <Parameter Name="P_MESSAGE" Type="varchar2" Mode="Out" />
+        </Function>
+        <Function Name="SP_CHECK_SESSION_STATUS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_SID" Type="number" Mode="In" />
+          <Parameter Name="P_SERIAL" Type="number" Mode="In" />
+          <Parameter Name="P_MAX_IDLE_SEC" Type="number" Mode="In" />
+          <Parameter Name="P_STATUS_MSG" Type="varchar2" Mode="Out" />
+        </Function>
+        <Function Name="SP_CHECK_USER_SESSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_SID" Type="number" Mode="In" />
+          <Parameter Name="P_SERIAL" Type="number" Mode="In" />
+          <Parameter Name="P_STATUS" Type="number" Mode="Out" />
+        </Function>
         <Function Name="SP_CREATE_MANAGER_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
           <Parameter Name="P_PASSWORD" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_CREATE_ROLE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_ROLE_NAME" Type="varchar2" Mode="In" />
         </Function>
         <Function Name="SP_DANGKYTAPTHU" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_TENKH" Type="nvarchar2" Mode="In" />
@@ -686,6 +734,28 @@
         </Function>
         <Function Name="SP_DROP_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_GET_AUDITED_TABLES" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" />
+        <Function Name="SP_GET_AUDIT_LOGS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_TABLE_NAME" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_GET_EXISTING_PRIVS" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_TARGET" Type="varchar2" Mode="In" />
+          <Parameter Name="P_TABLE_NAME" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_GET_METADATA" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM" />
+        <Function Name="SP_GET_USERS_IN_ROLE" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_ROLE_NAME" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_GRANT_PERMISSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USER_OR_ROLE" Type="varchar2" Mode="In" />
+          <Parameter Name="P_TABLE_NAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_PRIVILEGE" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_GRANT_ROLE_TO_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USER_NAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_ROLE_NAME" Type="varchar2" Mode="In" />
         </Function>
         <Function Name="SP_KHACHHANGDANGKY" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_TENKH" Type="nvarchar2" Mode="In" />
@@ -697,8 +767,12 @@
           <Parameter Name="P_MATKHAU" Type="nvarchar2" Mode="In" />
         </Function>
         <Function Name="SP_KHACHHANGLOGIN" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
-          <Parameter Name="P_TENDANGNHAP" Type="varchar2" Mode="In" />
-          <Parameter Name="P_MATKHAU" Type="varchar2" Mode="In" />
+          <Parameter Name="P_TENDANGNHAP" Type="nvarchar2" Mode="In" />
+          <Parameter Name="P_MATKHAU" Type="nvarchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_KHOIPHUCMATKHAU" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_EMAIL" Type="nvarchar2" Mode="In" />
+          <Parameter Name="P_MATKHAUMOI" Type="nvarchar2" Mode="In" />
         </Function>
         <Function Name="SP_LAYCHITIETHOADON" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_MAHD" Type="number" Mode="In" />
@@ -716,6 +790,15 @@
         <Function Name="SP_RESOLVE_LOGIN_LIMIT" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
         </Function>
+        <Function Name="SP_REVOKE_PERMISSION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USER_OR_ROLE" Type="varchar2" Mode="In" />
+          <Parameter Name="P_TABLE_NAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_PRIVILEGE" Type="varchar2" Mode="In" />
+        </Function>
+        <Function Name="SP_REVOKE_ROLE_FROM_USER" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
+          <Parameter Name="P_USER_NAME" Type="varchar2" Mode="In" />
+          <Parameter Name="P_ROLE_NAME" Type="varchar2" Mode="In" />
+        </Function>
         <Function Name="SP_TEST_CONNECTION" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="ADMINGYM">
           <Parameter Name="P_ALIVE" Type="number" Mode="Out" />
         </Function>
@@ -723,7 +806,6 @@
           <Parameter Name="P_USERNAME" Type="varchar2" Mode="In" />
         </Function>
         <EntityContainer Name="ModelStoreContainer">
-          <EntitySet Name="ACTIVE_WEB_LOGINS" EntityType="Self.ACTIVE_WEB_LOGINS" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="CHECKIN" EntityType="Self.CHECKIN" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="CHITIETGIOHANG" EntityType="Self.CHITIETGIOHANG" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="CHITIETHOADON" EntityType="Self.CHITIETHOADON" Schema="ADMINGYM" store:Type="Tables" />
@@ -746,7 +828,6 @@
           <EntitySet Name="NHANVIEN" EntityType="Self.NHANVIEN" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="NHANVIENCHUYENMON" EntityType="Self.NHANVIENCHUYENMON" Schema="ADMINGYM" store:Type="Tables" />
           <EntitySet Name="SANPHAM" EntityType="Self.SANPHAM" Schema="ADMINGYM" store:Type="Tables" />
-          <EntitySet Name="USER_SESSIONS" EntityType="Self.USER_SESSIONS" Schema="ADMINGYM" store:Type="Tables" />
           <AssociationSet Name="FK_CT_HD" Association="Self.FK_CT_HD">
             <End Role="HOADON" EntitySet="HOADON" />
             <End Role="CHITIETHOADON" EntitySet="CHITIETHOADON" />
@@ -835,7 +916,7 @@
             <End Role="DANGKYPT" EntitySet="DANGKYPT" />
             <End Role="LICHTAPPT" EntitySet="LICHTAPPT" />
           </AssociationSet>
-          <AssociationSet Name="FK_LOGINHISTORY_KHACHHANG" Association="Self.FK_LOGINHISTORY_KHACHHANG">
+          <AssociationSet Name="FK_LOGIN_KHACHHANG" Association="Self.FK_LOGIN_KHACHHANG">
             <End Role="KHACHHANG" EntitySet="KHACHHANG" />
             <End Role="LOGINHISTORY" EntitySet="LOGINHISTORY" />
           </AssociationSet>
@@ -865,14 +946,6 @@
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="ACTIVE_WEB_LOGINS">
-          <Key>
-            <PropertyRef Name="LOGIN_ID" />
-          </Key>
-          <Property Name="LOGIN_ID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="USERNAME" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="LOGIN_TIME" Type="DateTime" />
-        </EntityType>
         <EntityType Name="CHECKIN">
           <Key>
             <PropertyRef Name="MACHECKIN" />
@@ -1056,7 +1129,7 @@
           <NavigationProperty Name="DIACHIs" Relationship="Self.FK_DIACHI_KHACHHANG" FromRole="KHACHHANG" ToRole="DIACHI" />
           <NavigationProperty Name="HOADONs" Relationship="Self.FK_HOADON_KH" FromRole="KHACHHANG" ToRole="HOADON" />
           <NavigationProperty Name="LOAIKHACHHANG" Relationship="Self.FK_KHACHHANG_LOAIKH" FromRole="KHACHHANG" ToRole="LOAIKHACHHANG" />
-          <NavigationProperty Name="LOGINHISTORies" Relationship="Self.FK_LOGINHISTORY_KHACHHANG" FromRole="KHACHHANG" ToRole="LOGINHISTORY" />
+          <NavigationProperty Name="LOGINHISTORies" Relationship="Self.FK_LOGIN_KHACHHANG" FromRole="KHACHHANG" ToRole="LOGINHISTORY" />
         </EntityType>
         <EntityType Name="LICHLOP">
           <Key>
@@ -1109,10 +1182,10 @@
           <Property Name="USERID" Type="Decimal" Precision="38" Scale="0" Nullable="false" />
           <Property Name="IPADDRESS" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LOGINTIME" Type="DateTime" />
-          <Property Name="STATUS" Type="Byte" />
-          <Property Name="OTPCODE" Type="String" MaxLength="1000" FixedLength="false" Unicode="false" />
+          <Property Name="STATUS" Type="Boolean" />
+          <Property Name="OTPCODE" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="OTPEXPIRE" Type="DateTime" />
-          <NavigationProperty Name="KHACHHANG" Relationship="Self.FK_LOGINHISTORY_KHACHHANG" FromRole="LOGINHISTORY" ToRole="KHACHHANG" />
+          <NavigationProperty Name="KHACHHANG" Relationship="Self.FK_LOGIN_KHACHHANG" FromRole="LOGINHISTORY" ToRole="KHACHHANG" />
         </EntityType>
         <EntityType Name="LOPHOC">
           <Key>
@@ -1143,6 +1216,8 @@
           <Property Name="TENNV" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="SDT" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
           <Property Name="NGAYSINH" Type="DateTime" />
+          <Property Name="LUONG_ENC" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="LUONG_KEY" Type="String" MaxLength="2000" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="CHUCVU" Relationship="Self.FK_NHANVIEN_CHUCVU" FromRole="NHANVIEN" ToRole="CHUCVU" />
           <NavigationProperty Name="DANGKYPTs" Relationship="Self.FK_DKPT_NV" FromRole="NHANVIEN" ToRole="DANGKYPT" />
           <NavigationProperty Name="LICHLOPs" Relationship="Self.FK_LICHLOP_NV" FromRole="NHANVIEN" ToRole="LICHLOP" />
@@ -1167,15 +1242,6 @@
           <NavigationProperty Name="CHITIETHOADONs" Relationship="Self.FK_CT_SP" FromRole="SANPHAM" ToRole="CHITIETHOADON" />
           <NavigationProperty Name="HINHANHs" Relationship="Self.FK_HINHANH_SANPHAM" FromRole="SANPHAM" ToRole="HINHANH" />
           <NavigationProperty Name="LOAISANPHAM" Relationship="Self.FK_SP_LSP" FromRole="SANPHAM" ToRole="LOAISANPHAM" />
-        </EntityType>
-        <EntityType Name="USER_SESSIONS">
-          <Key>
-            <PropertyRef Name="SESSION_ID" />
-          </Key>
-          <Property Name="SESSION_ID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="USERNAME" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="CREATED_AT" Type="DateTime" Precision="6" />
-          <Property Name="IS_ACTIVE" Type="Boolean" />
         </EntityType>
         <Association Name="FK_CHECKIN_KH">
           <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1" />
@@ -1451,10 +1517,8 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_LOGINHISTORY_KHACHHANG">
-          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
+        <Association Name="FK_LOGIN_KHACHHANG">
+          <End Role="KHACHHANG" Type="Self.KHACHHANG" Multiplicity="1" />
           <End Role="LOGINHISTORY" Type="Self.LOGINHISTORY" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="KHACHHANG">
@@ -1506,7 +1570,6 @@
           <End Role="NHANVIEN" Type="Self.NHANVIEN" Multiplicity="*" />
         </Association>
         <EntityContainer Name="QL_PHONGGYMEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="ACTIVE_WEB_LOGINS" EntityType="Self.ACTIVE_WEB_LOGINS" />
           <EntitySet Name="CHECKINs" EntityType="Self.CHECKIN" />
           <EntitySet Name="CHITIETGIOHANGs" EntityType="Self.CHITIETGIOHANG" />
           <EntitySet Name="CHITIETHOADONs" EntityType="Self.CHITIETHOADON" />
@@ -1528,7 +1591,6 @@
           <EntitySet Name="LOPHOCs" EntityType="Self.LOPHOC" />
           <EntitySet Name="NHANVIENs" EntityType="Self.NHANVIEN" />
           <EntitySet Name="SANPHAMs" EntityType="Self.SANPHAM" />
-          <EntitySet Name="USER_SESSIONS" EntityType="Self.USER_SESSIONS" />
           <AssociationSet Name="FK_CHECKIN_KH" Association="Self.FK_CHECKIN_KH">
             <End Role="KHACHHANG" EntitySet="KHACHHANGs" />
             <End Role="CHECKIN" EntitySet="CHECKINs" />
@@ -1617,7 +1679,7 @@
             <End Role="LOAIKHACHHANG" EntitySet="LOAIKHACHHANGs" />
             <End Role="KHACHHANG" EntitySet="KHACHHANGs" />
           </AssociationSet>
-          <AssociationSet Name="FK_LOGINHISTORY_KHACHHANG" Association="Self.FK_LOGINHISTORY_KHACHHANG">
+          <AssociationSet Name="FK_LOGIN_KHACHHANG" Association="Self.FK_LOGIN_KHACHHANG">
             <End Role="KHACHHANG" EntitySet="KHACHHANGs" />
             <End Role="LOGINHISTORY" EntitySet="LOGINHISTORies" />
           </AssociationSet>
@@ -1638,6 +1700,17 @@
             <End Role="NHANVIEN" EntitySet="NHANVIENs" />
           </AssociationSet>
           <FunctionImport Name="GET_ORACLE_USERS" />
+          <FunctionImport Name="GET_RECENT_AUDIT_LOGS">
+            <Parameter Name="P_OWNER" Mode="In" Type="String" />
+            <Parameter Name="P_HOURS" Mode="In" Type="Decimal" />
+          </FunctionImport>
+          <FunctionImport Name="GET_USER_SESSIONS">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="KILL_USER_SESSION">
+            <Parameter Name="P_SID" Mode="In" Type="Decimal" />
+            <Parameter Name="P_SERIAL" Mode="In" Type="Decimal" />
+          </FunctionImport>
           <FunctionImport Name="P_DECRYPTADDCIPHER">
             <Parameter Name="STR" Mode="In" Type="String" />
             <Parameter Name="K" Mode="In" Type="Decimal" />
@@ -1665,9 +1738,37 @@
           <FunctionImport Name="SP_CHECK_OTHER_MACHINE">
             <Parameter Name="P_RESULT" Mode="Out" Type="Decimal" />
           </FunctionImport>
+          <FunctionImport Name="SP_CHECK_OWN_SESSION">
+            <Parameter Name="P_SID" Mode="Out" Type="Decimal" />
+            <Parameter Name="P_SERIAL" Mode="Out" Type="Decimal" />
+          </FunctionImport>
+          <FunctionImport Name="SP_CHECK_SESSION_FULL">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+            <Parameter Name="P_SID" Mode="In" Type="Decimal" />
+            <Parameter Name="P_SERIAL" Mode="In" Type="Decimal" />
+            <Parameter Name="P_MAX_IDLE_SEC" Mode="In" Type="Decimal" />
+            <Parameter Name="P_STATUS_CODE" Mode="Out" Type="Decimal" />
+            <Parameter Name="P_MESSAGE" Mode="Out" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_CHECK_SESSION_STATUS">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+            <Parameter Name="P_SID" Mode="In" Type="Decimal" />
+            <Parameter Name="P_SERIAL" Mode="In" Type="Decimal" />
+            <Parameter Name="P_MAX_IDLE_SEC" Mode="In" Type="Decimal" />
+            <Parameter Name="P_STATUS_MSG" Mode="Out" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_CHECK_USER_SESSION">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+            <Parameter Name="P_SID" Mode="In" Type="Decimal" />
+            <Parameter Name="P_SERIAL" Mode="In" Type="Decimal" />
+            <Parameter Name="P_STATUS" Mode="Out" Type="Decimal" />
+          </FunctionImport>
           <FunctionImport Name="SP_CREATE_MANAGER_USER">
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
             <Parameter Name="P_PASSWORD" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_CREATE_ROLE">
+            <Parameter Name="P_ROLE_NAME" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SP_DANGKYTAPTHU">
             <Parameter Name="P_TENKH" Mode="In" Type="String" />
@@ -1676,6 +1777,28 @@
           </FunctionImport>
           <FunctionImport Name="SP_DROP_USER">
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_GET_AUDITED_TABLES" />
+          <FunctionImport Name="SP_GET_AUDIT_LOGS">
+            <Parameter Name="P_USERNAME" Mode="In" Type="String" />
+            <Parameter Name="P_TABLE_NAME" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_GET_EXISTING_PRIVS">
+            <Parameter Name="P_TARGET" Mode="In" Type="String" />
+            <Parameter Name="P_TABLE_NAME" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_GET_METADATA" />
+          <FunctionImport Name="SP_GET_USERS_IN_ROLE">
+            <Parameter Name="P_ROLE_NAME" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_GRANT_PERMISSION">
+            <Parameter Name="P_USER_OR_ROLE" Mode="In" Type="String" />
+            <Parameter Name="P_TABLE_NAME" Mode="In" Type="String" />
+            <Parameter Name="P_PRIVILEGE" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_GRANT_ROLE_TO_USER">
+            <Parameter Name="P_USER_NAME" Mode="In" Type="String" />
+            <Parameter Name="P_ROLE_NAME" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SP_KHACHHANGDANGKY">
             <Parameter Name="P_TENKH" Mode="In" Type="String" />
@@ -1689,6 +1812,10 @@
           <FunctionImport Name="SP_KHACHHANGLOGIN">
             <Parameter Name="P_TENDANGNHAP" Mode="In" Type="String" />
             <Parameter Name="P_MATKHAU" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_KHOIPHUCMATKHAU">
+            <Parameter Name="P_EMAIL" Mode="In" Type="String" />
+            <Parameter Name="P_MATKHAUMOI" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SP_LAYCHITIETHOADON">
             <Parameter Name="P_MAHD" Mode="In" Type="Decimal" />
@@ -1706,6 +1833,15 @@
           <FunctionImport Name="SP_RESOLVE_LOGIN_LIMIT">
             <Parameter Name="P_USERNAME" Mode="In" Type="String" />
           </FunctionImport>
+          <FunctionImport Name="SP_REVOKE_PERMISSION">
+            <Parameter Name="P_USER_OR_ROLE" Mode="In" Type="String" />
+            <Parameter Name="P_TABLE_NAME" Mode="In" Type="String" />
+            <Parameter Name="P_PRIVILEGE" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SP_REVOKE_ROLE_FROM_USER">
+            <Parameter Name="P_USER_NAME" Mode="In" Type="String" />
+            <Parameter Name="P_ROLE_NAME" Mode="In" Type="String" />
+          </FunctionImport>
           <FunctionImport Name="SP_TEST_CONNECTION">
             <Parameter Name="P_ALIVE" Mode="Out" Type="Decimal" />
           </FunctionImport>
@@ -1719,15 +1855,6 @@
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="ModelStoreContainer" CdmEntityContainer="QL_PHONGGYMEntities">
-          <EntitySetMapping Name="ACTIVE_WEB_LOGINS">
-            <EntityTypeMapping TypeName="Model.ACTIVE_WEB_LOGINS">
-              <MappingFragment StoreEntitySet="ACTIVE_WEB_LOGINS">
-                <ScalarProperty Name="LOGIN_ID" ColumnName="LOGIN_ID" />
-                <ScalarProperty Name="USERNAME" ColumnName="USERNAME" />
-                <ScalarProperty Name="LOGIN_TIME" ColumnName="LOGIN_TIME" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="CHECKINs">
             <EntityTypeMapping TypeName="Model.CHECKIN">
               <MappingFragment StoreEntitySet="CHECKIN">
@@ -1970,6 +2097,8 @@
                 <ScalarProperty Name="TENNV" ColumnName="TENNV" />
                 <ScalarProperty Name="SDT" ColumnName="SDT" />
                 <ScalarProperty Name="NGAYSINH" ColumnName="NGAYSINH" />
+                <ScalarProperty Name="LUONG_ENC" ColumnName="LUONG_ENC" />
+                <ScalarProperty Name="LUONG_KEY" ColumnName="LUONG_KEY" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1990,16 +2119,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="USER_SESSIONS">
-            <EntityTypeMapping TypeName="Model.USER_SESSIONS">
-              <MappingFragment StoreEntitySet="USER_SESSIONS">
-                <ScalarProperty Name="SESSION_ID" ColumnName="SESSION_ID" />
-                <ScalarProperty Name="USERNAME" ColumnName="USERNAME" />
-                <ScalarProperty Name="CREATED_AT" ColumnName="CREATED_AT" />
-                <ScalarProperty Name="IS_ACTIVE" ColumnName="IS_ACTIVE" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <AssociationSetMapping Name="NHANVIENCHUYENMON" TypeName="Model.NHANVIENCHUYENMON" StoreEntitySet="NHANVIENCHUYENMON">
             <EndProperty Name="CHUYENMON">
               <ScalarProperty Name="MACM" ColumnName="MACM" />
@@ -2009,22 +2128,40 @@
             </EndProperty>
           </AssociationSetMapping>
           <FunctionImportMapping FunctionImportName="GET_ORACLE_USERS" FunctionName="Model.Store.GET_ORACLE_USERS" />
+          <FunctionImportMapping FunctionImportName="GET_RECENT_AUDIT_LOGS" FunctionName="Model.Store.GET_RECENT_AUDIT_LOGS" />
+          <FunctionImportMapping FunctionImportName="GET_USER_SESSIONS" FunctionName="Model.Store.GET_USER_SESSIONS" />
+          <FunctionImportMapping FunctionImportName="KILL_USER_SESSION" FunctionName="Model.Store.KILL_USER_SESSION" />
           <FunctionImportMapping FunctionImportName="P_DECRYPTADDCIPHER" FunctionName="Model.Store.P_DECRYPTADDCIPHER" />
           <FunctionImportMapping FunctionImportName="P_DECRYPTMULCIPHER" FunctionName="Model.Store.P_DECRYPTMULCIPHER" />
           <FunctionImportMapping FunctionImportName="P_ENCRYPTADDCIPHER" FunctionName="Model.Store.P_ENCRYPTADDCIPHER" />
           <FunctionImportMapping FunctionImportName="P_ENCRYPTMULCIPHER" FunctionName="Model.Store.P_ENCRYPTMULCIPHER" />
           <FunctionImportMapping FunctionImportName="SP_CHECKCHINE" FunctionName="Model.Store.SP_CHECKCHINE" />
           <FunctionImportMapping FunctionImportName="SP_CHECK_OTHER_MACHINE" FunctionName="Model.Store.SP_CHECK_OTHER_MACHINE" />
+          <FunctionImportMapping FunctionImportName="SP_CHECK_OWN_SESSION" FunctionName="Model.Store.SP_CHECK_OWN_SESSION" />
+          <FunctionImportMapping FunctionImportName="SP_CHECK_SESSION_FULL" FunctionName="Model.Store.SP_CHECK_SESSION_FULL" />
+          <FunctionImportMapping FunctionImportName="SP_CHECK_SESSION_STATUS" FunctionName="Model.Store.SP_CHECK_SESSION_STATUS" />
+          <FunctionImportMapping FunctionImportName="SP_CHECK_USER_SESSION" FunctionName="Model.Store.SP_CHECK_USER_SESSION" />
           <FunctionImportMapping FunctionImportName="SP_CREATE_MANAGER_USER" FunctionName="Model.Store.SP_CREATE_MANAGER_USER" />
+          <FunctionImportMapping FunctionImportName="SP_CREATE_ROLE" FunctionName="Model.Store.SP_CREATE_ROLE" />
           <FunctionImportMapping FunctionImportName="SP_DANGKYTAPTHU" FunctionName="Model.Store.SP_DANGKYTAPTHU" />
           <FunctionImportMapping FunctionImportName="SP_DROP_USER" FunctionName="Model.Store.SP_DROP_USER" />
+          <FunctionImportMapping FunctionImportName="SP_GET_AUDITED_TABLES" FunctionName="Model.Store.SP_GET_AUDITED_TABLES" />
+          <FunctionImportMapping FunctionImportName="SP_GET_AUDIT_LOGS" FunctionName="Model.Store.SP_GET_AUDIT_LOGS" />
+          <FunctionImportMapping FunctionImportName="SP_GET_EXISTING_PRIVS" FunctionName="Model.Store.SP_GET_EXISTING_PRIVS" />
+          <FunctionImportMapping FunctionImportName="SP_GET_METADATA" FunctionName="Model.Store.SP_GET_METADATA" />
+          <FunctionImportMapping FunctionImportName="SP_GET_USERS_IN_ROLE" FunctionName="Model.Store.SP_GET_USERS_IN_ROLE" />
+          <FunctionImportMapping FunctionImportName="SP_GRANT_PERMISSION" FunctionName="Model.Store.SP_GRANT_PERMISSION" />
+          <FunctionImportMapping FunctionImportName="SP_GRANT_ROLE_TO_USER" FunctionName="Model.Store.SP_GRANT_ROLE_TO_USER" />
           <FunctionImportMapping FunctionImportName="SP_KHACHHANGDANGKY" FunctionName="Model.Store.SP_KHACHHANGDANGKY" />
           <FunctionImportMapping FunctionImportName="SP_KHACHHANGLOGIN" FunctionName="Model.Store.SP_KHACHHANGLOGIN" />
+          <FunctionImportMapping FunctionImportName="SP_KHOIPHUCMATKHAU" FunctionName="Model.Store.SP_KHOIPHUCMATKHAU" />
           <FunctionImportMapping FunctionImportName="SP_LAYCHITIETHOADON" FunctionName="Model.Store.SP_LAYCHITIETHOADON" />
           <FunctionImportMapping FunctionImportName="SP_LOCK_USER" FunctionName="Model.Store.SP_LOCK_USER" />
           <FunctionImportMapping FunctionImportName="SP_LOGOUT_USER" FunctionName="Model.Store.SP_LOGOUT_USER" />
           <FunctionImportMapping FunctionImportName="SP_MANAGE_SESSIONS" FunctionName="Model.Store.SP_MANAGE_SESSIONS" />
           <FunctionImportMapping FunctionImportName="SP_RESOLVE_LOGIN_LIMIT" FunctionName="Model.Store.SP_RESOLVE_LOGIN_LIMIT" />
+          <FunctionImportMapping FunctionImportName="SP_REVOKE_PERMISSION" FunctionName="Model.Store.SP_REVOKE_PERMISSION" />
+          <FunctionImportMapping FunctionImportName="SP_REVOKE_ROLE_FROM_USER" FunctionName="Model.Store.SP_REVOKE_ROLE_FROM_USER" />
           <FunctionImportMapping FunctionImportName="SP_TEST_CONNECTION" FunctionName="Model.Store.SP_TEST_CONNECTION" />
           <FunctionImportMapping FunctionImportName="SP_UNLOCK_USER" FunctionName="Model.Store.SP_UNLOCK_USER" />
         </EntityContainerMapping>

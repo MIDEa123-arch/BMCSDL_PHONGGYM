@@ -19,28 +19,6 @@
             margin-left: 0;
         }
 
-        .login-alert {
-            position: fixed;
-            top: 9%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 390px;
-            max-width: 90%;
-            background-color: #ffd8d8;
-            border: 1px solid #dc3545;
-            z-index: 1050;
-        }
-
-            .login-alert .btn-close {
-                outline: none;
-                box-shadow: none;
-            }
-
-                .login-alert .btn-close:focus {
-                    outline: none;
-                    box-shadow: none;
-                }
-
         /* Style cho phần bên trái */
         .left-section {
             background: #f8f9fa;
@@ -173,20 +151,19 @@
             .password-toggle:hover {
                 color: #0d6efd;
             }
+
+        /* CSS chỉnh sửa alert cho đẹp */
+        .alert-custom {
+            width: 400px;
+            max-width: 100%;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body class="bg-light">
-    @if (ViewBag.Err != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show login-alert" role="alert">
-            <div class="text-danger" style="font-size: 15px; line-height: 1.2;">@ViewBag.Err</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="container-fluid h-100 p-0">
         <div class="row h-100 m-0">
-            <!-- Div bên trái với membership info -->
             <div class="col-md-7 left-section">
                 <div class="membership-content">
                     <div class="gym-logo">
@@ -253,9 +230,27 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-md-5 bg-white text-center d-flex flex-column align-items-center justify-content-center" style="height: 100vh;">
                 <span class="text-primary fs-3 fw-bold m-3">Đăng nhập GYM</span>
 
+                @if (TempData["ErrorMessage"] != null || ViewBag.Err != null || TempData["OtpError"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show alert-custom" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        @(TempData["ErrorMessage"] ?? TempData["OtpError"] ?? ViewBag.Err)
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["SuccessMessage"] != null || TempData["ThongBao"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show alert-custom" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        @(TempData["SuccessMessage"] ?? TempData["ThongBao"])
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
                 @using (Html.BeginForm("Login", "Account", FormMethod.Post, new
                 {
                     role = "form",
@@ -299,6 +294,7 @@
 
     <script>
         $(function () {
+            // Script ẩn hiện mật khẩu
             $('#togglePassword').on('click', function () {
                 var $pwd = $('#passwordInput');
                 if ($pwd.attr('type') === 'password') {
@@ -309,9 +305,12 @@
                     $(this).removeClass('bi-eye').addClass('bi-eye-slash');
                 }
             });
+
+            // Script tự động ẩn thông báo sau 5 giây cho đẹp
+            setTimeout(function () {
+                $('.alert').alert('close');
+            }, 5000);
         });
     </script>
-
-
 </body>
 </html>

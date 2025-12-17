@@ -1,0 +1,60 @@
+﻿@{
+    ViewBag.Title = "Giải Mã Báo Cáo";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var data = ViewBag.CsvData as List<string[]>;
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Giải Mã File Báo Cáo (.secure)</h6>
+    </div>
+    <div class="card-body">
+
+        @using (Html.BeginForm("DecryptReport", "Admin", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-inline mb-4" }))
+        {
+            <div class="form-group mr-2">
+                <label class="mr-2">Chọn file .secure:</label>
+                <input type="file" name="encryptedFile" class="form-control-file" accept=".secure" required />
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-unlock"></i> Giải Mã & Xem
+            </button>
+        }
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        @if (ViewBag.Success != null)
+        {
+            <div class="alert alert-success">@ViewBag.Success</div>
+        }
+
+        @if (data != null && data.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            @foreach (var header in data[0])
+                            {
+                                <th>@header.Replace("\"", "")</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 1; i < data.Count; i++) // Bỏ qua dòng tiêu đề (i=0)
+                        {
+                            <tr>
+                                @foreach (var cell in data[i])
+                                {
+                                    <td>@cell.Replace("\"", "")</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

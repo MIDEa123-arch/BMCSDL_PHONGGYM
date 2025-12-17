@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;  
+using System.Text;
+using System.Web;
 using System.Web.Mvc;
+using UserApp.Helpers;
 using UserApp.Models;
 using UserApp.Repositories;
 using UserApp.ViewModel;
-using Oracle.ManagedDataAccess.Client;
-using System.Data;
+
+
 namespace UserApp.Controllers
 {
     public class AdminController : AdminBaseController
@@ -14,7 +20,7 @@ namespace UserApp.Controllers
         public UserService userService;
 
 
-        private QL_PHONGGYMEntities _context = new QL_PHONGGYMEntities();
+        private QL_PHONGGYMEntities _context = new QL_PHONGGYMEntities(true);
         private readonly PhanQuyenRepository _phanQuyenRepository;
         private readonly KhachHangRepository _khachHang;
 
@@ -25,6 +31,83 @@ namespace UserApp.Controllers
             userService = new UserService();
         }
 
+        public ActionResult DecryptReport()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult DecryptReport(HttpPostedFileBase encryptedFile)
+        {
+            if (encryptedFile == null || encryptedFile.ContentLength == 0)
+            {
+                ViewBag.Error = "Vui lòng chọn file .secure cần giải mã.";
+                return View();
+            }
+
+            string tempFolder = Server.MapPath("~/App_Data/Temp/");
+            if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
+
+            // Đặt tên file tạm
+            string uniqueId = Guid.NewGuid().ToString();
+            string inputPath = Path.Combine(tempFolder, uniqueId + ".secure");
+            string outputPath = Path.Combine(tempFolder, uniqueId + ".csv");
+            string privateKeyPath = Server.MapPath("~/App_Data/private_rsa_key.xml");
+
+            try
+            {
+                // A. Lưu file upload xuống server tạm thời
+                encryptedFile.SaveAs(inputPath);
+
+                // B. Kiểm tra file Private Key có tồn tại không
+                if (!System.IO.File.Exists(privateKeyPath))
+                {
+                    ViewBag.Error = "Không tìm thấy file Private Key trên server (App_Data/private_rsa_key.xml).";
+                    return View();
+                }
+
+                // Đọc Private Key
+                string privateKeyXml = System.IO.File.ReadAllText(privateKeyPath);
+
+                // Tiến hành giải mã
+                var crypto = new DesRsaCrypto();
+                crypto.DecryptFile(inputPath, outputPath, privateKeyXml);
+
+                // Đọc nội dung file CSV đã giải mã
+                List<string[]> csvData = new List<string[]>();
+
+                // Đọc file CSV 
+                using (var fs = new FileStream(outputPath, FileMode.Open, FileAccess.Read))
+                using (var reader = new StreamReader(fs, Encoding.UTF8))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        if (!string.IsNullOrWhiteSpace(line))
+                        {
+                            var values = line.Split(',');
+                            csvData.Add(values);
+                        }
+                    }
+                }
+
+                // Gửi dữ liệu sang View
+                ViewBag.CsvData = csvData;
+                ViewBag.Success = "Giải mã thành công!";
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi giải mã: " + ex.Message + " (Kiểm tra lại xem File upload có đúng là file được mã hóa bởi Public Key tương ứng không)";
+            }
+            finally
+            {
+                // Dọn dẹp file tạm để bảo mật và tiết kiệm dung lượng
+                if (System.IO.File.Exists(inputPath)) System.IO.File.Delete(inputPath);
+                if (System.IO.File.Exists(outputPath)) System.IO.File.Delete(outputPath);
+            }
+
+            return View();
+        }
         public ActionResult KhachHang()
         {           
             return View(_khachHang.GetMyCustomers());
@@ -97,27 +180,76 @@ namespace UserApp.Controllers
         public ActionResult ThemNguoiDung()
         {
             if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
-            return View();
+
+            var viewModel = new NhanVienViewModel
+            {
+                ChucVuList = new SelectList(_context.CHUCVUs, "MaChucVu", "TenChucVu"),
+                ChuyenMonList = _context.CHUYENMONs.ToList()
+            };
+
+            return View(viewModel);
         }
 
+        // 2. Action POST: Xử lý dữ liệu gửi lên
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ThemNguoiDung(FormCollection form)
+        public ActionResult ThemNguoiDung(NhanVienViewModel viewModel)
         {
-            try
+            if (Session["Admin"] == null) return RedirectToAction("Login", "Staff");
+            if (ModelState.IsValid)
             {
-                string username = form["TenDangNhap"];
-                string password = form["MatKhau"];
-                bool result = userService.AddUser(username, password);
-                if (result) TempData["Success"] = "Đã tạo tài khoản thành công.";
-                else TempData["Error"] = "Không thể thêm tài khoản.";
-                return RedirectToAction("NguoiDung");
+                bool trungUser = _context.NHANVIENs.Any(x => x.TENDANGNHAP == viewModel.TenDangNhap);
+                if (trungUser)
+                {
+                    ModelState.AddModelError("TenDangNhap", "Tên đăng nhập này đã tồn tại!");
+                }
+
+                // Kiểm tra trùng SĐT
+                bool trungSDT = _context.NHANVIENs.Any(x => x.SDT == viewModel.SDT);
+                if (trungSDT)
+                {
+                    ModelState.AddModelError("SDT", "Số điện thoại này đã được sử dụng!");
+                }
             }
-            catch (Exception ex)
+
+            if (ModelState.IsValid)
             {
-                TempData["Error"] = "Lỗi: " + ex.Message;
-                return RedirectToAction("NguoiDung");
+                bool result = userService.AddUser(viewModel);
+
+                if (result)
+                {
+                    if (viewModel.SelectedChuyenMonIds != null && viewModel.SelectedChuyenMonIds.Count > 0)
+                    {
+                        var newNV = _context.NHANVIENs.FirstOrDefault(x => x.TENDANGNHAP == viewModel.TenDangNhap.ToUpper());
+
+                        if (newNV != null)
+                        {
+                            if (newNV.CHUYENMONs == null) newNV.CHUYENMONs = new HashSet<CHUYENMON>();
+
+                            var selectedChuyenMons = _context.CHUYENMONs
+                                .Where(cm => viewModel.SelectedChuyenMonIds.Contains((int)cm.MACM))
+                                .ToList();
+
+                            foreach (var cm in selectedChuyenMons)
+                            {
+                                newNV.CHUYENMONs.Add(cm);
+                            }
+                            _context.SaveChanges();
+                        }
+                    }
+
+                    TempData["Success"] = "Thêm nhân viên và tạo User Oracle thành công!";
+                    return RedirectToAction("NguoiDung");
+                }
+                else
+                {
+                    TempData["Error"] = "Lỗi: Không thể tạo tài khoản (Có thể trùng tên User Oracle).";
+                }
             }
+            viewModel.ChucVuList = new SelectList(_context.CHUCVUs, "MaChucVu", "TenChucVu", viewModel.MaChucVu);
+            viewModel.ChuyenMonList = _context.CHUYENMONs.ToList();
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -311,6 +443,35 @@ namespace UserApp.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult ViewSecureFile(string fileName)
+        {            
+            if (Session["Admin"] == null)
+                return RedirectToAction("Login", "Staff");
+
+            try
+            {
+                string securePath = Server.MapPath("~/SecureFiles/" + fileName);
+                string outputPath = Server.MapPath("~/Temp/" + Path.GetFileNameWithoutExtension(fileName));
+
+                string privateKeyPath = Server.MapPath("~/App_Data/private_rsa_key.xml");
+
+                string privateKeyXml = System.IO.File.ReadAllText(privateKeyPath);
+
+
+                DesRsaCrypto crypto = new DesRsaCrypto();
+                crypto.DecryptFile(securePath, outputPath, privateKeyXml);
+                string content = System.IO.File.ReadAllText(outputPath);
+                System.IO.File.Delete(outputPath);
+
+                return Content(content, "text/plain");
+            }
+            catch (Exception ex)
+            {
+                return Content("Lỗi giải mã: " + ex.Message);
             }
         }
     } 
