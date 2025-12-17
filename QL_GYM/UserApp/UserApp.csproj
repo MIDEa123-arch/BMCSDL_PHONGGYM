@@ -286,6 +286,7 @@
     <Compile Include="ViewModel\AuditLogViewModel.cs" />
     <Compile Include="ViewModel\GioHangViewModel.cs" />
     <Compile Include="ViewModel\GrantViewModel.cs" />
+    <Compile Include="ViewModel\HocVienViewModel.cs" />
     <Compile Include="ViewModel\InvoiceFullData.cs" />
     <Compile Include="ViewModel\KhachHangLoginResult.cs" />
     <Compile Include="ViewModel\KhachHangLoginViewModel.cs" />
@@ -674,6 +675,8 @@
     <Content Include="Views\Staff\ThemSanPham.cshtml" />
     <Content Include="Views\Admin\AuditTrail.cshtml" />
     <Content Include="Views\Staff\SuaSanPham.cshtml" />
+    <Content Include="Views\Admin\KhachHang.cshtml" />
+    <Content Include="Views\Staff\KhachHang.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

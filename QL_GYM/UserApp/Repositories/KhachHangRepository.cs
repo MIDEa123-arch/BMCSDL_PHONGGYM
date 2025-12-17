@@ -18,6 +18,58 @@ namespace UserApp.Repositories
         {
             _context = context;
         }
+        public KhachHangRepository(string connStr)
+        {
+            _context = new QL_PHONGGYMEntities(connStr);
+        }
+
+        public KhachHangRepository()
+        {
+            _context = new QL_PHONGGYMEntities(true);
+        }
+
+        public List<HocVienViewModel> GetHocVien()
+        {
+            var list = (from kh in _context.KHACHHANGs
+                        join dk in _context.DANGKYPTs on kh.MAKH equals dk.MAKH
+                        join nv in _context.NHANVIENs on dk.MANV equals nv.MANV                       
+                        select new HocVienViewModel
+                        {
+                            MaKH = (int)kh.MAKH,
+                            TenKH = kh.TENKH,
+                            GioiTinh = kh.GIOITINH,
+                            SDT = kh.SDT,
+                            Email = kh.EMAIL,
+                            SoBuoi = (int)(dk.SOBUOI),
+                            TrangThai = dk.TRANGTHAI
+                        }).ToList();
+            
+            foreach (var item in list)
+            {
+                item.SDT = GiaiMa.GiaiMaCong(item.SDT, 6);
+                item.Email = GiaiMa.GiaiMaCong(item.Email, 6);
+            }
+
+            return list;
+        }
+        public List<KHACHHANG> GetMyCustomers()
+        {
+            var list = _context.KHACHHANGs.ToList();
+            
+            foreach (var item in list)
+            {
+                try
+                {
+                    item.SDT = GiaiMa.GiaiMaCong(item.SDT, 6);
+                    item.EMAIL = GiaiMa.GiaiMaCong(item.EMAIL, 6);
+                }
+                catch
+                {                    
+                }
+            }
+
+            return list;
+        }
         public KHACHHANG ThongTinKH(int makh)
         {
             var kh = _context.KHACHHANGs.FirstOrDefault(k => k.MAKH == makh);

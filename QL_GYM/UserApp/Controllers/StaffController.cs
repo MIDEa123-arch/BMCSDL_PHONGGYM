@@ -19,6 +19,7 @@ namespace UserApp.Controllers
         public UserService userService;
         public HoaDonRepository hoaDonRepository;
         public SanPhamRepository _spRepo;
+        public KhachHangRepository _khachHang;
         private QL_PHONGGYMEntities _context;
         public StaffController()
         {         
@@ -27,6 +28,13 @@ namespace UserApp.Controllers
             userService = new UserService();
         }
 
+        public ActionResult KhachHang()
+        {
+            _khachHang = new KhachHangRepository(Session["connectionString"] as string);
+
+            return View(_khachHang.GetHocVien());
+
+        }
         public ActionResult HoaDon()
         {
             hoaDonRepository = new HoaDonRepository(Session["connectionString"] as string);

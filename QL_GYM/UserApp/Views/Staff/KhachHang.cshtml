@@ -1,0 +1,160 @@
+﻿@model IEnumerable<dynamic>
+
+@{
+    ViewBag.Title = "Danh Sách Học Viên Của Tôi";
+    Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<div class="container-fluid p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary font-weight-bold"><i class="fas fa-dumbbell mr-2"></i>Học Viên Của Tôi</h2>
+            <p class="text-muted mb-0">Danh sách học viên bạn đang phụ trách hướng dẫn.</p>
+        </div>
+
+        <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control border-0 shadow-sm" id="searchBox" placeholder="Tìm tên học viên...">
+            <div class="input-group-append">
+                <span class="input-group-text bg-white border-0 shadow-sm"><i class="fas fa-search text-muted"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 rounded-lg">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="border-0 py-3 pl-4">Học Viên</th>
+                            <th class="border-0 py-3">Liên Hệ</th>
+                            <th class="border-0 py-3 text-center">Số Buổi</th>
+                            <th class="border-0 py-3 text-center">Trạng Thái</th>
+                            <th class="border-0 py-3 text-right pr-4">Tác Vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Count() > 0)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="pl-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle mr-3 bg-primary text-white d-flex align-items-center justify-content-center font-weight-bold" style="width: 45px; height: 45px; border-radius: 50%;">
+                                                @item.TenKH.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 font-weight-bold text-dark">@item.TenKH</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-venus-mars mr-1"></i>
+                                                    @(item.GioiTinh ?? "Không rõ")
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-dark font-weight-500"><i class="fas fa-phone-alt text-success mr-2 fa-xs"></i>@item.SDT</span>
+                                            <span class="text-muted small mt-1"><i class="fas fa-envelope text-info mr-2 fa-xs"></i>@item.Email</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="font-weight-bold text-primary" style="font-size: 1.1rem;">
+                                            @item.SoBuoi
+                                        </span>
+                                        <small class="d-block text-muted">buổi tập</small>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (item.TrangThai == "Còn hiệu lực")
+                                        {
+                                            <span class="badge badge-soft-success px-3 py-2 rounded-pill">Đang tập</span>
+                                        }
+                                        else if (item.TrangThai == "Hết hạn")
+                                        {
+                                            <span class="badge badge-soft-danger px-3 py-2 rounded-pill">Hết hạn</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-soft-warning px-3 py-2 rounded-pill">@item.TrangThai</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-right pr-4">
+                                        <a href="@Url.Action("LichSuTap", "Staff", new { id = item.MaKH })" class="btn btn-light btn-sm text-primary font-weight-bold shadow-sm mr-1" title="Lịch sử tập">
+                                            <i class="fas fa-history"></i> Lịch sử
+                                        </a>
+                                        <a href="@Url.Action("ChiTietHocVien", "Staff", new { id = item.MaKH })" class="btn btn-light btn-sm text-info font-weight-bold shadow-sm" title="Xem hồ sơ">
+                                            <i class="fas fa-user"></i> Hồ sơ
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-user-slash fa-3x mb-3"></i>
+                                        <p>Bạn chưa có học viên nào.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CSS cho Badge mềm (Soft Badge) nhìn hiện đại hơn */
+    .badge-soft-success {
+        color: #1b5e20;
+        background-color: #e8f5e9;
+    }
+
+    .badge-soft-danger {
+        color: #b71c1c;
+        background-color: #ffebee;
+    }
+
+    .badge-soft-warning {
+        color: #e65100;
+        background-color: #fff3e0;
+    }
+
+    /* Hover hiệu ứng cho dòng */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.002);
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .table th {
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+</style>
+
+<script>
+    document.getElementById('searchBox').addEventListener('keyup', function () {
+        var value = this.value.toLowerCase();
+        var rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(function (row) {
+            var text = row.textContent.toLowerCase();
+            row.style.display = text.indexOf(value) > -1 ? "" : "none";
+        });
+    });
+</script>

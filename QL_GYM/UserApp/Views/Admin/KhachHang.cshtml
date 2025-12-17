@@ -1,0 +1,111 @@
+﻿@model IEnumerable<UserApp.Models.KHACHHANG>
+
+@{
+    ViewBag.Title = "Quản Lý Khách Hàng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<div class="container-fluid p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary font-weight-bold"><i class="fas fa-users mr-2"></i>Danh Sách Khách Hàng</h2>
+        <a href="@Url.Action("Create")" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus-circle mr-1"></i> Thêm Khách Hàng Mới
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white border-bottom-0">
+            <h6 class="m-0 font-weight-bold text-primary">Dữ liệu chi tiết</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="bg-light text-dark">
+                        <tr>
+                            <th class="border-top-0">Họ và Tên</th>
+                            <th class="border-top-0">Ngày Sinh</th>
+                            <th class="border-top-0">Số Điện Thoại</th>
+                            <th class="border-top-0">Email</th>
+                            <th class="border-top-0 text-center">Giới Tính</th>
+                            <th class="border-top-0 text-center">Loại Khách</th>
+                            <th class="border-top-0 text-right" style="width: 150px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="align-middle font-weight-bold text-dark">
+                                    @Html.DisplayFor(modelItem => item.TENKH)
+                                </td>
+                                <td class="align-middle">
+                                    @(item.NGAYSINH.HasValue ? item.NGAYSINH.Value.ToString("dd/MM/yyyy") : "N/A")
+                                </td>
+                                <td class="align-middle  text-dark">
+                                    @Html.DisplayFor(modelItem => item.SDT)
+                                </td>
+                                <td class="align-middle  text-dark">
+                                    @Html.DisplayFor(modelItem => item.EMAIL)
+                                </td>
+                                <td class="align-middle text-center">
+                                    @if (item.GIOITINH == "Nam")
+                                    {
+                                        <span class="badge badge-pill badge-primary  text-dark">Nam</span>
+                                    }
+                                    else if (item.GIOITINH == "Nữ")
+                                    {
+                                        <span class="badge badge-pill badge-danger  text-dark">Nữ</span>
+                                    }
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="badge badge-info px-2 py-1  text-dark">
+                                        @Html.DisplayFor(modelItem => item.LOAIKHACHHANG.TENLOAI)
+                                    </span>
+                                </td>
+                                <td class="align-middle text-right">
+                                    <a href="@Url.Action("Edit", new { id=item.MAKH })" class="btn btn-sm btn-warning" title="Sửa">
+                                        <i class="fas fa-edit text-white"></i>
+                                    </a>
+                                    <a href="@Url.Action("Details", new { id=item.MAKH })" class="btn btn-sm btn-info" title="Chi tiết">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    <a href="@Url.Action("Delete", new { id=item.MAKH })"
+                                       class="btn btn-sm btn-danger"
+                                       title="Xóa"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa khách hàng @item.TENKH không?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CSS Tùy chỉnh nhỏ để bảng đẹp hơn */
+    .table th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+    }
+
+    .btn-sm {
+        border-radius: 50%; /* Làm nút tròn */
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        line-height: 32px;
+        margin-left: 2px;
+    }
+</style>

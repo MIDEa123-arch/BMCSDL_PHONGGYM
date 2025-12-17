@@ -16,11 +16,19 @@ namespace UserApp.Controllers
 
         private QL_PHONGGYMEntities _context = new QL_PHONGGYMEntities();
         private readonly PhanQuyenRepository _phanQuyenRepository;
+        private readonly KhachHangRepository _khachHang;
 
         public AdminController()
         {
+            _khachHang = new KhachHangRepository();
             _phanQuyenRepository = new PhanQuyenRepository();
             userService = new UserService();
+        }
+
+        public ActionResult KhachHang()
+        {           
+            return View(_khachHang.GetMyCustomers());
+
         }
 
         [HttpGet]
