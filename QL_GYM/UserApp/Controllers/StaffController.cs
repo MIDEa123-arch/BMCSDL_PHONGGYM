@@ -43,30 +43,36 @@ namespace UserApp.Controllers
 
 
 
-        [HttpPost]
+        [HttpPost]        
         public JsonResult CheckSessionAlive()
         {
-            if (Session["sid"] == null)
-                return Json(new { alive = false, msg = "Mất kết nối với Server." });
+            if (Session["sid"] == null || Session["user"] == null)
+                return Json(new { alive = false, msg = "Phiên đăng nhập trên trình duyệt đã hết hạn." });
 
             string username = Session["user"].ToString();
             string sid = Session["sid"].ToString();
             string serial = Session["serial"].ToString();
-
-            // Gọi hàm trả về số nguyên (1, 0, -1)
             int status = userService.CheckSessionAlive(username, sid, serial);
 
             if (status != 1)
             {
-                // Xóa sạch session Web
                 Session.Clear();
                 Session.Abandon();
 
                 string message = "";
+
                 if (status == 0)
-                    message = "Phiên làm việc đã hết hạn.";
+                {
+                    message = "Phiên làm việc đã tự động kết thúc do không hoạt động.";
+                }
+                else if (status == -1)
+                {
+                    message = "Phiên làm việc của bạn đã bị tạm ngưng.";
+                }
                 else
-                    message = "Tài khoản đã đăng xuất.";
+                {
+                    message = "Kết nối đến máy chủ bị gián đoạn.";
+                }
 
                 return Json(new { alive = false, msg = message });
             }
