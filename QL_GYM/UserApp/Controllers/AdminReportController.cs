@@ -204,8 +204,8 @@ namespace QL_PHONGGYM.Controllers
                     sb.AppendLine(line);
                 }
 
-                byte[] buffer = System.Text.Encoding.UTF8.GetPreamble()
-                    .Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+                byte[] buffer = Encoding.UTF8.GetPreamble()
+                    .Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
 
                 // 1. Tạo thư mục tạm và lưu file CSV
                 string fileName = $"BaoCaoDoanhThu_{start:ddMMyyyy}_{end:ddMMyyyy}.csv";

@@ -88,10 +88,10 @@ namespace UserApp.Repositories
             otpCode = new Random().Next(1000, 9999).ToString(); // Tạo mã OTP 6 số
             try
             {
-                var fromAddress = new MailAddress("thangdien0169@gmail.com", "QL_GYM");
+                var fromAddress = new MailAddress("nguyenngadeptrai2005@gmail.com", "Gym");
                 var toAddress = new MailAddress(userEmail);
 
-                const string appPassword = "rtrxvdpyiynbxyzn"; // Gmail App Password
+                const string appPassword = "ridfwvtnwuukyece"; // Gmail App Password
 
                 var smtp = new SmtpClient
                 {

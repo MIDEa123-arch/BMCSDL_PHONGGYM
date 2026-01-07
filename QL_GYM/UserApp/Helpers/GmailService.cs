@@ -14,10 +14,10 @@ namespace UserApp.Helpers
 
             try
             {
-                var fromAddress = new MailAddress("thangdien0169@gmail.com", "Gym System Security");
+                var fromAddress = new MailAddress("nguyenngadeptrai2005@gmail.com", "Gym");
                 var toAddress = new MailAddress(GiaiMa.GiaiMaCong(userEmail, 6));
 
-                const string appPassword = "wfjrxxlksiwzvifm";
+                const string appPassword = "ridfwvtnwuukyece";
 
                 var smtp = new SmtpClient
                 {

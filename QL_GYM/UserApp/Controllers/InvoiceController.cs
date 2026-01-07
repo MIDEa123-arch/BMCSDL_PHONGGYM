@@ -147,7 +147,7 @@ namespace UserApp.Controllers
             mail.Attachments.Add(new Attachment(pdfPath));
             mail.Attachments.Add(new Attachment(sigPath));
             SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587); //Cổng của gmail
-            smtp.Credentials = new System.Net.NetworkCredential("thangdien0169@gmail.com", "rtrxvdpyiynbxyzn");
+            smtp.Credentials = new System.Net.NetworkCredential("thangdien0169@gmail.com", "vroazyitytrakwrx");
             smtp.EnableSsl = true; //Chế độ mã hóa
             smtp.Send(mail);
         }

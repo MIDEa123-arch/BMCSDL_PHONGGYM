@@ -17,7 +17,7 @@ namespace UserApp.Helpers
         }
         public void EncryptFile(string inputFilePath, string outputFilePath, string rsaPublicKeyXml)
         {
-            // 1. Tạo khóa DES ngẫu nhiên cho phiên làm việc này
+            //Tạo khóa DES ngẫu nhiên
             using (var des = new DESCryptoServiceProvider())
             {
                 des.GenerateKey(); // Sinh Key ngẫu nhiên (8 bytes)
@@ -28,24 +28,24 @@ namespace UserApp.Helpers
                 using (var rsa = new RSACryptoServiceProvider())
                 {
                     rsa.FromXmlString(rsaPublicKeyXml);
-                    // Mã hóa Key của DES. false = dùng PKCS#1 padding (chuẩn cũ, tương thích tốt)
+                    // Mã hóa Key của DES
                     encryptedDesKey = rsa.Encrypt(des.Key, false);
                 }
 
                 // Cấu trúc: [Độ dài Key RSA (4 byte)] + [Key DES đã mã hóa] + [IV (8 byte)] + [Dữ liệu file đã mã hóa]
                 using (var fsOut = new FileStream(outputFilePath, FileMode.Create))
                 {
-                    // A. Ghi độ dài của Key đã mã hóa (để lúc giải mã biết đường cắt)
+                    // Ghi độ dài của Key đã mã hóa
                     byte[] lenBytes = BitConverter.GetBytes(encryptedDesKey.Length);
                     fsOut.Write(lenBytes, 0, 4);
 
-                    // B. Ghi Key DES đã mã hóa
+                    // Ghi Key DES đã mã hóa
                     fsOut.Write(encryptedDesKey, 0, encryptedDesKey.Length);
 
-                    // C. Ghi IV (IV không cần mã hóa, chỉ cần gửi kèm)
+                    // Ghi IV
                     fsOut.Write(des.IV, 0, des.IV.Length);
 
-                    // D. Ghi nội dung file đã được mã hóa bằng DES
+                    // Ghi nội dung file đã được mã hóa bằng DES
                     using (var cryptoStream = new CryptoStream(fsOut, des.CreateEncryptor(), CryptoStreamMode.Write))
                     {
                         using (var fsIn = new FileStream(inputFilePath, FileMode.Open))
